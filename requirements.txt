@@ -1,0 +1,10 @@
+# Install pdsview itself
+-e .
+
+# Install our development requirements
+flake8
+pytest
+pytest-qt
+planetary_test_data
+tox
+wheel==0.23.0
