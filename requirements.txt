@@ -7,4 +7,4 @@ pytest
 pytest-qt
 planetary_test_data
 tox
-wheel==0.23.0
+wheel
