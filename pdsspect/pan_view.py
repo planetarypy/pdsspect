@@ -1,18 +1,10 @@
 from functools import wraps
 
-import numpy as np
 from qtpy import QtWidgets
-from ginga import RGBImage, LayerImage
 
 from .roi import Polygon, Rectangle
 from .pds_image_view_canvas import PDSImageViewCanvas
 from .pdsspect_image_set import PDSSpectImageSetViewBase
-
-
-class ComposeImage(RGBImage.RGBImage, LayerImage.LayerImage):
-    def __init__(self, *args, **kwdargs):
-        RGBImage.RGBImage.__init__(self, *args, **kwdargs)
-        LayerImage.LayerImage.__init__(self)
 
 
 class PanViewController(object):
@@ -65,16 +57,8 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.view_canvas.zoom_fit()
 
     def move_pan(self):
-        # for roi in self.image_set.rois_iterator:
-        #     roi.move_delta(self.image_set._delta_x, self.image_set._delta_y)
         self.set_data()
         self.view_canvas.zoom_fit()
-
-    def adjust_pan_size(self):
-        # zoom_delta = self.image_set.map_zoom_point_to_view()
-        # for roi in self.image_set.rois_iterator:
-        #     roi.move_delta(*zoom_delta)
-        pass
 
     def _make_x_y_in_pan(self, x, y):
         bottom, top = -.5, self.image_set.pan_height * 2 - 1.
@@ -133,26 +117,15 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_ROI_in_pan
     @check_roi_in_process
     def extend_ROI(self, view_canvas, button, data_x, data_y):
-        bottom, top = 0, self.image_set.pan_height * 2
-        left, right = 0, self.image_set.pan_width * 2
-        data_x = left if data_x < left else data_x
-        data_x = right if data_x > right else data_x
-        data_y = bottom if data_y < bottom else data_y
-        data_y = top if data_y > top else data_y
         self._current_roi.extend_ROI(data_x, data_y)
 
+    @check_ROI_in_pan
     @check_roi_in_process
     def stop_ROI(self, view_canvas, button, data_x, data_y):
         coords = self._current_roi.stop_ROI(data_x, data_y)
         self.controller.add_ROI(coords)
         self._making_roi = False
         self._current_roi = None
-
-    def delete_rois_with_color(self, color):
-        self.view_canvas.delete_objects(self.image_set.rois[color])
-
-    def delete_all_rois(self):
-        self.view_canvas.delete_all_object()
 
     def redraw(self):
         self.view_canvas.redraw()
