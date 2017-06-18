@@ -42,6 +42,8 @@ class ROIBase(basic.Polygon):
 
     def lock_coords_to_pixel(self, data_x, data_y):
         point_x = point_y = None
+
+        # Set default values for data points outside the pan
         if data_x <= 0:
             point_x = -.5
         if data_y <= 0:
@@ -50,6 +52,7 @@ class ROIBase(basic.Polygon):
             point_x = (self.image_set.x_radius * 2 - 1.5)
         if data_y >= (self.image_set.y_radius * 2 - 1):
             point_y = self.image_set.y_radius * 2 - 1.5
+
         if None not in (point_x, point_y):
             return point_x, point_y
 
@@ -124,6 +127,17 @@ class ROIBase(basic.Polygon):
         result.fill(False)
 
         points = self.get_data_points()
+        # xi, yi = np.column_stack(np.array(points))
+        # xj, yj = np.column_stack(np.roll(np.array(points), 1, axis=0))
+        # tf = np.logical_and(
+        #     np.logical_or(np.logical_and(yi < ya, yj >= ya),
+        #                   np.logical_and(yj < ya, yi >= ya)),
+        #     np.logical_or(xi <= xa, xj <= xa)
+        # )
+        # cross = (
+        #     (xi + (ya - yi).astype(np.float) / (yj - yi) * (xj - xi)) < xa
+        # )
+        # result[tf] ^= cross[tf]
 
         xj, yj = points[-1]
         for point in points:
