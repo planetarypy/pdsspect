@@ -5,15 +5,12 @@ from glob import glob
 
 from qtpy import QtWidgets
 
+from . import app
 from .basic import Basic
 from .selection import Selection
 from .transforms import Transforms
 from .pdsspect_view import PDSSPectView
 from .pdsspect_image_set import PDSSPectImageSet, PDSSpectImageSetViewBase
-
-app = QtWidgets.QApplication.instance()
-if not app:
-    app = QtWidgets.QApplication(sys.argv)
 
 
 class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
