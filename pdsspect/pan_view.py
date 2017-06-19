@@ -15,7 +15,11 @@ class PanViewController(object):
 
     def add_ROI(self, coords):
         self.image_set.add_coords_to_roi_data_with_color(
-            coords, self.image_set.color)
+            coords, self.image_set.color
+        )
+
+    def erase_ROI(self, coords):
+        self.image_set._erase_coords(coords)
 
 
 class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
@@ -43,6 +47,10 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.setMouseTracking(True)
         self.set_data()
         self.view_canvas.add(self.image_set._maskrgb_obj)
+
+    @property
+    def is_erasing(self):
+        return self.image_set.color == 'eraser'
 
     def set_data(self):
         self.view_canvas.set_data(self.image_set.pan_data)
@@ -87,6 +95,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
                 ROI = Rectangle
             elif self.image_set.selection_type == 'pencil':
                 ROI = Pencil
+            fillalpha = self.image_set.alpha if not self.is_erasing else 0
             self._current_roi = ROI(
                 self.image_set,
                 view_canvas,
@@ -94,7 +103,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
                 fill=True,
                 alpha=self.image_set.alpha,
                 fillcolor=self.image_set.color,
-                fillalpha=self.image_set.alpha,
+                fillalpha=fillalpha,
             )
             self._current_roi.start_ROI(data_x, data_y)
             self._making_roi = True
@@ -111,7 +120,12 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_ROI_in_pan
     @check_roi_in_process
     def continue_ROI(self, view_canvas, button, data_x, data_y):
-        self._current_roi.continue_ROI(data_x, data_y)
+        if self.image_set.selection_type == 'filled polygon':
+            self._current_roi.continue_ROI(data_x, data_y)
+        elif self.image_set.selection_type == 'filled rectangle':
+            self.stop_ROI(view_canvas, button, data_x, data_y)
+        elif self.image_set.selection_type == 'pencil':
+            self._current_roi.continue_ROI(data_x, data_y)
 
     @check_ROI_in_pan
     @check_roi_in_process
@@ -122,7 +136,10 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_roi_in_process
     def stop_ROI(self, view_canvas, button, data_x, data_y):
         coords = self._current_roi.stop_ROI(data_x, data_y)
-        self.controller.add_ROI(coords)
+        if self.is_erasing:
+            self.controller.erase_ROI(coords)
+        else:
+            self.controller.add_ROI(coords)
         self._making_roi = False
         self._current_roi = None
 

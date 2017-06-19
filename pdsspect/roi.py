@@ -103,7 +103,7 @@ class ROIBase(basic.Polygon):
             linewidth=self.linewidth, linestyle=self.linestyle,
             showcap=self.showcap, fill=self.fill, fillcolor=self.color,
             alpha=self.alpha, drawdims=self.drawdims, font=self.font,
-            fillalpha=self.alpha, **self.kwargs)
+            fillalpha=self.fillalpha, **self.kwargs)
         self.view_canvas.add(self)
         coords = self._get_roi_coords()
         self.view_canvas.deleteObject(self)
@@ -245,7 +245,7 @@ class Rectangle(ROIBase):
         self.view_canvas.add(self._current_path)
 
     def continue_ROI(self, data_x, data_y):
-        self.stop_ROI(self, data_x, data_y)
+        pass
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper

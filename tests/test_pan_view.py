@@ -59,6 +59,43 @@ class TestPanViewController(object):
             self.image_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
         )
+        self.image_set._roi_data[rows, cols] = np.array([[0., 0., 0., 0.]])
+        self.image_set.rois['purple'] = empty
+        self.image_set.alpha = 1
+
+    def test_erase_ROI(self):
+        coords = np.array([[42, 42]])
+        rows, cols = np.column_stack(coords)
+        empty = np.array([])
+        self.image_set.add_coords_to_roi_data_with_color(coords, 'red')
+        assert np.array_equal(self.image_set.rois['red'], coords)
+        assert np.array_equal(self.image_set.rois['brown'], empty)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.]])
+        )
+        self.controller.erase_ROI(coords)
+        assert np.array_equal(self.image_set.rois['red'], empty)
+        assert np.array_equal(self.image_set.rois['brown'], empty)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
+        self.image_set.alpha = 1
+        self.image_set.add_coords_to_roi_data_with_color(coords, 'brown')
+        assert np.array_equal(self.image_set.rois['red'], empty)
+        assert np.array_equal(self.image_set.rois['brown'], coords)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[165.0, 42.0, 42.0, 255.]])
+        )
+        self.controller.erase_ROI(coords)
+        assert np.array_equal(self.image_set.rois['red'], empty)
+        assert np.array_equal(self.image_set.rois['brown'], empty)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
 
 
 class TestPanView(object):
@@ -72,6 +109,13 @@ class TestPanView(object):
             qtbot.add_widget(self.view)
             return func(self, qtbot)
         return wrapper
+
+    def test_is_erasing(self):
+        assert not self.view.is_erasing
+        self.image_set.current_color_index = 14
+        assert self.view.is_erasing
+        self.image_set.current_color_index = 0
+        assert not self.view.is_erasing
 
     @add_view_to_qtbot
     def test_set_data(self, qtbot):

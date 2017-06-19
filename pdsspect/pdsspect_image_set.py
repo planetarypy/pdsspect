@@ -346,6 +346,16 @@ class PDSSPectImageSet(object):
                     roi_coords.remove(coord)
             self.rois[roi_name] = np.array(roi_coords)
 
+    def _erase_coords(self, coords):
+        rows, cols = np.column_stack(coords)
+        self._roi_data[rows, cols] = [0.0, 0.0, 0.0, 0.0]
+        for roi_name in self.rois:
+            roi_coords = self.rois[roi_name].tolist()
+            for coord in coords.tolist():
+                if coord in roi_coords:
+                    roi_coords.remove(coord)
+            self.rois[roi_name] = np.array(roi_coords)
+
     def add_coords_to_roi_data_with_color(self, coords, color):
         rows, cols = np.column_stack(coords)
         rgba = self._get_rgba_from_color(color)
