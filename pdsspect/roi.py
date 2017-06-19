@@ -245,7 +245,7 @@ class Rectangle(ROIBase):
         self.view_canvas.add(self._current_path)
 
     def continue_ROI(self, data_x, data_y):
-        pass
+        self.stop_ROI(self, data_x, data_y)
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
@@ -268,22 +268,46 @@ class Rectangle(ROIBase):
 
 class Pencil(ROIBase):
 
+    point_radius = center_shift = .5
+
+    def __init__(self, *args, **kwargs):
+        super(Pencil, self).__init__(*args, **kwargs)
+        self._current_path = []
+
     @ROIBase.draw_after
     def start_ROI(self, data_x, data_y):
-        self._current_path = [
-            basic.Point(data_x, data_y, 1, color=self.color)
-        ]
-        self.view_canvas.add(self._current_path[0])
+        self._add_point(data_x, data_y)
+
+    @ROIBase.lock_coords_to_pixel_wrapper
+    def _add_point(self, data_x, data_y):
+        next_point = basic.Point(
+            data_x + self.center_shift,
+            data_y + self.center_shift,
+            self.point_radius,
+            color=self.color)
+        self.view_canvas.add(next_point)
+        self._current_path.append(next_point)
 
     @ROIBase.draw_after
     def continue_ROI(self, data_x, data_y):
-        next_point = basic.Point(data_x, data_y, 1, color=self.color)
-        self.view_canvas.add(next_point)
-        self._current_path.append(next_point)
+        self._add_point(data_x, data_y)
+
+    # @ROIBase.draw_after
+    # def extend_ROI(self, data_x, data_y):
+    #     self._add_point(data_x, data_y)
 
     def extend_ROI(self, data_x, data_y):
         pass
 
+    def move_delta(self, delta_x, delta_y):
+        for point in self._current_path:
+            point.move_delta(delta_x, delta_y)
+
     @ROIBase.draw_after
     def stop_ROI(self, data_x, data_y):
-        pass
+        delta = self.image_set.map_zoom_to_full_view()
+        with self._temporary_move_by_delta(delta) as moved:
+            pixels = list(set([(p.x, p.y) for p in moved._current_path]))
+        self.view_canvas.delete_objects(self._current_path)
+        coords = [(int(y), int(x)) for x, y in pixels]
+        return np.array(coords)

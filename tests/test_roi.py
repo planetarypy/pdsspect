@@ -1,10 +1,10 @@
 from . import *  # Import Test File Paths from __init__
 
 import pytest
-# import numpy as np
+import numpy as np
 from ginga.canvas.types import basic
 
-from pdsspect.roi import Rectangle, Polygon, ROIBase
+from pdsspect.roi import Rectangle, Polygon, Pencil, ROIBase
 from pdsspect.pdsspect_image_set import PDSSPectImageSet
 from pdsspect.pds_image_view_canvas import PDSImageViewCanvas
 
@@ -163,3 +163,51 @@ class TestRectangle(object):
         assert rect.get_data_points() == [
             (2.5, 3.5), (4.5, 3.5), (4.5, 5.5), (2.5, 5.5)
         ]
+
+
+class TestPencil(object):
+    image_set = PDSSPectImageSet(TEST_FILES)
+    view_canvas = PDSImageViewCanvas()
+
+    def test_start_ROI(self):
+        pencil = Pencil(self.image_set, self.view_canvas)
+        assert not pencil._current_path
+        pencil.start_ROI(3.5, 1.5)
+        assert isinstance(pencil._current_path[0], basic.Point)
+        assert pencil._current_path[0] in self.view_canvas.objects
+        assert pencil._current_path[0].x == 4
+        assert pencil._current_path[0].y == 2
+
+    def test_add_point(self):
+        pencil = Pencil(self.image_set, self.view_canvas)
+        pencil.start_ROI(3.5, 1.5)
+        pencil._add_point(4.5, 6.5)
+        assert len(pencil._current_path) == 2
+        assert pencil._current_path[1].x == 5
+        assert pencil._current_path[1].y == 7
+        assert pencil._current_path[1] in self.view_canvas.objects
+
+    def test_move_delta(self):
+        pencil = Pencil(self.image_set, self.view_canvas)
+        pencil.start_ROI(3.5, 1.5)
+        pencil._add_point(4.5, 6.5)
+        assert pencil._current_path[0].x == 4
+        assert pencil._current_path[0].y == 2
+        assert pencil._current_path[1].x == 5
+        assert pencil._current_path[1].y == 7
+        pencil.move_delta(-1, 3)
+        assert pencil._current_path[0].x == 3
+        assert pencil._current_path[0].y == 5
+        assert pencil._current_path[1].x == 4
+        assert pencil._current_path[1].y == 10
+
+    def test_stop_ROI(self):
+        pencil = Pencil(self.image_set, self.view_canvas)
+        pencil.start_ROI(3.5, 1.5)
+        pencil._add_point(4.5, 6.5)
+        assert pencil._current_path[0] in self.view_canvas.objects
+        assert pencil._current_path[1] in self.view_canvas.objects
+        test_coords = pencil.stop_ROI(0, 0)
+        assert pencil._current_path[0] not in self.view_canvas.objects
+        assert pencil._current_path[1] not in self.view_canvas.objects
+        assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))

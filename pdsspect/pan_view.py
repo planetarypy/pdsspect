@@ -2,7 +2,7 @@ from functools import wraps
 
 from qtpy import QtWidgets
 
-from .roi import Polygon, Rectangle
+from .roi import Polygon, Rectangle, Pencil
 from .pds_image_view_canvas import PDSImageViewCanvas
 from .pdsspect_image_set import PDSSpectImageSetViewBase
 
@@ -85,6 +85,8 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
                 ROI = Polygon
             elif self.image_set.selection_type == 'filled rectangle':
                 ROI = Rectangle
+            elif self.image_set.selection_type == 'pencil':
+                ROI = Pencil
             self._current_roi = ROI(
                 self.image_set,
                 view_canvas,
@@ -109,10 +111,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_ROI_in_pan
     @check_roi_in_process
     def continue_ROI(self, view_canvas, button, data_x, data_y):
-        if self.image_set.selection_type == 'filled polygon':
-            self._current_roi.continue_ROI(data_x, data_y)
-        elif self.image_set.selection_type == 'filled rectangle':
-            self.stop_ROI(view_canvas, button, data_x, data_y)
+        self._current_roi.continue_ROI(data_x, data_y)
 
     @check_ROI_in_pan
     @check_roi_in_process
