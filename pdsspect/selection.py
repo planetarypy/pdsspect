@@ -1,11 +1,8 @@
 import os
-import warnings
-from contextlib import contextmanager
 
 import numpy as np
 from qtpy import QtWidgets, QtCore
 
-from .roi import Polygon
 from .pdsspect_image_set import PDSSpectImageSetViewBase
 
 
@@ -82,10 +79,10 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         self.clear_all_btn.clicked.connect(self.clear_all)
 
         self.export_btn = QtWidgets.QPushButton("Export ROIs")
-        self.export_btn.clicked.connect(self.export)
+        self.export_btn.clicked.connect(self.open_save_dialog)
 
         self.load_btn = QtWidgets.QPushButton("Load ROIs")
-        self.load_btn.clicked.connect(self.load_selections)
+        self.load_btn.clicked.connect(self.show_open_dialog)
 
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addLayout(self.type_layout)
@@ -125,16 +122,19 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             exported_rois[color] = mask
         return exported_rois
 
-    def export(self):
+    def open_save_dialog(self):
         save_dialog = QtWidgets.QFileDialog(self)
         save_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
         save_dialog.setNameFilter("Selections(*.npz)")
         save_dialog.setViewMode(QtWidgets.QFileDialog.Detail)
         if save_dialog.exec_():
             save_file = save_dialog.getSaveFileName(self, None)[0]
-            exported_rois = self._get_rois_masks_to_export()
-            exported_rois['files'] = np.array(self.image_set.filenames)
-            np.savez(save_file, **exported_rois)
+            self.export(save_file)
+
+    def export(self, save_file):
+        exported_rois = self._get_rois_masks_to_export()
+        exported_rois['files'] = np.array(self.image_set.filenames)
+        np.savez(save_file, **exported_rois)
 
     def _check_pdsspect_selection_is_file(self, filepath):
         base, ext = os.path.splitext(filepath)
@@ -148,13 +148,7 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             if os.path.basename(file) not in self.image_set.filenames:
                 raise RuntimeError('%s not an opened image')
 
-    def load_selections(self):
-        open_dialog = QtWidgets.QFileDialog(self)
-        open_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        open_dialog.setNameFilter("Selections(*.npz)")
-        open_dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        if open_dialog.exec_():
-            selected_files = open_dialog.getOpenFileNames(self)[0]
+    def load_selections(self, selected_files):
             for selected_file in selected_files:
                 self._check_pdsspect_selection_is_file(selected_file)
                 arr_dict = np.load(selected_file)
@@ -164,3 +158,12 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
                     coords = np.column_stack(np.where(arr_dict[color]))
                     if coords.size > 0:
                         self.controller.add_ROI(coords, color)
+
+    def show_open_dialog(self):
+        open_dialog = QtWidgets.QFileDialog(self)
+        open_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
+        open_dialog.setNameFilter("Selections(*.npz)")
+        open_dialog.setViewMode(QtWidgets.QFileDialog.Detail)
+        if open_dialog.exec_():
+            selected_files = open_dialog.getOpenFileNames(self)[0]
+            self.load_selections(selected_files)

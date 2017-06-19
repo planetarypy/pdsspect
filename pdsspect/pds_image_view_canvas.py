@@ -13,6 +13,8 @@ class PDSImageViewCanvas(ImageViewCanvas):
         self.ui_setActive(True)
 
     def add_subview(self, subview):
+        if not isinstance(subview, ImageViewCanvas):
+            raise TypeError("Subview must be an ImageViewCanvas")
         self._subviews.append(subview)
 
     def cut_levels(self, cut_low, cut_high):

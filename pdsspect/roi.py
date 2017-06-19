@@ -60,13 +60,13 @@ class ROIBase(basic.Polygon):
         x, y = np.floor(data_x), np.floor(data_y)
 
         if point_x is None:
-            if X - data_x < .5:
+            if X - data_x <= .5:
                 point_x = x + .5
             else:
                 point_x = x - .5
 
         if point_y is None:
-            if Y - data_y < .5:
+            if Y - data_y <= .5:
                 point_y = y + .5
             else:
                 point_y = y - .5
@@ -216,10 +216,10 @@ class Polygon(ROIBase):
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def extend_ROI(self, data_x, data_y):
-        self._has_temp_point = True
         self._current_path.insert_pt(0, (data_x, data_y))
-        if self._current_path.get_num_points() > 2:
+        if self._current_path.get_num_points() > 2 and self._has_temp_point:
             self._current_path.delete_pt(1)
+        self._has_temp_point = True
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper

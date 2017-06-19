@@ -1,7 +1,8 @@
 from . import *  # Import Test File Paths from __init__
 
 import pytest
-import numpy as np
+# import numpy as np
+from ginga.canvas.types import basic
 
 from pdsspect.roi import Rectangle, Polygon, ROIBase
 from pdsspect.pdsspect_image_set import PDSSPectImageSet
@@ -18,7 +19,6 @@ def test_abstract_base_class():
 class TestPolygon(object):
     image_set = PDSSPectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
-    rect = Polygon(image_set, view_canvas)
     shape1 = [
         (2.5, 5.5), (4.5, 3.5), (6.5, 5.5), (6.5, 2.5), (2.5, 2.5)
     ]
@@ -31,11 +31,13 @@ class TestPolygon(object):
             (2.3, 2.3, 1.5, 1.5),
             (1.7, 2.3, 1.5, 1.5),
             (1.7, 1.7, 1.5, 1.5),
-            (2.3, 1.7, 1.5, 1.5)
+            (2.3, 1.7, 1.5, 1.5),
+            (2.5, 3.5, 2.5, 3.5)
         ]
     )
     def test_lock_coords_to_pixel(self, x, y, expected_x, expected_y):
-        assert self.rect.lock_coords_to_pixel(x, y) == (expected_x, expected_y)
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly.lock_coords_to_pixel(x, y) == (expected_x, expected_y)
 
     # def test_contains_arr(self):
     #     self.rect.create_ROI(self.shape1)
@@ -53,3 +55,111 @@ class TestPolygon(object):
     #         ]
     #     )
     #     assert np.array_equal(self.rect.contains_arr(X, Y), test_mask)
+
+    def test_move_by_delta(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        poly.create_ROI(self.shape1)
+        rect_points = poly.get_points()
+        for rect_point, point in zip(rect_points, self.shape1):
+            assert rect_point == point
+        with poly._temporary_move_by_delta((2, 3)) as moved_rect:
+            moved_points = moved_rect.get_points()
+            for moved_point, point in zip(moved_points, self.shape1):
+                assert moved_point[0] == point[0] + 2
+                assert moved_point[1] == point[1] + 3
+        rect_points = poly.get_points()
+        for rect_point, point in zip(rect_points, self.shape1):
+            assert rect_point == point
+
+    def test_start_ROI(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly._current_path is None
+        poly.start_ROI(2.5, 3.5)
+        assert isinstance(poly._current_path, basic.Path)
+        assert poly._current_path in self.view_canvas.objects
+        assert poly._current_path.get_points() == [(2.5, 3.5)]
+
+    def test_current_ROI(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        poly.start_ROI(2.5, 3.5)
+        poly._has_temp_point = True
+        poly.continue_ROI(5.5, 4.5)
+        assert poly._current_path.get_points() == [(5.5, 4.5), (2.5, 3.5)]
+        assert not poly._has_temp_point
+
+    def test_extend_ROI(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        poly.start_ROI(2.5, 3.5)
+        poly._has_temp_point = False
+        poly.extend_ROI(5.5, 4.5)
+        assert poly._current_path.get_points() == [(5.5, 4.5), (2.5, 3.5)]
+        assert poly._has_temp_point
+        poly.extend_ROI(6.5, 5.5)
+        assert poly._current_path.get_points() == [(6.5, 5.5), (2.5, 3.5)]
+
+    def test_stop_ROI(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        poly.start_ROI(2.5, 3.5)
+        poly.continue_ROI(2.5, 4.5)
+        poly.continue_ROI(5.5, 3.5)
+        poly.extend_ROI(3.5, 3.5)
+        poly.stop_ROI(2.5, 3.5)
+        assert poly._current_path not in self.view_canvas.objects
+        assert poly._current_path.get_points() == [
+            (5.5, 3.5), (2.5, 4.5), (2.5, 3.5)
+        ]
+        assert poly.get_data_points() == [
+            (5.5, 3.5), (2.5, 4.5), (2.5, 3.5)
+        ]
+
+        poly.start_ROI(2.5, 3.5)
+        poly.continue_ROI(2.5, 4.5)
+        with pytest.warns(UserWarning):
+            poly.stop_ROI(2.5, 3.5)
+
+
+class TestRectangle(object):
+    image_set = PDSSPectImageSet(TEST_FILES)
+    view_canvas = PDSImageViewCanvas()
+
+    def test_start_ROI(self):
+        rect = Rectangle(self.image_set, self.view_canvas)
+        assert rect._current_path is None
+        rect.start_ROI(2.5, 3.5)
+        assert isinstance(rect._current_path, basic.Rectangle)
+        assert rect._current_path.x1 == 2.5
+        assert rect._current_path.y1 == 3.5
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y2 == 4.5
+        assert rect._current_path is not None
+        assert rect._current_path in self.view_canvas.objects
+
+    def test_extend_ROI(self):
+        rect = Rectangle(self.image_set, self.view_canvas)
+        rect.start_ROI(2.5, 3.5)
+        rect.extend_ROI(2.5, 3.5)
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y2 == 4.5
+        rect.extend_ROI(3.5, 3.5)
+        assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y2 == 4.5
+        rect.extend_ROI(3.5, 4.5)
+        assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y2 == 5.5
+        rect.extend_ROI(1.5, 3.5)
+        assert rect._current_path.x2 == 1.5
+        assert rect._current_path.y2 == 4.5
+        rect.extend_ROI(1.5, 2.5)
+        assert rect._current_path.x2 == 1.5
+        assert rect._current_path.y2 == 2.5
+
+    def test_stop_ROI(self):
+        rect = Rectangle(self.image_set, self.view_canvas)
+        rect.start_ROI(2.5, 3.5)
+        assert rect._current_path in self.view_canvas.objects
+        rect.extend_ROI(3.5, 4.5)
+        rect.stop_ROI(3.5, 4.5)
+        assert rect._current_path not in self.view_canvas.objects
+        assert rect.get_data_points() == [
+            (2.5, 3.5), (4.5, 3.5), (4.5, 5.5), (2.5, 5.5)
+        ]

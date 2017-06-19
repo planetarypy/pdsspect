@@ -28,3 +28,7 @@ TEST_FILES = [FILE_1, FILE_2, FILE_3, FILE_4, FILE_5]
 TEST_FILE_NAMES = [
     FILE_1_NAME, FILE_2_NAME, FILE_3_NAME, FILE_4_NAME, FILE_5_NAME
 ]
+
+SAMPLE_ROI = os.path.join(
+    'tests', 'sample_roi.npz'
+)
