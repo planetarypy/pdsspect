@@ -6,5 +6,6 @@ flake8
 pytest
 pytest-qt
 planetary_test_data
+sphinx
 tox
 wheel
