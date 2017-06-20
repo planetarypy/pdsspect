@@ -69,10 +69,7 @@ class PDSSPectImageSet(object):
         self._selection_index = 0
         self._zoom = 1.0
         self._center = None
-        self._delta_x = 0
-        self._delta_y = 0
         self._last_zoom = 1.0
-        self._move_rois = True
         self._alpha = 1.0
         self._flip_x = False
         self._flip_y = False
@@ -216,12 +213,6 @@ class PDSSPectImageSet(object):
             center = (
                 self._determine_center_x(x), self._determine_center_y(y),
             )
-            if self._move_rois:
-                self._delta_x = self.center[0] - center[0]
-                self._delta_y = self.center[1] - center[1]
-            else:
-                self._delta_x = 0
-                self._delta_y = 0
             self._center = center
             for view in self._views:
                 view.move_pan()

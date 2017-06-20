@@ -30,8 +30,6 @@ class TestPDSSPectImageSet(object):
         self.test_set._selection_index = 0
         self.test_set._zoom = 1.0
         self.test_set._center = None
-        self.test_set._delta_x = 0
-        self.test_set._delta_y = 0
         self.test_set._last_zoom = 1.0
         self.test_set._move_rois = True
         self.test_set._alpha = 1.0
@@ -71,10 +69,7 @@ class TestPDSSPectImageSet(object):
         assert isinstance(test_set._selection_index, int)
         assert test_set.current_color_index == 0
         assert isinstance(test_set.current_color_index, int)
-        assert test_set._delta_x == 0
-        assert test_set._delta_y == 0
         assert test_set._last_zoom == 1.0
-        assert test_set._move_rois
         assert test_set._alpha == 1.0
         assert isinstance(test_set._alpha, float)
         assert not test_set._flip_x
@@ -361,38 +356,6 @@ class TestPDSSPectImageSet(object):
         self.test_set.center = center
         assert self.test_set.center == expected
         assert self.test_set._center == expected
-
-    @ensure_correct_state
-    def test_center2(self):
-        assert self.test_set._delta_x == 0
-        assert self.test_set._delta_y == 0
-        assert self.test_set.center == (512, 512)
-        self.test_set.zoom = 2
-        assert self.test_set.center == (512, 512)
-        self.test_set.center = (513, 512)
-        assert self.test_set._delta_x == -1
-        assert self.test_set._delta_y == 0
-        self.test_set.center = (513, 513)
-        assert self.test_set._delta_x == 0
-        assert self.test_set._delta_y == -1
-        self.test_set.center = (613, 613)
-        assert self.test_set._delta_x == -100
-        assert self.test_set._delta_y == -100
-        self.test_set.center = (513, 513)
-        assert self.test_set._delta_x == 100
-        assert self.test_set._delta_y == 100
-        self.test_set.center = (255, 769)
-        assert self.test_set.center == (256, 768)
-        assert self.test_set._delta_x == 257
-        assert self.test_set._delta_y == -255
-        self.test_set.center = (769, 255)
-        assert self.test_set.center == (768, 256)
-        assert self.test_set._delta_x == -512
-        assert self.test_set._delta_y == 512
-        self.test_set._move_rois = False
-        self.test_set.center = (512, 512)
-        assert self.test_set._delta_x == 0
-        assert self.test_set._delta_y == 0
 
     @pytest.mark.parametrize(
         'alpha, expected',
