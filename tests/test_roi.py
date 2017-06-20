@@ -1,3 +1,5 @@
+import warnings
+
 from . import *  # Import Test File Paths from __init__
 
 import pytest
@@ -39,22 +41,24 @@ class TestPolygon(object):
         poly = Polygon(self.image_set, self.view_canvas)
         assert poly.lock_coords_to_pixel(x, y) == (expected_x, expected_y)
 
-    # def test_contains_arr(self):
-    #     self.rect.create_ROI(self.shape1)
-    #     x1, y1, x2, y2 = self.rect.get_llur()
-    #     x1, y1 = np.floor([x1, y1]).astype(int)
-    #     x2, y2 = np.ceil([x2, y2]).astype(int)
-    #     X, Y = np.mgrid[x1:x2, y1:y2]
-    #     test_mask = np.array(
-    #         [
-    #             [False, False, False, False],
-    #             [False, True, True, True],
-    #             [False, True, True, False],
-    #             [False, True, True, False],
-    #             [False, True, True, True],
-    #         ]
-    #     )
-    #     assert np.array_equal(self.rect.contains_arr(X, Y), test_mask)
+    def test_contains_arr(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        poly.create_ROI(self.shape1)
+        x1, y1, x2, y2 = poly.get_llur()
+        x1, y1 = np.floor([x1, y1]).astype(int)
+        x2, y2 = np.ceil([x2, y2]).astype(int)
+        X, Y = np.mgrid[x1:x2, y1:y2]
+        test_mask = np.array(
+            [
+                [False, False, False, False],
+                [False, True, True, True],
+                [False, True, True, False],
+                [False, True, True, False],
+                [False, True, True, True],
+            ]
+        )
+        mask = poly.contains_arr(X, Y)
+        assert np.array_equal(mask, test_mask)
 
     def test_move_by_delta(self):
         poly = Polygon(self.image_set, self.view_canvas)

@@ -116,28 +116,18 @@ class ROIBase(basic.Polygon):
 
         # promote input arrays dimension cardinality, if necessary
         promoted = False
-        if len(xa.shape) == 1:
-            xa = xa.reshape(1, -1)
+        if len(x_arr.shape) == 1:
+            x_arr = x_arr.reshape(1, -1)
             promoted = True
-        if len(ya.shape) == 1:
-            ya = ya.reshape(-1, 1)
+        if len(y_arr.shape) == 1:
+            y_arr = y_arr.reshape(-1, 1)
             promoted = True
 
-        result = np.empty(ya.shape, dtype=np.bool)
-        result.fill(False)
+        result = np.zeros(y_arr.shape, dtype=np.bool)
+        result1 = np.zeros(y_arr.shape, dtype=np.bool)
+        result2 = np.zeros(y_arr.shape, dtype=np.bool)
 
         points = self.get_data_points()
-        # xi, yi = np.column_stack(np.array(points))
-        # xj, yj = np.column_stack(np.roll(np.array(points), 1, axis=0))
-        # tf = np.logical_and(
-        #     np.logical_or(np.logical_and(yi < ya, yj >= ya),
-        #                   np.logical_and(yj < ya, yi >= ya)),
-        #     np.logical_or(xi <= xa, xj <= xa)
-        # )
-        # cross = (
-        #     (xi + (ya - yi).astype(np.float) / (yj - yi) * (xj - xi)) < xa
-        # )
-        # result[tf] ^= cross[tf]
 
         xj, yj = points[-1]
         for point in points:
@@ -147,20 +137,21 @@ class ROIBase(basic.Polygon):
                               np.logical_and(yj < ya, yi >= ya)),
                 np.logical_or(xi <= xa, xj <= xa)
             )
-            # NOTE: get a divide by zero here for some elements whose tf=False
-            # Need to figure out a way to conditionally do those w/tf=True
-            # Till then we use the warnings module to suppress the warning.
-            # with warnings.catch_warnings():
-            #     warnings.simplefilter('default', RuntimeWarning)
-            # NOTE postscript: warnings context manager causes this computation
-            # to fail silently sometimes where it previously worked with a
-            # warning--commenting out the warning manager for now
-            cross = (
-                (xi + (ya - yi).astype(np.float) / (yj - yi) * (xj - xi)) < xa
+            rs, cs = np.where(tf)
+            cross1 = np.zeros(ya.shape, dtype=bool)
+            cross2 = np.zeros(ya.shape, dtype=bool)
+            mask1 = (
+                (xi + (ya[rs, cs] - yi) / (yj - yi) * (xj - xi)) < xa[rs, cs]
             )
-
-            result[tf] ^= cross[tf]
+            mask2 = (
+                (xi + (ya[rs, cs] - yi) / (yj - yi) * (xj - xi)) <= xa[rs, cs]
+            )
+            cross1[rs, cs] = mask1
+            cross2[rs, cs] = mask2
+            result1[tf] ^= cross1[tf]
+            result2[tf] ^= cross2[tf]
             xj, yj = xi, yi
+        result = np.logical_or(result1, result2)
 
         if promoted:
             # de-promote result
