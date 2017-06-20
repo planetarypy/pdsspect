@@ -38,32 +38,20 @@ class TestSelectionController(object):
 
     def test_clear_current_color(self):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois[self.image_set.color] = np.array([(4, 2)])
         self.controller.clear_current_color()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
-        assert np.array_equal(
-            self.image_set.rois[self.image_set.color], np.array([])
-        )
 
     def test_clear_all(self):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois['red'] = np.array([(4, 2)])
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.image_set.rois['brown'] = np.array([(2, 4)])
         self.controller.clear_all()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
         assert np.array_equal(
-            self.image_set.rois['red'], np.array([])
-        )
-        assert np.array_equal(
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
-        )
-        assert np.array_equal(
-            self.image_set.rois['brown'], np.array([])
         )
 
     def test_add_ROI(self):
@@ -71,9 +59,6 @@ class TestSelectionController(object):
         self.controller.add_ROI(coords, 'red')
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [255.0, 0.0, 0.0, 255.]
-        )
-        assert np.array_equal(
-            self.image_set.rois['red'], coords
         )
 
 
@@ -133,17 +118,12 @@ class TestSelection(object):
 
     def test_clear_current_color(self, qtbot):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois[self.image_set.color] = np.array([(4, 2)])
         self.sel.clear_current_color()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
-        assert np.array_equal(
-            self.image_set.rois[self.image_set.color], np.array([])
-        )
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois[self.image_set.color] = np.array([(4, 2)])
         self.sel.show()
         qtbot.add_widget(self.sel)
         qtbot.mouseClick(
@@ -152,33 +132,20 @@ class TestSelection(object):
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
-        assert np.array_equal(
-            self.image_set.rois[self.image_set.color], np.array([])
-        )
 
     def test_clear_all(self, qtbot):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois['red'] = np.array([(4, 2)])
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.image_set.rois['brown'] = np.array([(2, 4)])
         self.sel.clear_all()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
         assert np.array_equal(
-            self.image_set.rois['red'], np.array([])
-        )
-        assert np.array_equal(
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
-        )
-        assert np.array_equal(
-            self.image_set.rois['brown'], np.array([])
         )
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.image_set.rois['red'] = np.array([(4, 2)])
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.image_set.rois['brown'] = np.array([(2, 4)])
         self.sel.show()
         qtbot.add_widget(self.sel)
         qtbot.mouseClick(
@@ -188,21 +155,12 @@ class TestSelection(object):
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
         assert np.array_equal(
-            self.image_set.rois['red'], np.array([])
-        )
-        assert np.array_equal(
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
-        )
-        assert np.array_equal(
-            self.image_set.rois['brown'], np.array([])
         )
 
     def test_get_rois_masks_to_export(self):
         self.sel.controller.add_ROI(self.roi_coords, 'red')
         test_rois_dict = self.sel._get_rois_masks_to_export()
-        assert np.array_equal(
-            test_rois_dict['red_coordinates'], self.roi_coords
-        )
         assert np.array_equal(
             np.where(test_rois_dict['red'])[0], np.array([512, 512, 513, 513])
         )
@@ -216,9 +174,6 @@ class TestSelection(object):
             save_file = os.path.join(tmpdirname, 'temp.npz')
             self.sel.export(save_file)
             np_file = np.load(save_file)
-            assert np.array_equal(
-                np_file['red_coordinates'], self.roi_coords
-            )
             assert np.array_equal(
                 np.where(np_file['red'])[0], np.array([512, 512, 513, 513])
             )
@@ -239,9 +194,6 @@ class TestSelection(object):
 
     def test_load_selections(self):
         self.sel.load_selections([SAMPLE_ROI])
-        assert np.array_equal(
-            self.image_set.rois['red'], self.roi_coords
-        )
         rows, cols = np.column_stack(self.roi_coords)
         for pixel in self.image_set._roi_data[rows, cols]:
             assert np.array_equal(

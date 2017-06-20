@@ -19,10 +19,6 @@ class TestPanViewController(object):
         assert self.image_set.color == 'red'
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
-        empty = np.array([])
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
-        assert np.array_equal(self.image_set.rois['purple'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[0., 0., 0., 0.]])
@@ -30,9 +26,6 @@ class TestPanViewController(object):
 
         self.image_set.alpha = 1
         self.controller.add_ROI(coords)
-        assert np.array_equal(self.image_set.rois['red'], coords)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
-        assert np.array_equal(self.image_set.rois['purple'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
@@ -41,9 +34,6 @@ class TestPanViewController(object):
         self.image_set.alpha = .75
         self.image_set.current_color_index = 1
         self.controller.add_ROI(coords)
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], coords)
-        assert np.array_equal(self.image_set.rois['purple'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 191.25]])
@@ -52,46 +42,33 @@ class TestPanViewController(object):
         self.image_set.alpha = .25
         self.image_set.current_color_index = 13
         self.controller.add_ROI(coords)
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
-        assert np.array_equal(self.image_set.rois['purple'], coords)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
         )
         self.image_set._roi_data[rows, cols] = np.array([[0., 0., 0., 0.]])
-        self.image_set.rois['purple'] = empty
         self.image_set.alpha = 1
 
     def test_erase_ROI(self):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
-        empty = np.array([])
         self.image_set.add_coords_to_roi_data_with_color(coords, 'red')
-        assert np.array_equal(self.image_set.rois['red'], coords)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
         )
         self.controller.erase_ROI(coords)
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
         self.image_set.alpha = 1
         self.image_set.add_coords_to_roi_data_with_color(coords, 'brown')
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], coords)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 255.]])
         )
         self.controller.erase_ROI(coords)
-        assert np.array_equal(self.image_set.rois['red'], empty)
-        assert np.array_equal(self.image_set.rois['brown'], empty)
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])

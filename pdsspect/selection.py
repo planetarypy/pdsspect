@@ -25,8 +25,7 @@ class SelectionController(object):
         self.image_set.delete_rois_with_color(self.image_set.color)
 
     def clear_all(self):
-        for color in self.image_set.rois:
-            self.image_set.delete_rois_with_color(color)
+        self.image_set.delete_all_rois()
 
     def add_ROI(self, coords, color):
         self.image_set.add_coords_to_roi_data_with_color(
@@ -114,10 +113,7 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         exported_rois = {}
         for color in self.image_set.colors:
             mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
-            rgba = self.image_set._get_rgba_from_color(color)
-            rows, cols = np.where(
-                (self.image_set._roi_data == rgba).all(axis=2)
-            )
+            rows, cols = self.image_set.get_coordinates_of_color(color)
             mask[rows, cols] = True
             exported_rois[color] = mask
         return exported_rois

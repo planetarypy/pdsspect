@@ -1,6 +1,5 @@
 import os
 import warnings
-from functools import wraps
 
 import numpy as np
 from ginga.util.dp import masktorgb
@@ -9,18 +8,6 @@ from planetaryimage import PDS3Image
 from ginga.BaseImage import BaseImage
 from ginga import colors as ginga_colors
 from ginga.canvas.types.image import Image
-import time
-
-
-def timeit(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        finish = time.time()
-        print(finish - start)
-        return result
-    return wrapper
 
 
 ginga_colors.add_color('crimson', (0.86275, 0.07843, 0.23529))
@@ -60,6 +47,7 @@ class PDSSPectImageSet(object):
         'purple',
         'eraser',
     ]
+
     selection_types = [
         'filled rectangle',
         'filled polygon',
@@ -81,7 +69,6 @@ class PDSSPectImageSet(object):
         self._selection_index = 0
         self._zoom = 1.0
         self._center = None
-        # self.rois = {color: np.array([]) for color in self.colors}
         self._delta_x = 0
         self._delta_y = 0
         self._last_zoom = 1.0
@@ -240,6 +227,10 @@ class PDSSPectImageSet(object):
                 view.move_pan()
 
     @property
+    def all_rois_coordinates(self):
+        return np.where((self._roi_data != 0).any(axis=2))
+
+    @property
     def alpha255(self):
         return self._alpha * 255.
 
@@ -250,8 +241,7 @@ class PDSSPectImageSet(object):
     @alpha.setter
     def alpha(self, new_alpha):
         self._alpha = new_alpha
-        rows, cols = np.where((~(self._roi_data == 0)).any(axis=2))
-        # rows, cols = np.column_stack(roi)
+        rows, cols = self.all_rois_coordinates
         self._roi_data[rows, cols, 3] = self.alpha255
         for view in self._views:
             view.set_roi_data()
@@ -291,25 +281,6 @@ class PDSSPectImageSet(object):
         return self.flip_x, self.flip_y, self.swap_xy
 
     @property
-    def rois_iterator(self):
-        rois = [roi for roi in self.rois.values() if roi.size > 0]
-        return rois
-
-    # @property
-    # def _image_radius(self):
-    #     height, width = self.current_image.shape[:2]
-    #     image_radius = width / 2 if width < height else height / 2
-    #     return image_radius
-
-    # @property
-    # def radius(self):
-    #     return self._image_radius / self.zoom
-
-    # @property
-    # def _last_radius(self):
-    #     return self._image_radius / self._last_zoom
-
-    @property
     def edges(self):
         x, y = self.center
         left = int(round(x - self.pan_width))
@@ -342,32 +313,11 @@ class PDSSPectImageSet(object):
         rgba = [r, g, b, a]
         return rgba
 
-    # def _set_coords_in_rois_with_color(self, coords, color):
-    #     for roi_name in self.rois:
-    #         roi_coords = self.rois[roi_name].tolist()
-    #         for coord in coords.tolist():
-    #             add_coord_to_list = all(
-    #                 (coord not in roi_coords, roi_name == color)
-    #             )
-    #             if add_coord_to_list:
-    #                 roi_coords.append(coord)
-
-    #             remove_coord_from_list = all(
-    #                 (coord in roi_coords, roi_name != color)
-    #             )
-    #             if remove_coord_from_list:
-    #                 roi_coords.remove(coord)
-    #         self.rois[roi_name] = np.array(roi_coords)
-
     def _erase_coords(self, coords):
-        rows, cols = np.column_stack(coords)
+        if isinstance(coords, np.ndarray):
+            coords = np.column_stack(coords)
+        rows, cols = coords
         self._roi_data[rows, cols] = [0.0, 0.0, 0.0, 0.0]
-        # for roi_name in self.rois:
-        #     roi_coords = self.rois[roi_name].tolist()
-        #     for coord in coords.tolist():
-        #         if coord in roi_coords:
-        #             roi_coords.remove(coord)
-        #     self.rois[roi_name] = np.array(roi_coords)
 
     def add_coords_to_roi_data_with_color(self, coords, color):
         rows, cols = np.column_stack(coords)
@@ -375,25 +325,6 @@ class PDSSPectImageSet(object):
         self._roi_data[rows, cols] = rgba
         for view in self._views:
             view.set_roi_data()
-        # self._set_coords_in_rois_with_color(coords, color)
-        # print((self._roi_data == rgba).all(axis=2))
-        # r, c = np.where((self._roi_data == rgba).all(axis=2))
-        # print(np.column_stack([r, c]))
-        # print(self.rois[color])
-
-    # def _get_canvas_coordinate(self, side, coordinate):
-    #     if self._last_zoom > self._zoom:
-    #         canvas_coordinate = side + coordinate
-    #     elif self._last_zoom < self._zoom:
-    #         canvas_coordinate = side - coordinate
-    #     else:
-    #         canvas_coordinate = coordinate
-    #     return canvas_coordinate
-
-    # def map_zoom_point_to_view(self):
-    #     delta_x = self.pan_width - self._last_pan_width
-    #     delta_y = self.pan_height - self._last_pan_height
-    #     return delta_x, delta_y
 
     def map_zoom_to_full_view(self):
         center_x1, center_y1 = self.current_image.get_center()
@@ -402,13 +333,24 @@ class PDSSPectImageSet(object):
         delta_y = (self.y_radius - self.pan_height) + (center_y2 - center_y1)
         return delta_x, delta_y
 
+    def get_coordinates_of_color(self, color):
+        rgba = self._get_rgba_from_color(color)
+        coordinates = np.where(
+            (self._roi_data == rgba).all(axis=2)
+        )
+
+        return coordinates
+
     def delete_rois_with_color(self, color):
-        if coords.size != 0:
-            rows, cols = np.column_stack(coords)
-            self._roi_data[rows, cols] = [0, 0, 0, 0]
-            # self.rois[color] = np.array([])
-            for view in self._views:
-                view.set_roi_data()
+        coords = self.get_coordinates_of_color(color)
+        self._erase_coords(coords)
+        for view in self._views:
+            view.set_roi_data()
+
+    def delete_all_rois(self):
+        self._erase_coords(self.all_rois_coordinates)
+        for view in self._views:
+            view.set_roi_data()
 
 
 class PDSSpectImageSetViewBase(object):
