@@ -1,12 +1,12 @@
 from . import *  # Import Test File Paths from __init__
 
 from pdsspect.basic import BasicController, Basic
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.pds_image_view_canvas import PDSImageViewCanvas
 
 
 class TestBasicController(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     controller = BasicController(image_set, None)
 
     def test_change_current_image_index(self):
@@ -16,7 +16,7 @@ class TestBasicController(object):
 
 
 class TestBasic(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
     view_canvas.set_image(image_set.current_image)
     basic = Basic(image_set, view_canvas)

@@ -20,10 +20,10 @@ class PDSSpectViewController(object):
         self.image_set.zoom = zoom
 
 
-class PDSSPectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
+class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     def __init__(self, image_set):
-        super(PDSSPectView, self).__init__()
+        super(PDSSpectView, self).__init__()
         self.image_set = image_set
         self.image_set.register(self)
         self.controller = PDSSpectViewController(self.image_set, self)

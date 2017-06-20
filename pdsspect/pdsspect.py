@@ -9,18 +9,31 @@ from . import app
 from .basic import Basic
 from .selection import Selection
 from .transforms import Transforms
-from .pdsspect_view import PDSSPectView
-from .pdsspect_image_set import PDSSPectImageSet, PDSSpectImageSetViewBase
+from .pdsspect_view import PDSSpectView
+from .pdsspect_image_set import PDSSpectImageSet, PDSSpectImageSetViewBase
 
 
 class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
+    """Main Window of pdsspect
+
+    Parameters
+    ----------
+    image_set : :class:`~PDSSPectImageSet`
+        pdsspect model
+
+    Attributes
+    ----------
+    image_Set :class:`PDSSpectImageSet`
+        The model for each view
+    pdsspect_view : `PDSSpectView1
+    """
 
     def __init__(self, image_set):
         super(PDSSpect, self).__init__()
         self.image_set = image_set
         self.image_set.register(self)
 
-        self.pdsspect_view = PDSSPectView(image_set)
+        self.pdsspect_view = PDSSpectView(image_set)
         self.pan_view = self.pdsspect_view.pan_view
 
         self.selection_btn = QtWidgets.QPushButton("Selection")
@@ -121,7 +134,7 @@ def pdsspect(inlist=None):
 
     From the (i)python command line:
 
-    >>> from pdsview.pdsview import pdsview
+    >>> from pdsspect.pdsspect import pdsspect
     >>> pdsspect()
     Displays all of the images from current directory
     >>> pdsspect('path/to/different/directory')
@@ -148,7 +161,7 @@ def pdsspect(inlist=None):
     elif inlist is None:
         files = glob('*')
 
-    image_set = PDSSPectImageSet(files)
+    image_set = PDSSpectImageSet(files)
     window = PDSSpect(image_set)
     geometry = app.desktop().screenGeometry()
     geo_center = geometry.center()

@@ -5,11 +5,11 @@ from pdsspect.basic import Basic
 from pdsspect.pdsspect import PDSSpect
 from pdsspect.selection import Selection
 from pdsspect.transforms import Transforms
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
 
 class TestPDSSpect(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     window = PDSSpect(image_set)
 
     def test_init(self):

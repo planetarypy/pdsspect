@@ -28,7 +28,7 @@ class ImageStamp(BaseImage):
         self.cuts = (None, None)
 
 
-class PDSSPectImageSet(object):
+class PDSSpectImageSet(object):
 
     colors = [
         'red',

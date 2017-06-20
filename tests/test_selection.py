@@ -7,12 +7,12 @@ import pytest
 import numpy as np
 from qtpy import QtCore
 
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.selection import SelectionController, Selection
 
 
 class TestSelectionController(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     controller = SelectionController(image_set, None)
 
     def test_change_current_color_index(self):
@@ -63,7 +63,7 @@ class TestSelectionController(object):
 
 
 class TestSelection(object):
-    image_set = PDSSPectImageSet([FILE_1])
+    image_set = PDSSpectImageSet([FILE_1])
     sel = Selection(image_set)
     roi_coords = np.array(
         [

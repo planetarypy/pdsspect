@@ -4,12 +4,12 @@ from . import *  # Import Test File Paths from __init__
 
 from qtpy import QtCore
 
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
-from pdsspect.pdsspect_view import PDSSpectViewController, PDSSPectView
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
+from pdsspect.pdsspect_view import PDSSpectViewController, PDSSpectView
 
 
 class TestPDSSpectViewController(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     controller = PDSSpectViewController(image_set, None)
 
     def test_init(self):
@@ -36,9 +36,9 @@ class TestPDSSpectViewController(object):
         assert self.image_set.zoom == 1
 
 
-class TestPDSSPectView(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
-    view = PDSSPectView(image_set)
+class TestPDSSpectView(object):
+    image_set = PDSSpectImageSet(TEST_FILES)
+    view = PDSSpectView(image_set)
 
     def add_view_to_qtbot(func):
         @wraps(func)

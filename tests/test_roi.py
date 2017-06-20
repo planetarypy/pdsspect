@@ -5,19 +5,19 @@ import numpy as np
 from ginga.canvas.types import basic
 
 from pdsspect.roi import Rectangle, Polygon, Pencil, ROIBase
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.pds_image_view_canvas import PDSImageViewCanvas
 
 
 def test_abstract_base_class():
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
     with pytest.raises(TypeError):
         ROIBase(image_set, view_canvas)
 
 
 class TestPolygon(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
     shape1 = [
         (2.5, 5.5), (4.5, 3.5), (6.5, 5.5), (6.5, 2.5), (2.5, 2.5)
@@ -121,7 +121,7 @@ class TestPolygon(object):
 
 
 class TestRectangle(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
 
     def test_start_ROI(self):
@@ -168,7 +168,7 @@ class TestRectangle(object):
 
 
 class TestPencil(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
 
     def test_start_ROI(self):

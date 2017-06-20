@@ -6,12 +6,12 @@ import pytest
 import numpy as np
 
 from pdsspect.roi import Rectangle, Polygon
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.pan_view import PanViewController, PanView
 
 
 class TestPanViewController(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     controller = PanViewController(image_set, None)
 
     def test_add_ROI(self):
@@ -76,7 +76,7 @@ class TestPanViewController(object):
 
 
 class TestPanView(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view = PanView(image_set)
 
     def add_view_to_qtbot(func):

@@ -9,7 +9,7 @@ from ginga.RGBImage import RGBImage
 from ginga.canvas.types.image import Image
 
 from pdsspect.pdsspect_image_set import (
-    ImageStamp, PDSSPectImageSet, ginga_colors
+    ImageStamp, PDSSpectImageSet, ginga_colors
 )
 
 
@@ -21,8 +21,8 @@ def test_ImageStamp():
     assert test_stamp.cuts == (None, None)
 
 
-class TestPDSSPectImageSet(object):
-    test_set = PDSSPectImageSet(TEST_FILES)
+class TestPDSSpectImageSet(object):
+    test_set = PDSSpectImageSet(TEST_FILES)
 
     def reset_test_set_state(self):
         self.test_set._current_image_index = 0
@@ -55,7 +55,7 @@ class TestPDSSPectImageSet(object):
     def test_init(self):
         test_set = self.test_set
         assert test_set._views == []
-        assert isinstance(test_set, PDSSPectImageSet)
+        assert isinstance(test_set, PDSSpectImageSet)
         assert len(test_set.images) == 5
         for image in test_set.images:
             assert isinstance(image, ImageStamp)

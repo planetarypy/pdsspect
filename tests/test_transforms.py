@@ -2,13 +2,13 @@ from . import *  # Import Test File Paths from __init__
 
 from qtpy import QtCore
 
-from pdsspect.pdsspect_image_set import PDSSPectImageSet
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.pds_image_view_canvas import PDSImageViewCanvas
 from pdsspect.transforms import TransformsController, Transforms
 
 
 class TestTransformsController(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     controller = TransformsController(image_set, None)
 
     def test_set_flip_x(self):
@@ -34,7 +34,7 @@ class TestTransformsController(object):
 
 
 class TestTransforms(object):
-    image_set = PDSSPectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
     view_canvas.set_image(image_set.current_image)
     trans = Transforms(image_set, view_canvas)
