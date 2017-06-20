@@ -3,7 +3,7 @@ import sys
 import argparse
 from glob import glob
 
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtCore
 
 from . import app
 from .basic import Basic
@@ -150,14 +150,26 @@ def pdsspect(inlist=None):
 
     image_set = PDSSPectImageSet(files)
     window = PDSSpect(image_set)
-    window.resize(500, 500)
+    geometry = app.desktop().screenGeometry()
+    geo_center = geometry.center()
+    width = geometry.width()
+    height = geometry.height()
+    width_to_height = width / height
+    window_width = width * .4
+    window_height = window_width / width_to_height
+    center = QtCore.QPoint(
+        geo_center.x() - window_width * .7, geo_center.y() - window_height * .2
+    )
+    window.resize(window_width, window_height)
+    window.move(center)
     window.show()
-    window.pan_view.resize(400, 400)
-    window.basic_window.resize(450, 300)
-    spect_pos = window.pos()
-    window.pan_view.move(spect_pos.x(), spect_pos.y() - 500)
+    pan_width = width * .35
+    pan_height = pan_width / width_to_height
+    window.pan_view.resize(pan_width, pan_height)
+    window.basic_window.resize(pan_width, pan_height)
+    window.pan_view.move(center.x(), center.y() - window_height * .9)
     window.pan_view.show()
-    window.basic_window.move(spect_pos.x() + 500, spect_pos.y())
+    window.basic_window.move(center.x() + window_width, center.y())
     window.pdsspect_view.view_canvas.zoom_fit()
     window.pan_view.view_canvas.zoom_fit()
     app.setActiveWindow(window)
