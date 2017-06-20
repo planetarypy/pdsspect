@@ -28,8 +28,7 @@ class SelectionController(object):
         self.image_set.delete_all_rois()
 
     def add_ROI(self, coords, color):
-        self.image_set.add_coords_to_roi_data_with_color(
-            coords, color)
+        self.image_set.add_coords_to_roi_data_with_color(coords, color)
 
 
 class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
@@ -46,7 +45,8 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             self.selection_menu.addItem(selection_type)
         self.selection_menu.setCurrentIndex(self.image_set.selection_index)
         self.selection_menu.currentIndexChanged.connect(
-            self.change_selection_type)
+            self.change_selection_type
+        )
         self.type_layout = QtWidgets.QHBoxLayout()
         self.type_layout.addWidget(self.type_label)
         self.type_layout.addWidget(self.selection_menu)
@@ -71,7 +71,8 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         self.opacity_layout.addWidget(self.opacity_slider)
 
         self.clear_current_color_btn = QtWidgets.QPushButton(
-            'Clear Current Color')
+            'Clear Current Color'
+        )
         self.clear_current_color_btn.clicked.connect(self.clear_current_color)
 
         self.clear_all_btn = QtWidgets.QPushButton('Clear All')
@@ -119,12 +120,12 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         return exported_rois
 
     def open_save_dialog(self):
-        save_dialog = QtWidgets.QFileDialog(self)
-        save_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        save_dialog.setNameFilter("Selections(*.npz)")
-        save_dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        if save_dialog.exec_():
-            save_file = save_dialog.getSaveFileName(self, None)[0]
+        save_file, _ = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption='Export ROIs',
+            filter='*.npz',
+        )
+        if save_file != '':
             self.export(save_file)
 
     def export(self, save_file):
@@ -145,21 +146,19 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
                 raise RuntimeError('%s not an opened image')
 
     def load_selections(self, selected_files):
-            for selected_file in selected_files:
-                self._check_pdsspect_selection_is_file(selected_file)
-                arr_dict = np.load(selected_file)
-                self._check_files_in_selection_file_compatible(
-                    arr_dict['files'])
-                for color in self.image_set.colors:
-                    coords = np.column_stack(np.where(arr_dict[color]))
-                    if coords.size > 0:
-                        self.controller.add_ROI(coords, color)
+        for selected_file in selected_files:
+            self._check_pdsspect_selection_is_file(selected_file)
+            arr_dict = np.load(selected_file)
+            self._check_files_in_selection_file_compatible(arr_dict['files'])
+            for color in self.image_set.colors:
+                coords = np.column_stack(np.where(arr_dict[color]))
+                if coords.size > 0:
+                    self.controller.add_ROI(coords, color)
 
     def show_open_dialog(self):
-        open_dialog = QtWidgets.QFileDialog(self)
-        open_dialog.setFileMode(QtWidgets.QFileDialog.AnyFile)
-        open_dialog.setNameFilter("Selections(*.npz)")
-        open_dialog.setViewMode(QtWidgets.QFileDialog.Detail)
-        if open_dialog.exec_():
-            selected_files = open_dialog.getOpenFileNames(self)[0]
-            self.load_selections(selected_files)
+        selected_files, _ = QtWidgets.QFileDialog.getOpenFileNames(
+            parent=self,
+            caption='Open ROIs',
+            filter='Selections(*.npz)',
+        )
+        self.load_selections(selected_files)
