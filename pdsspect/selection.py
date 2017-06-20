@@ -45,7 +45,7 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         self.selection_menu = QtWidgets.QComboBox()
         for selection_type in self.image_set.selection_types:
             self.selection_menu.addItem(selection_type)
-        self.selection_menu.setCurrentIndex(0)
+        self.selection_menu.setCurrentIndex(self.image_set.selection_index)
         self.selection_menu.currentIndexChanged.connect(
             self.change_selection_type)
         self.type_layout = QtWidgets.QHBoxLayout()
@@ -112,13 +112,13 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
 
     def _get_rois_masks_to_export(self):
         exported_rois = {}
-        for color, coords in self.image_set.rois.items():
+        for color in self.image_set.colors:
             mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
-            coords_name = color + '_coordinates'
-            exported_rois[coords_name] = coords
-            if coords.size > 0:
-                rows, cols = np.column_stack(coords)
-                mask[rows, cols] = True
+            rgba = self.image_set._get_rgba_from_color(color)
+            rows, cols = np.where(
+                (self.image_set._roi_data == rgba).all(axis=2)
+            )
+            mask[rows, cols] = True
             exported_rois[color] = mask
         return exported_rois
 

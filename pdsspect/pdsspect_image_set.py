@@ -1,5 +1,6 @@
 import os
 import warnings
+from functools import wraps
 
 import numpy as np
 from ginga.util.dp import masktorgb
@@ -8,6 +9,18 @@ from planetaryimage import PDS3Image
 from ginga.BaseImage import BaseImage
 from ginga import colors as ginga_colors
 from ginga.canvas.types.image import Image
+import time
+
+
+def timeit(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.time()
+        result = func(*args, **kwargs)
+        finish = time.time()
+        print(finish - start)
+        return result
+    return wrapper
 
 
 ginga_colors.add_color('crimson', (0.86275, 0.07843, 0.23529))
@@ -68,7 +81,7 @@ class PDSSPectImageSet(object):
         self._selection_index = 0
         self._zoom = 1.0
         self._center = None
-        self.rois = {color: np.array([]) for color in self.colors}
+        # self.rois = {color: np.array([]) for color in self.colors}
         self._delta_x = 0
         self._delta_y = 0
         self._last_zoom = 1.0
@@ -237,9 +250,9 @@ class PDSSPectImageSet(object):
     @alpha.setter
     def alpha(self, new_alpha):
         self._alpha = new_alpha
-        for roi in self.rois_iterator:
-            rows, cols = np.column_stack(roi)
-            self._roi_data[rows, cols, 3] = self.alpha255
+        rows, cols = np.where((~(self._roi_data == 0)).any(axis=2))
+        # rows, cols = np.column_stack(roi)
+        self._roi_data[rows, cols, 3] = self.alpha255
         for view in self._views:
             view.set_roi_data()
 
@@ -329,32 +342,32 @@ class PDSSPectImageSet(object):
         rgba = [r, g, b, a]
         return rgba
 
-    def _set_coords_in_rois_with_color(self, coords, color):
-        for roi_name in self.rois:
-            roi_coords = self.rois[roi_name].tolist()
-            for coord in coords.tolist():
-                add_coord_to_list = all(
-                    (coord not in roi_coords, roi_name == color)
-                )
-                if add_coord_to_list:
-                    roi_coords.append(coord)
+    # def _set_coords_in_rois_with_color(self, coords, color):
+    #     for roi_name in self.rois:
+    #         roi_coords = self.rois[roi_name].tolist()
+    #         for coord in coords.tolist():
+    #             add_coord_to_list = all(
+    #                 (coord not in roi_coords, roi_name == color)
+    #             )
+    #             if add_coord_to_list:
+    #                 roi_coords.append(coord)
 
-                remove_coord_from_list = all(
-                    (coord in roi_coords, roi_name != color)
-                )
-                if remove_coord_from_list:
-                    roi_coords.remove(coord)
-            self.rois[roi_name] = np.array(roi_coords)
+    #             remove_coord_from_list = all(
+    #                 (coord in roi_coords, roi_name != color)
+    #             )
+    #             if remove_coord_from_list:
+    #                 roi_coords.remove(coord)
+    #         self.rois[roi_name] = np.array(roi_coords)
 
     def _erase_coords(self, coords):
         rows, cols = np.column_stack(coords)
         self._roi_data[rows, cols] = [0.0, 0.0, 0.0, 0.0]
-        for roi_name in self.rois:
-            roi_coords = self.rois[roi_name].tolist()
-            for coord in coords.tolist():
-                if coord in roi_coords:
-                    roi_coords.remove(coord)
-            self.rois[roi_name] = np.array(roi_coords)
+        # for roi_name in self.rois:
+        #     roi_coords = self.rois[roi_name].tolist()
+        #     for coord in coords.tolist():
+        #         if coord in roi_coords:
+        #             roi_coords.remove(coord)
+        #     self.rois[roi_name] = np.array(roi_coords)
 
     def add_coords_to_roi_data_with_color(self, coords, color):
         rows, cols = np.column_stack(coords)
@@ -362,7 +375,11 @@ class PDSSPectImageSet(object):
         self._roi_data[rows, cols] = rgba
         for view in self._views:
             view.set_roi_data()
-        self._set_coords_in_rois_with_color(coords, color)
+        # self._set_coords_in_rois_with_color(coords, color)
+        # print((self._roi_data == rgba).all(axis=2))
+        # r, c = np.where((self._roi_data == rgba).all(axis=2))
+        # print(np.column_stack([r, c]))
+        # print(self.rois[color])
 
     # def _get_canvas_coordinate(self, side, coordinate):
     #     if self._last_zoom > self._zoom:
@@ -386,11 +403,10 @@ class PDSSPectImageSet(object):
         return delta_x, delta_y
 
     def delete_rois_with_color(self, color):
-        coords = self.rois[color]
         if coords.size != 0:
             rows, cols = np.column_stack(coords)
             self._roi_data[rows, cols] = [0, 0, 0, 0]
-            self.rois[color] = np.array([])
+            # self.rois[color] = np.array([])
             for view in self._views:
                 view.set_roi_data()
 

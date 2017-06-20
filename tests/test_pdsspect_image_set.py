@@ -74,7 +74,7 @@ class TestPDSSPectImageSet(object):
         assert isinstance(test_set._selection_index, int)
         assert test_set.current_color_index == 0
         assert isinstance(test_set.current_color_index, int)
-        assert isinstance(test_set.rois, dict)
+        # assert isinstance(test_set.rois, dict)
         assert test_set._delta_x == 0
         assert test_set._delta_y == 0
         assert test_set._last_zoom == 1.0
@@ -606,53 +606,53 @@ class TestPDSSPectImageSet(object):
         for val, test_val in zip(rgba, test_rgba):
             assert val == round(test_val, 4)
 
-    @ensure_correct_state
-    def test_set_coords_in_rois_with_color(self):
-        coords = np.array([[42, 42]])
-        empty = np.array([])
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
-        self.test_set._set_coords_in_rois_with_color(coords, 'red')
-        assert np.array_equal(self.test_set.rois['red'], coords)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
-        self.test_set._set_coords_in_rois_with_color(coords, 'brown')
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], coords)
-        self.test_set._set_coords_in_rois_with_color(coords, 'purple')
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
-        assert np.array_equal(self.test_set.rois['purple'], coords)
+    # @ensure_correct_state
+    # def test_set_coords_in_rois_with_color(self):
+    #     coords = np.array([[42, 42]])
+    #     empty = np.array([])
+    #     assert np.array_equal(self.test_set.rois['red'], empty)
+    #     assert np.array_equal(self.test_set.rois['brown'], empty)
+    #     self.test_set._set_coords_in_rois_with_color(coords, 'red')
+    #     assert np.array_equal(self.test_set.rois['red'], coords)
+    #     assert np.array_equal(self.test_set.rois['brown'], empty)
+    #     self.test_set._set_coords_in_rois_with_color(coords, 'brown')
+    #     assert np.array_equal(self.test_set.rois['red'], empty)
+    #     assert np.array_equal(self.test_set.rois['brown'], coords)
+    #     self.test_set._set_coords_in_rois_with_color(coords, 'purple')
+    #     assert np.array_equal(self.test_set.rois['red'], empty)
+    #     assert np.array_equal(self.test_set.rois['brown'], empty)
+    #     assert np.array_equal(self.test_set.rois['purple'], coords)
 
     @ensure_correct_state
     def test_erase_coords(self):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
-        empty = np.array([])
+        # empty = np.array([])
         self.test_set.add_coords_to_roi_data_with_color(coords, 'red')
-        assert np.array_equal(self.test_set.rois['red'], coords)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], coords)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
         )
         self.test_set._erase_coords(coords)
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
         self.test_set.alpha = 1
         self.test_set.add_coords_to_roi_data_with_color(coords, 'brown')
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], coords)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], coords)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 255.]])
         )
         self.test_set._erase_coords(coords)
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
@@ -663,8 +663,8 @@ class TestPDSSPectImageSet(object):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
         empty = np.array([])
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[0., 0., 0., 0.]])
@@ -672,8 +672,8 @@ class TestPDSSPectImageSet(object):
 
         self.test_set.alpha = 1
         self.test_set.add_coords_to_roi_data_with_color(coords, 'red')
-        assert np.array_equal(self.test_set.rois['red'], coords)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], coords)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
@@ -681,8 +681,8 @@ class TestPDSSPectImageSet(object):
 
         self.test_set.alpha = .75
         self.test_set.add_coords_to_roi_data_with_color(coords, 'brown')
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], coords)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], coords)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 191.25]])
@@ -690,9 +690,9 @@ class TestPDSSPectImageSet(object):
 
         self.test_set.alpha = .25
         self.test_set.add_coords_to_roi_data_with_color(coords, 'purple')
-        assert np.array_equal(self.test_set.rois['red'], empty)
-        assert np.array_equal(self.test_set.rois['brown'], empty)
-        assert np.array_equal(self.test_set.rois['purple'], coords)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['brown'], empty)
+        # assert np.array_equal(self.test_set.rois['purple'], coords)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
@@ -725,8 +725,8 @@ class TestPDSSPectImageSet(object):
         self.test_set.add_coords_to_roi_data_with_color(coords1, 'red')
         self.test_set.alpha = .75
         self.test_set.add_coords_to_roi_data_with_color(coords2, 'brown')
-        assert np.array_equal(self.test_set.rois['red'], coords1)
-        assert np.array_equal(self.test_set.rois['brown'], coords2)
+        # assert np.array_equal(self.test_set.rois['red'], coords1)
+        # assert np.array_equal(self.test_set.rois['brown'], coords2)
         assert np.array_equal(
             self.test_set._roi_data[rows1, cols1],
             np.array([[255.0, 0.0, 0.0, 191.25]])
@@ -736,12 +736,12 @@ class TestPDSSPectImageSet(object):
             np.array([[165.0, 42.0, 42.0, 191.25]])
         )
         self.test_set.delete_rois_with_color('red')
-        assert np.array_equal(self.test_set.rois['red'], empty)
+        # assert np.array_equal(self.test_set.rois['red'], empty)
         assert np.array_equal(
             self.test_set._roi_data[rows1, cols1],
             np.array([[0., 0., 0., 0.]])
         )
-        assert np.array_equal(self.test_set.rois['brown'], coords2)
+        # assert np.array_equal(self.test_set.rois['brown'], coords2)
         assert np.array_equal(
             self.test_set._roi_data[rows2, cols2],
             np.array([[165.0, 42.0, 42.0, 191.25]])
