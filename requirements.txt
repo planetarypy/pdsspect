@@ -7,5 +7,6 @@ pytest
 pytest-qt
 planetary_test_data
 sphinx
+sphinx_rtd_theme
 tox
 wheel

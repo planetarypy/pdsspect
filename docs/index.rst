@@ -10,6 +10,9 @@ Welcome to pdsspect's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   pdsspect
+   pdsspect_image_set
+
 
 
 Indices and tables

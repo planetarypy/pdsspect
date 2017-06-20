@@ -16,6 +16,29 @@ ginga_colors.add_color('eraser', (0.0, 0.0, 0.0))
 
 
 class ImageStamp(BaseImage):
+    """BaseImage for the image view canvas
+
+    Parameters
+    ----------
+    filepath : :obj:`str`
+        The path to the image to be opened
+    metadata : None
+        Metadata for `BaseImage`
+    logger : None
+        logger for `BaseImage`
+
+    Attributes
+    ----------
+    pds_image : :class:`PDS3Image`
+        Image object that holds data and the image label
+    image_name : :obj:`str`
+        The basename of the filepath
+    seen : :obj:`bool`
+        False if the image has not been seen by the viewer. True otherwise
+        Default if False
+    cuts : :obj:`tuple`
+        The cut levels of the image. Default is two `None` types
+    """
 
     def __init__(self, filepath, metadata=None, logger=None):
         self.pds_image = PDS3Image.open(filepath)
@@ -29,6 +52,13 @@ class ImageStamp(BaseImage):
 
 
 class PDSSpectImageSet(object):
+    """Model for each view is pdsspect
+
+    Parameters
+    ----------
+    filepaths : :obj:`list`
+        List of filepaths to images
+    """
 
     colors = [
         'red',

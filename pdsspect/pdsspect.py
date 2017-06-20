@@ -18,14 +18,37 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
 
     Parameters
     ----------
-    image_set : :class:`~PDSSPectImageSet`
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         pdsspect model
 
     Attributes
     ----------
-    image_Set :class:`PDSSpectImageSet`
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         The model for each view
-    pdsspect_view : `PDSSpectView1
+    pdsspect_view : :class:`PDSSpectView`
+        The main viewer for panning
+    pan_view : :class:`~.pdsspect.pan_view.PanView`
+        The view in which the user makes ROI selections
+    selection_btn : :class:`~QtWidgets.QPushButton`
+        Button to open the selections window
+    selection_window : :class:`Selection`
+        The selection window to adjust ROI, import ROIs, and export ROIs
+    basic_btn : :class:`~QtWidgets.QPushButton`
+        Button to open the basic window
+    basic_window : :class:`Basic`
+        Window to adjust cut levels and change images
+    transforms_btn : :class:`QtWidgets.QPushButton`
+        Open Transforms window
+    transforms_window : :class:`Transforms`
+        Window to flip x axis, flip y axis, or switch x and y axis
+    quit_btn : :class:`~QtWidgets.QPushButton`
+        Quit
+    button_layout : :class:`~QtWidgets.QHBoxLayout`
+        Layout for the buttons. If you want to re-adjust where the buttons
+        go, override this attribute
+    main_layout : :class:`~QtWidgets.QVBoxLayout`
+        Place the image viewer over the buttons. Overide this attribute if
+        changing overall layout
     """
 
     def __init__(self, image_set):
