@@ -1,3 +1,4 @@
+"""Region of interest creation"""
 import abc
 import six
 import warnings
@@ -10,6 +11,7 @@ from ginga.canvas.types import basic
 
 @six.add_metaclass(abc.ABCMeta)
 class ROIBase(basic.Polygon):
+    """Base class for all ROI shapes"""
 
     def __init__(self, image_set, view_canvas, color='red',
                  linewidth=1, linestyle='solid', showcap=False,
@@ -33,6 +35,7 @@ class ROIBase(basic.Polygon):
         self._current_path = None
 
     def draw_after(func):
+        """Wrapper to redraw canvas after function"""
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             run_func = func(self, *args, **kwargs)
@@ -41,6 +44,29 @@ class ROIBase(basic.Polygon):
         return wrapper
 
     def lock_coords_to_pixel(self, data_x, data_y):
+        """Lock the coordinates to the pixel
+
+        The coordinate of the pixel is located at the bottom left corner of the
+        pixel square while the center of the pixel .5 units up and to the right
+        of the corner. So if the given coordinates are (2.3, 3.7), the pixel
+        coordinates will be (2, 3) and the center of the pixel is (2.5, 3.5).
+        This method locks the given coordinates to the pixel's coordinates
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The given x coordinate
+        data_y : :obj:`float`
+            The given y coordinate
+
+        Returns
+        -------
+        point_x : :obj:`float`
+            The corresponding x pixel coordinate
+        point_y : :obj:`float`
+            The corresponding y pixel coordinate
+        """
+
         point_x = point_y = None
 
         # Set default values for data points outside the pan
@@ -74,6 +100,7 @@ class ROIBase(basic.Polygon):
         return point_x, point_y
 
     def lock_coords_to_pixel_wrapper(func):
+        """Wrapper to lock data coordinates to the corresponding pixels"""
         @wraps(func)
         def wrapper(self, data_x, data_y):
             point_x, point_y = self.lock_coords_to_pixel(data_x, data_y)
@@ -82,18 +109,22 @@ class ROIBase(basic.Polygon):
 
     @abc.abstractmethod
     def start_ROI(self, data_x, data_y):
+        """Abstract method to start the ROI process"""
         pass
 
     @abc.abstractmethod
     def continue_ROI(self, data_x, data_y):
+        """Abstract method to continue the ROI process"""
         pass
 
     @abc.abstractmethod
     def extend_ROI(self, data_x, data_y):
+        """Abstract method to extend the ROI process"""
         pass
 
     @abc.abstractmethod
     def stop_ROI(self, data_x, data_y):
+        """Abstract method to stop the ROI process"""
         pass
 
     def create_ROI(self, points=None):

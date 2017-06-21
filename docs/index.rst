@@ -12,6 +12,12 @@ Welcome to pdsspect's documentation!
 
    pdsspect
    pdsspect_image_set
+   pdsspect_view
+   pan_view
+   pds_image_view_canvas
+   selection
+   transforms
+   roi
 
 
 

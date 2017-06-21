@@ -1,3 +1,4 @@
+"""Display data in pan and make ROI selections"""
 from functools import wraps
 
 from qtpy import QtWidgets
@@ -8,21 +9,82 @@ from .pdsspect_image_set import PDSSpectImageSetViewBase
 
 
 class PanViewController(object):
+    """Controller for the :class:`PanView`
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view : :class:`PanView`
+        View to control
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view : :class:`PanView`
+        View to control
+    """
 
     def __init__(self, image_set, view):
         self.image_set = image_set
         self.view = view
 
-    def add_ROI(self, coords):
+    def add_ROI(self, coordinates):
+        """Add a region of interest
+
+        Parameters
+        ----------
+        coordinates : :class:`np.ndarray` or :obj:`tuple`
+            Either a ``(m x 2)`` array or a tuple of two arrays
+
+            If an array, the first column are the x coordinates and the second
+            are the y coordinates. If a tuple of arrays, the first array are x
+            coordinates and the second are the corresponding y coordinates.
+        """
         self.image_set.add_coords_to_roi_data_with_color(
-            coords, self.image_set.color
+            coordinates=coordinates,
+            color=self.image_set.color,
         )
 
-    def erase_ROI(self, coords):
-        self.image_set._erase_coords(coords)
+    def erase_ROI(self, coordinates):
+        """Erase any region of interest inside coordinates
+
+        Parameters
+        ----------
+        coordinates : :class:`np.ndarray` or :obj:`tuple`
+            Either a ``(m x 2)`` array or a tuple of two arrays
+
+            If an array, the first column are the x coordinates and the second
+            are the y coordinates. If a tuple of arrays, the first array are x
+            coordinates and the second are the corresponding y coordinates.
+        """
+        self.image_set._erase_coords(coordinates)
 
 
 class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
+    """View of the image inside the pan
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    parent : None
+        The parent of the view
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    controller : :class:`PanViewController`
+        The view's controller
+    parent : None
+        The view's parent
+    main_layout : :class:`QtWidgets.QVBoxLayout`
+        The main layout of the view
+    view_canvas : :class:`~pdsspect.pds_image_view_canvas.PDSImageViewCanvas`
+        Canvas to view the image
+    """
 
     def __init__(self, image_set, parent=None):
         super(PanView, self).__init__()
@@ -50,21 +112,26 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     @property
     def is_erasing(self):
+        """:obj:`bool` : True if current color is ``eraser`` false otherwise"""
         return self.image_set.color == 'eraser'
 
     def set_data(self):
+        """Set pan data on the canvas"""
         self.view_canvas.set_data(self.image_set.pan_data)
         self.set_roi_data()
 
     def set_roi_data(self):
-        self.image_set._maskrgb.set_data(self.image_set.pan_mask)
+        """Set the ROI data on the canvas"""
+        self.image_set._maskrgb.set_data(self.image_set.pan_roi_data)
         self.view_canvas.redraw()
 
     def set_image(self):
+        """Set the data"""
         self.set_data()
         self.view_canvas.zoom_fit()
 
     def move_pan(self):
+        """Set the data when the pan is moved"""
         self.set_data()
         self.view_canvas.zoom_fit()
 
@@ -78,6 +145,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         return x, y
 
     def check_ROI_in_pan(func):
+        """Wrapper to make sure ROI stays inside the current view"""
         @wraps(func)
         def wrapper(self, view_canvas, button, data_x, data_y):
             data_x, data_y = self._make_x_y_in_pan(data_x, data_y)
@@ -86,6 +154,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     @check_ROI_in_pan
     def start_ROI(self, view_canvas, button, data_x, data_y):
+        """Start the ROI at the mouse location"""
         if self._making_roi:
             self.continue_ROI(view_canvas, button, data_x, data_y)
         else:
@@ -109,6 +178,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             self._making_roi = True
 
     def check_roi_in_process(func):
+        """Wrapper to make sure the roi making is in process"""
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             if not self._making_roi or not self._current_roi:
@@ -120,6 +190,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_ROI_in_pan
     @check_roi_in_process
     def continue_ROI(self, view_canvas, button, data_x, data_y):
+        """Continue the ROI making on click"""
         if self.image_set.selection_type == 'filled polygon':
             self._current_roi.continue_ROI(data_x, data_y)
         elif self.image_set.selection_type == 'filled rectangle':
@@ -130,11 +201,13 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     @check_ROI_in_pan
     @check_roi_in_process
     def extend_ROI(self, view_canvas, button, data_x, data_y):
+        """Extend the ROI on mouse motion"""
         self._current_roi.extend_ROI(data_x, data_y)
 
     @check_ROI_in_pan
     @check_roi_in_process
     def stop_ROI(self, view_canvas, button, data_x, data_y):
+        """Stop ROI on right click"""
         coords = self._current_roi.stop_ROI(data_x, data_y)
         if self.is_erasing:
             self.controller.erase_ROI(coords)
@@ -144,6 +217,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self._current_roi = None
 
     def redraw(self):
+        """Redraw :attr:`view_canvas`"""
         self.view_canvas.redraw()
 
     def resizeEvent(self, event):

@@ -117,20 +117,20 @@ class TestPanView(object):
     def test_set_roi_data(self, qtbot):
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
-            self.image_set.pan_mask)
+            self.image_set.pan_roi_data)
         self.image_set._zoom = 2
         assert not np.array_equal(
             self.image_set._maskrgb.get_data(),
-            self.image_set.pan_mask)
+            self.image_set.pan_roi_data)
         self.view.set_data()
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
-            self.image_set.pan_mask)
+            self.image_set.pan_roi_data)
         self.image_set._zoom = 1
         self.view.set_data()
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
-            self.image_set.pan_mask)
+            self.image_set.pan_roi_data)
 
     @pytest.mark.parametrize(
         'pre_x, pre_y, expected_x, expected_y',

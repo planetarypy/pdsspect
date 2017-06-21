@@ -98,19 +98,19 @@ class TestPDSSpectView(object):
 
     @add_view_to_qtbot
     def test_adjust_pan_size(self, qtbot):
-        assert self.view.box.xradius == 512
-        assert self.view.box.yradius == 512
+        assert self.view.pan.xradius == 512
+        assert self.view.pan.yradius == 512
         self.image_set._zoom = 2
-        self.view.box.x = 400
-        self.view.box.y = 500
+        self.view.pan.x = 400
+        self.view.pan.y = 500
         self.view.adjust_pan_size()
-        assert self.view.box.xradius == 256
-        assert self.view.box.yradius == 256
+        assert self.view.pan.xradius == 256
+        assert self.view.pan.yradius == 256
         assert self.image_set.center == (400, 500)
         self.image_set._zoom = 1
         self.view.adjust_pan_size()
-        assert self.view.box.xradius == 512
-        assert self.view.box.yradius == 512
+        assert self.view.pan.xradius == 512
+        assert self.view.pan.yradius == 512
         assert self.image_set.center == (512, 512)
 
     @add_view_to_qtbot
@@ -130,13 +130,13 @@ class TestPDSSpectView(object):
     def test_move_pan(self, qtbot):
         self.image_set.zoom = 2
         self.image_set._center = (300, 400)
-        assert self.view.box.x == 512
-        assert self.view.box.y == 512
+        assert self.view.pan.x == 512
+        assert self.view.pan.y == 512
         self.view.move_pan()
-        assert self.view.box.x == 300
-        assert self.view.box.y == 400
+        assert self.view.pan.x == 300
+        assert self.view.pan.y == 400
         self.image_set._center = (512, 512)
         self.view.move_pan()
-        assert self.view.box.x == 512
-        assert self.view.box.y == 512
+        assert self.view.pan.x == 512
+        assert self.view.pan.y == 512
         self.image_set.zoom = 1

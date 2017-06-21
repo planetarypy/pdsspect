@@ -30,7 +30,6 @@ class TestPDSSpectImageSet(object):
         self.test_set._selection_index = 0
         self.test_set._zoom = 1.0
         self.test_set._center = None
-        self.test_set._last_zoom = 1.0
         self.test_set._move_rois = True
         self.test_set._alpha = 1.0
         self.test_set._flip_x = False
@@ -69,7 +68,6 @@ class TestPDSSpectImageSet(object):
         assert isinstance(test_set._selection_index, int)
         assert test_set.current_color_index == 0
         assert isinstance(test_set.current_color_index, int)
-        assert test_set._last_zoom == 1.0
         assert test_set._alpha == 1.0
         assert isinstance(test_set._alpha, float)
         assert not test_set._flip_x
@@ -195,15 +193,11 @@ class TestPDSSpectImageSet(object):
         self.test_set.zoom = 42.0
         assert self.test_set._zoom == 42.0
         assert self.test_set._zoom == self.test_set.zoom
-        assert self.test_set._last_zoom == 1.0
         with pytest.raises(ValueError):
             self.test_set.zoom = -42.0
         self.test_set.zoom = 1.0
         assert self.test_set._zoom == 1.0
         assert self.test_set._zoom == self.test_set.zoom
-        assert self.test_set._last_zoom == 42.0
-        self.test_set._last_zoom = 1.0
-        assert self.test_set._last_zoom == 1.0
 
     def test_x_radius(self):
         test_x_radius = 512
@@ -228,14 +222,6 @@ class TestPDSSpectImageSet(object):
         self.test_set.zoom = zoom
         assert self.test_set.pan_width == expected
 
-    @ensure_correct_state
-    def test_last_pan_width(self):
-        assert self.test_set._last_pan_width == 512
-        self.test_set.zoom = 2.0
-        assert self.test_set._last_pan_width == 512
-        self.test_set.zoom = 1.0
-        assert self.test_set._last_pan_width == 256
-
     @pytest.mark.parametrize(
         'zoom, expected',
         [
@@ -248,16 +234,6 @@ class TestPDSSpectImageSet(object):
     def test_pan_height(self, zoom, expected):
         self.test_set.zoom = zoom
         assert self.test_set.pan_height == expected
-
-    @ensure_correct_state
-    def test_last_pan_height(self):
-        self.test_set.zoom = 1.0
-        self.test_set._last_zoom = 1.0
-        assert self.test_set._last_pan_height == 512
-        self.test_set.zoom = 2.0
-        assert self.test_set._last_pan_height == 512
-        self.test_set.zoom = 1.0
-        assert self.test_set._last_pan_height == 256
 
     def test_reset_center(self):
         test_center = (512, 512)
@@ -489,13 +465,13 @@ class TestPDSSpectImageSet(object):
         ]
     )
     @ensure_correct_state
-    def test_pan_mask(self, zoom, center, edges):
+    def test_pan_roi_data(self, zoom, center, edges):
         self.test_set.zoom = zoom
         self.test_set.center = center
         x1, y1, x2, y2 = edges
         pan_slice = np.s_[y1:y2:1, x1:x2:1]
-        pan_mask = self.test_set._roi_data[pan_slice]
-        assert np.array_equal(self.test_set.pan_mask, pan_mask)
+        pan_roi_data = self.test_set._roi_data[pan_slice]
+        assert np.array_equal(self.test_set.pan_roi_data, pan_roi_data)
 
     @pytest.mark.parametrize(
         'color, rgb255',
