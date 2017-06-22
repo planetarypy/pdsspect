@@ -224,24 +224,75 @@ class HistogramModel(object):
 
 
 class HistogramController(object):
+    """Controller for histogram views
+
+    Parameters
+    ----------
+    model : :class:`HistogramModel`
+        histogram model
+    view : :class:`object`
+        View with :class:`HistogramModel` as its model
+
+    Attributes
+    ----------
+    model : :class:`HistogramModel`
+        histogram model
+    view : :class:`object`
+        View with :class:`HistogramModel` as its model
+    """
 
     def __init__(self, model, view):
         self.model = model
         self.view = view
 
     def set_cut_low(self, cut_low):
+        """Set the low cut level to a new value
+
+        Parameters
+        ----------
+        cut_low : :obj:`float`
+            New low cut value
+        """
+
         self.model.cut_low = cut_low
 
     def set_cut_high(self, cut_high):
+        """Set the high cut level to a new value
+
+        Parameters
+        ----------
+        cut_high : :obj:`float`
+            New high cut value
+        """
+
         self.model.cut_high = cut_high
 
     def set_cuts(self, cut_low, cut_high):
+        """Set both the low and high cut levels
+
+        Parameters
+        ----------
+        cut_low : :obj:`float`
+            New low cut value
+        cut_high : :obj:`float`
+            New high cut value
+        """
+
         self.model.cuts = cut_low, cut_high
 
     def set_bins(self, bins):
+        """Change the number of bins the histogram uses
+
+        Parameters
+        ----------
+        bins : :obj:`int`
+            The number number of bins for the histogram
+        """
+
         self.model.bins = bins
 
     def restore(self):
+        """Restore the histogram"""
         self.model.restore()
 
 
@@ -251,11 +302,16 @@ class HistogramWidget(QtWidgets.QWidget):
     Parameters
     ----------
     model : :class:`HistogramModel`
+        The view's model
 
     Attributes
     ----------
     model : :class:`HistogramModel`
         The view's model
+    controller : :class:`HistogramController`
+        The view's controller
+    histogram : :class:`Histogram`
+        The histogram itself
     """
 
     def __init__(self, model):
@@ -366,6 +422,8 @@ class Histogram(FigureCanvasQTAgg):
     ----------
     model : :class:`HistogramModel`
         The view's model
+    controller : :class:`HistogramController`
+        The view's controller
     """
 
     def __init__(self, model):

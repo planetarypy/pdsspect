@@ -5,6 +5,7 @@ from .pdsspect_image_set import PDSSpectImageSetViewBase
 
 
 class BasicHistogramWidget(HistogramWidget):
+    """:class:`.pdsspect.histogram.HistogramWidget` in a different layout"""
 
     def _create_layout(self):
         layout = QtWidgets.QGridLayout()
@@ -20,16 +21,68 @@ class BasicHistogramWidget(HistogramWidget):
 
 
 class BasicController(object):
+    """Controller for :class:`Basic` window
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view : :class:`Basic`
+        View to control
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view : :class:`Basic`
+        View to control
+    """
 
     def __init__(self, image_set, view):
         self.image_set = image_set
         self.view = view
 
     def change_current_image_index(self, new_index):
+        """Change the current image index to a new index
+
+        Parameters
+        ----------
+        new_index : :obj:`int`
+            The new index for
+            :class:`~.pdsspect_image_set.PDSSpectImageSetViewBase.images` to
+            determine the current image
+        """
+
         self.image_set.current_image_index = new_index
 
 
 class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
+    """Window to apply cut levels and choose the current image
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view_canvas : :class:`~.pds_image_view_canvas.PDSImageViewCanvas`
+        Canvas to view the image
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    view_canvas : :class:`~.pds_image_view_canvas.PDSImageViewCanvas`
+        Canvas to view the image
+    controller : :class:`BasicController`
+        Controller for view
+    image_menu : :class:`QtWidgets.QComboBox`
+        Drop down menu to pick the current image
+    histogram : :class:`~.histogram.HistogramModel`
+        Model for the :attr:`histogram_widget`
+    histogram_widget : :class:`BasicHistogramWidget`
+        The histogram widget to adjust the cut levels
+    layout : :class:`QtWidgets.QVBoxLayout`
+        The main layout
+    """
 
     def __init__(self, image_set, view_canvas):
         super(Basic, self).__init__()
@@ -54,9 +107,18 @@ class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         self.histogram.set_data()
 
     def change_image(self, new_index):
+        """Change the image when new image selected in :attr:`image_menu`
+
+        Parameters
+        ----------
+        new_index : :obj:`int`
+            The new index to determine the current image
+        """
+
         self.image_set.current_image.cuts = self.histogram.cuts
         self.controller.change_current_image_index(new_index)
 
     def set_image(self):
+        """When the image is set, adjust the histogram"""
         self.histogram.set_data()
         self.histogram.restore()

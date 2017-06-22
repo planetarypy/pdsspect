@@ -34,6 +34,7 @@ class ROIBase(basic.Polygon):
         self._has_temp_point = False
         self._current_path = None
 
+    @staticmethod
     def draw_after(func):
         """Wrapper to redraw canvas after function"""
         @wraps(func)
@@ -99,6 +100,7 @@ class ROIBase(basic.Polygon):
 
         return point_x, point_y
 
+    @staticmethod
     def lock_coords_to_pixel_wrapper(func):
         """Wrapper to lock data coordinates to the corresponding pixels"""
         @wraps(func)
@@ -128,6 +130,19 @@ class ROIBase(basic.Polygon):
         pass
 
     def create_ROI(self, points=None):
+        """Create a Region of interest
+
+        Parameters
+        ----------
+        points : :obj:`list` of :obj:`tuple` of two :obj:`int`
+            Points that make up the vertices of the ROI
+
+        Returns
+        -------
+        coordinates : :class:`np.ndarray`
+            ``m x 2`` array of coordinates.
+        """
+
         points = self._current_path.get_points() if points is None else points
         super(ROIBase, self).__init__(
             points, color=self.color,
@@ -138,9 +153,27 @@ class ROIBase(basic.Polygon):
         self.view_canvas.add(self)
         coords = self._get_roi_coords()
         self.view_canvas.deleteObject(self)
-        return np.stack(coords, axis=-1)
+        coordinates = np.stack(coords, axis=-1)
+        return coordinates
 
     def contains_arr(self, x_arr, y_arr):
+        """Determine whether the points in the ROI are in arrays
+
+        The arrays must be the same shape. The arrays should be result of
+        ``np.mgrid[y1:y2:1, x1:x2:1]``
+
+        Parameters
+        ----------
+        x_arr : :class:`np.ndarray`
+            Array of x coodinates
+        y_arr : :class:`np.ndarray`
+            Array of y coordinates
+
+        Returns
+        -------
+        result : :class:`np.ndarray`
+            Boolean array where coordinates that are in ROI are True
+        """
         # NOTE: we use a version of the ray casting algorithm
         # See: http://alienryderflex.com/polygon/
         xa, ya = x_arr, y_arr
@@ -191,6 +224,21 @@ class ROIBase(basic.Polygon):
         return result
 
     def _get_mask_from_roi(self, roi, mask=None):
+        """Get mask array from ROI
+
+        Parameters
+        ----------
+        roi : :class:`ROIBase`
+            The region of interest
+        mask : :class:`np.ndarray`
+            Boolean array of the image
+
+        Returns
+        -------
+        mask : :class:`np.ndarray`
+            Boolean array of the image with ROI coordinates as ``True``
+        """
+
         if mask is None:
             mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
         x1, y1, x2, y2 = roi.get_llur()
@@ -198,20 +246,32 @@ class ROIBase(basic.Polygon):
         x2, y2 = np.ceil([x2, y2]).astype(int)
         X, Y = np.mgrid[x1:x2, y1:y2]
         rows, cols = Y, X
-        with warnings.catch_warnings():
-            warnings.filterwarnings('ignore')
-            coords = roi.contains_arr(X, Y)
+        coords = roi.contains_arr(X, Y)
         mask[rows, cols] = coords
         return mask
 
     @contextmanager
     def _temporary_move_by_delta(self, delta):
+        """Context manager to move the ROI by delta temporarily
+
+        Parameters
+        ----------
+        delta : :obj:`tuple` of two :obj:`float`
+            Change the roi position by x and y
+
+        Example
+        -------
+        >>> with _temporary_move_by_delta((10, 15) as moved_roi:
+        ...     moved_roi.get_points()
+        """
+
         delta_x, delta_y = delta
         self.move_delta(delta_x, delta_y)
         yield self
         self.move_delta(-delta_x, -delta_y)
 
     def _get_roi_coords(self):
+        """Get the coordinates in the region of interest"""
         delta = self.image_set.map_zoom_to_full_view()
         with self._temporary_move_by_delta(delta) as moved_roi:
             mask = self._get_mask_from_roi(moved_roi)
@@ -220,10 +280,23 @@ class ROIBase(basic.Polygon):
 
 
 class Polygon(ROIBase):
+    """Polygon Region of Interest"""
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def start_ROI(self, data_x, data_y):
+        """Start the ROI process
+
+        The ROI will be a :class:`ginga.canvas.types.basic.Path` object
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._current_path = basic.Path(
             [(data_x, data_y)], color=self.color
         )
@@ -232,12 +305,32 @@ class Polygon(ROIBase):
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def continue_ROI(self, data_x, data_y):
+        """Create new vertex on the polygon on left click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._current_path.insert_pt(0, (data_x, data_y))
         self._has_temp_point = False
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def extend_ROI(self, data_x, data_y):
+        """Extend the current edge of the polygon on mouse motion
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._current_path.insert_pt(0, (data_x, data_y))
         if self._current_path.get_num_points() > 2 and self._has_temp_point:
             self._current_path.delete_pt(1)
@@ -246,6 +339,19 @@ class Polygon(ROIBase):
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def stop_ROI(self, data_x, data_y):
+        """Close the polygon on right click
+
+        The polygon will close based on last left click and not on the right
+        click. There must be more than 2 points to formulate a polygon
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         if self._has_temp_point:
                 self._current_path.delete_pt(0)
         if self._current_path.get_num_points() <= 2:
@@ -258,10 +364,21 @@ class Polygon(ROIBase):
 
 
 class Rectangle(ROIBase):
+    """Rectangle Region of interest"""
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def start_ROI(self, data_x, data_y):
+        """Start the region of interest on left click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._current_path = basic.Rectangle(
             data_x, data_y, data_x + 1, data_y + 1, color=self.color)
         self.view_canvas.add(self._current_path)
@@ -272,6 +389,16 @@ class Rectangle(ROIBase):
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def extend_ROI(self, data_x, data_y):
+        """Exend the rectangle on region of interest on mouse motion
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         if data_x >= self._current_path.x1:
             data_x += 1
         if data_y >= self._current_path.y1:
@@ -283,12 +410,22 @@ class Rectangle(ROIBase):
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def stop_ROI(self, data_x, data_y):
+        """Stop the region of interest on right click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
         coords = self.create_ROI(self._current_path.get_points())
         self.view_canvas.deleteObject(self._current_path)
         return coords
 
 
 class Pencil(ROIBase):
+    """Select individual pixels"""
 
     point_radius = center_shift = .5
 
@@ -298,10 +435,30 @@ class Pencil(ROIBase):
 
     @ROIBase.draw_after
     def start_ROI(self, data_x, data_y):
+        """Start choosing pixels on left click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._add_point(data_x, data_y)
 
     @ROIBase.lock_coords_to_pixel_wrapper
     def _add_point(self, data_x, data_y):
+        """Add a point to the current path list
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         next_point = basic.Point(
             data_x + self.center_shift,
             data_y + self.center_shift,
@@ -312,6 +469,16 @@ class Pencil(ROIBase):
 
     @ROIBase.draw_after
     def continue_ROI(self, data_x, data_y):
+        """Add another pixel on left click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+        """
+
         self._add_point(data_x, data_y)
 
     # @ROIBase.draw_after
@@ -322,14 +489,40 @@ class Pencil(ROIBase):
         pass
 
     def move_delta(self, delta_x, delta_y):
+        """Override the move_delta function to move all the points
+
+        Parameters
+        ----------
+        delta_x : :obj:`float`
+            Change in the x direction
+        delta_y : :obj:`float`
+            Change in the y direction
+        """
+
         for point in self._current_path:
             point.move_delta(delta_x, delta_y)
 
     @ROIBase.draw_after
     def stop_ROI(self, data_x, data_y):
+        """Set all pixels as roi cooridinates on right click
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The x coordinate
+        data_y : :obj:`float`
+            The y coordinate
+
+        Returns
+        -------
+        coordinates : :class:`np.ndarray`
+            Coordinates of points selected
+        """
+
         delta = self.image_set.map_zoom_to_full_view()
         with self._temporary_move_by_delta(delta) as moved:
             pixels = list(set([(p.x, p.y) for p in moved._current_path]))
         self.view_canvas.delete_objects(self._current_path)
         coords = [(int(y), int(x)) for x, y in pixels]
-        return np.array(coords)
+        coordinates = np.array(coords)
+        return coordinates

@@ -18,6 +18,8 @@ Welcome to pdsspect's documentation!
    selection
    transforms
    roi
+   basic
+   histogram
 
 
 

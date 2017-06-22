@@ -42,6 +42,7 @@ class PanViewController(object):
             are the y coordinates. If a tuple of arrays, the first array are x
             coordinates and the second are the corresponding y coordinates.
         """
+
         self.image_set.add_coords_to_roi_data_with_color(
             coordinates=coordinates,
             color=self.image_set.color,
@@ -59,6 +60,7 @@ class PanViewController(object):
             are the y coordinates. If a tuple of arrays, the first array are x
             coordinates and the second are the corresponding y coordinates.
         """
+
         self.image_set._erase_coords(coordinates)
 
 
