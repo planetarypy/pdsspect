@@ -1,5 +1,7 @@
 import os
+import shutil
 import tempfile
+from contextlib import contextmanager
 
 from . import *  # Import Test File Paths from __init__
 
@@ -9,6 +11,15 @@ from qtpy import QtCore
 
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.selection import SelectionController, Selection
+
+
+@contextmanager
+def make_temp_directory():
+    temp_dir = tempfile.mkdtemp()
+    try:
+        yield temp_dir
+    finally:
+        shutil.rmtree(temp_dir)
 
 
 class TestSelectionController(object):
@@ -170,7 +181,7 @@ class TestSelection(object):
 
     def test_export(self):
         self.sel.controller.add_ROI(self.roi_coords, 'red')
-        with tempfile.TemporaryDirectory() as tmpdirname:
+        with make_temp_directory() as tmpdirname:
             save_file = os.path.join(tmpdirname, 'temp.npz')
             self.sel.export(save_file)
             np_file = np.load(save_file)
