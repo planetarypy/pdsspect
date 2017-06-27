@@ -55,6 +55,16 @@ class ImageStamp(BaseImage):
 class PDSSpectImageSet(object):
     """Model for each view is pdsspect
 
+    The images loaded should all have the same shape. Otherwise the images will
+    have the smallest common shape and not look as expected (i.e., If when
+    loading two images where one image has a shape of ``(63, 36)`` and the
+    other image has a shape of ``(24, 42)``, the displayed shape will be
+    ``(24, 36)``. This will cause the first image to have the right side cut
+    off and the second image to have the top cut off). This is done so all ROIs
+    created can apply to the entire list of images. To avoid this behavior,
+    either only open images that have the same shape or open images one at a
+    time.
+
     Parameters
     ----------
     filepaths : :obj:`list`
@@ -258,8 +268,8 @@ class PDSSpectImageSet(object):
         """
         data_x, data_y = point
         height, width = self.shape[:2]
-        in_width = data_x >= -0.5 and data_x <= (width + 0.5)
-        in_height = data_y >= -0.5 and data_y <= (height + 0.5)
+        in_width = -0.5 <= data_x <= (width + 0.5)
+        in_height = -0.5 <= data_y <= (height + 0.5)
         is_in_image = in_width and in_height
         return is_in_image
 
