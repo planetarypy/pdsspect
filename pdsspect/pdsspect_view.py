@@ -100,8 +100,8 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.pan = basic.Box(
             centerx,
             centery,
-            self.image_set.pan_width,
-            self.image_set.pan_height
+            self.image_set.pan_width + .5,
+            self.image_set.pan_height + .5
         )
         self.view_canvas.add(self.pan)
 
@@ -142,8 +142,8 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     def adjust_pan_size(self):
         """Change the pan size as deterined by :attr:`image_set`"""
-        self.pan.xradius = self.image_set.pan_width
-        self.pan.yradius = self.image_set.pan_height
+        self.pan.xradius = self.image_set.pan_width + .5
+        self.pan.yradius = self.image_set.pan_height + .5
         self.image_set.center = self.pan.get_center_pt()
         self.view_canvas.redraw()
         self.image_set._move_rois = True

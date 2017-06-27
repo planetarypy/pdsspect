@@ -251,6 +251,7 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         """
         exported_rois = self._get_rois_masks_to_export()
         exported_rois['files'] = np.array(self.image_set.filenames)
+        exported_rois['shape'] = self.image_set.shape
         np.savez(save_file, **exported_rois)
 
     def _check_pdsspect_selection_is_file(self, filepath):
@@ -265,6 +266,12 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             if os.path.basename(file) not in self.image_set.filenames:
                 raise RuntimeError('%s not an opened image')
 
+    def _check_shape_is_the_same(self, shape):
+        if not np.array_equal(self.image_set.shape, shape):
+            raise RuntimeError(
+                'Cannot open import ROIs because the shapes are not the same'
+            )
+
     def load_selections(self, selected_files):
         """Load ROIs from selected files
 
@@ -277,6 +284,7 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             self._check_pdsspect_selection_is_file(selected_file)
             arr_dict = np.load(selected_file)
             self._check_files_in_selection_file_compatible(arr_dict['files'])
+            self._check_shape_is_the_same(arr_dict['shape'])
             for color in self.image_set.colors:
                 coords = np.column_stack(np.where(arr_dict[color]))
                 if coords.size > 0:

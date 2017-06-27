@@ -203,6 +203,11 @@ class TestSelection(object):
         with pytest.raises(RuntimeError):
             self.sel._check_files_in_selection_file_compatible(TEST_FILES)
 
+    def test_check_shape_is_the_same(self):
+        fail_shape = (self.image_set.shape[0] - 1, self.image_set.shape[1] + 5)
+        with pytest.raises(RuntimeError):
+            self.sel._check_shape_is_the_same(fail_shape)
+
     def test_load_selections(self):
         self.sel.load_selections([SAMPLE_ROI])
         rows, cols = np.column_stack(self.roi_coords)

@@ -11,7 +11,7 @@ from pdsspect.pan_view import PanViewController, PanView
 
 
 class TestPanViewController(object):
-    image_set = PDSSpectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet([FILE_1])
     controller = PanViewController(image_set, None)
 
     def test_add_ROI(self):
@@ -76,7 +76,7 @@ class TestPanViewController(object):
 
 
 class TestPanView(object):
-    image_set = PDSSpectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet([FILE_1])
     view = PanView(image_set)
 
     def add_view_to_qtbot(func):

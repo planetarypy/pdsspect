@@ -23,6 +23,8 @@ def test_ImageStamp():
 
 class TestPDSSpectImageSet(object):
     test_set = PDSSpectImageSet(TEST_FILES)
+    centerH = 16
+    centerV = 32
 
     def reset_test_set_state(self):
         self.test_set._current_image_index = 0
@@ -67,6 +69,8 @@ class TestPDSSpectImageSet(object):
         assert isinstance(test_set._maskrgb, RGBImage)
         assert not test_set._roi_data.any()
         assert isinstance(test_set._maskrgb_obj, Image)
+        test_shape = (self.centerV * 2, self.centerH * 2)
+        assert np.array_equal(test_set.shape, test_shape)
 
     def test_register(self):
         assert self.test_set._views == []
@@ -191,21 +195,19 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_x_radius(self):
-        test_x_radius = 512
-        assert self.test_set.current_image.shape[1] == 1024
-        assert self.test_set.x_radius == test_x_radius
+        assert self.test_set.shape[1] == self.centerH * 2
+        assert self.test_set.x_radius == self.centerH
 
     def test_y_radius(self):
-        test_y_radius = 512
-        assert self.test_set.current_image.shape[0] == 1024
-        assert self.test_set.y_radius == test_y_radius
+        assert self.test_set.current_image.shape[0] == self.centerV * 2
+        assert self.test_set.y_radius == self.centerV
 
     @pytest.mark.parametrize(
         'zoom, expected',
         [
-            (1.0, 512),
-            (2.0, 256),
-            (4.0, 128),
+            (1.0, 16),
+            (2.0, 8),
+            (4.0, 4),
         ]
     )
     def test_pan_width(self, zoom, expected):
@@ -216,9 +218,9 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, expected',
         [
-            (1.0, 512),
-            (2.0, 256),
-            (4.0, 128),
+            (1.0, 32),
+            (2.0, 16),
+            (4.0, 8),
         ]
     )
     def test_pan_height(self, zoom, expected):
@@ -227,7 +229,7 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_reset_center(self):
-        test_center = (512, 512)
+        test_center = (16, 32)
         assert self.test_set._center is None
         self.test_set.reset_center()
         assert self.test_set._center == test_center
@@ -237,17 +239,17 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'point, expected',
         [
-            ((512, 512), True),
+            ((16, 32), True),
             ((-.5, -.5), True),
-            ((-.5, 1024.5), True),
-            ((1024.5, -.5), True),
-            ((1024.5, 1024.5), True),
+            ((-.5, 64.5), True),
+            ((32.5, -.5), True),
+            ((32.5, 64.5), True),
             ((-.6, -.5), False),
             ((-.5, -.6), False),
             ((-.6, -.6), False),
-            ((1024.6, -.5), False),
-            ((-.5, 1024.6), False),
-            ((1024.6, 1024.6), False),
+            ((32.6, -.5), False),
+            ((-.5, 64.6), False),
+            ((32.6, 64.6), False),
         ]
     )
     def test_point_is_in_image(self, point, expected):
@@ -256,17 +258,15 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, x, expected',
         [
-            (1, 512, 512),
-            (2, 256, 256),
-            (2, -.5, 256),
-            (2, 768, 768),
-            (2, 1024.5, 768),
-            (4, 128, 128),
-            (4, -.5, 128),
-            (4, 896, 896),
-            (4, 896, 896),
-            (1, 512, 512),
-            (1, 512, 512),
+            (1, 16, 16),
+            (2, 8, 8),
+            (2, -.5, 8),
+            (2, 24, 24),
+            (2, 32.5, 24),
+            (4, 4, 4),
+            (4, -.5, 4),
+            (4, 28, 28),
+            (4, 32.5, 28),
         ]
     )
     def test_determine_center_x(self, zoom, x, expected):
@@ -276,17 +276,14 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, y, expected',
         [
-            (1, 512, 512),
-            (2, 256, 256),
-            (2, -.5, 256),
-            (2, 768, 768),
-            (2, 1024.5, 768),
-            (4, 128, 128),
-            (4, -.5, 128),
-            (4, 896, 896),
-            (4, 896, 896),
-            (1, 512, 512),
-            (1, 512, 512),
+            (1, 32, 32),
+            (2, 16, 16),
+            (2, -.5, 16),
+            (2, 48, 48),
+            (2, 64.5, 48),
+            (4, 8, 8),
+            (4, -.5, 8),
+            (4, 64.5, 56),
         ]
     )
     def test_determine_center_y(self, zoom, y, expected):
@@ -296,28 +293,26 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, expected',
         [
-            (1, (512, 512), (512, 512)),
-            (1, (511, 511), (512, 512)),
-            (1, (513, 513), (512, 512)),
-            (1, (512, 511), (512, 512)),
-            (1, (513, 512), (512, 512)),
-            (2, (256, 256), (256, 256)),
-            (2, (255, 256), (256, 256)),
-            (2, (256, 255), (256, 256)),
-            (2, (768, 768), (768, 768)),
-            (2, (769, 768), (768, 768)),
-            (2, (768, 769), (768, 768)),
-            (4, (128, 128), (128, 128)),
-            (4, (127, 128), (128, 128)),
-            (4, (128, 127), (128, 128)),
-            (4, (896, 896), (896, 896)),
-            (4, (897, 896), (896, 896)),
-            (4, (896, 897), (896, 896)),
-            (1, (512, 512), (512, 512)),
-            (1, (512, 512), (512, 512)),
+            (1, (16, 32), (16, 32)),
+            (1, (15, 31), (16, 32)),
+            (1, (17, 33), (16, 32)),
+            (1, (16, 31), (16, 32)),
+            (1, (17, 32), (16, 32)),
+            (2, (8, 16), (8, 16)),
+            (2, (7, 16), (8, 16)),
+            (2, (8, 15), (8, 16)),
+            (2, (24, 48), (24, 48)),
+            (2, (25, 48), (24, 48)),
+            (2, (24, 49), (24, 48)),
+            (4, (4, 8), (4, 8)),
+            (4, (3, 8), (4, 8)),
+            (4, (4, 7), (4, 8)),
+            (4, (28, 56), (28, 56)),
+            (4, (29, 56), (28, 56)),
+            (4, (28, 57), (28, 56)),
         ]
     )
-    def test_center1(self, zoom, center, expected):
+    def test_center(self, zoom, center, expected):
         self.test_set.zoom = zoom
         self.test_set.center = center
         assert self.test_set.center == expected
@@ -348,7 +343,7 @@ class TestPDSSpectImageSet(object):
         ]
     )
     def test_alpha(self, alpha, alpha255):
-        red_coords = np.array([[0, 0], [512, 512]])
+        red_coords = np.array([[0, 0], [32, 16]])
         rgba = [255.0, 0.0, 0.0, 355.]
         for red_coord in red_coords:
             row, col = red_coord
@@ -396,11 +391,11 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, expected',
         [
-            (1, (512, 512), (0, 0, 1024, 1024)),
-            (2, (256, 256), (0, 0, 512, 512)),
-            (2, (768, 768), (512, 512, 1024, 1024)),
-            (4, (128, 128), (0, 0, 256, 256)),
-            (4, (896, 896), (768, 768, 1024, 1024)),
+            (1, (16, 32), (0, 0, 32, 64)),
+            (2, (8, 16), (0, 0, 16, 32)),
+            (2, (24, 48), (16, 32, 32, 64)),
+            (4, (4, 8), (0, 0, 8, 16)),
+            (4, (28, 56), (24, 48, 32, 64)),
         ]
     )
     def test_edges(self, zoom, center, expected):
@@ -412,11 +407,11 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, edges',
         [
-            (1, (512, 512), (0, 0, 1024, 1024)),
-            (2, (256, 256), (0, 0, 512, 512)),
-            (2, (768, 768), (512, 512, 1024, 1024)),
-            (4, (128, 128), (0, 0, 256, 256)),
-            (4, (896, 896), (768, 768, 1024, 1024)),
+            (1, (16, 32), (0, 0, 32, 64)),
+            (2, (8, 16), (0, 0, 16, 32)),
+            (2, (24, 48), (16, 32, 32, 64)),
+            (4, (4, 8), (0, 0, 8, 16)),
+            (4, (28, 56), (24, 48, 32, 64)),
         ]
     )
     def test_pan_slice(self, zoom, center, edges):
@@ -429,11 +424,11 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, edges',
         [
-            (1, (512, 512), (0, 0, 1024, 1024)),
-            (2, (256, 256), (0, 0, 512, 512)),
-            (2, (768, 768), (512, 512, 1024, 1024)),
-            (4, (128, 128), (0, 0, 256, 256)),
-            (4, (896, 896), (768, 768, 1024, 1024)),
+            (1, (16, 32), (0, 0, 32, 64)),
+            (2, (8, 16), (0, 0, 16, 32)),
+            (2, (24, 48), (16, 32, 32, 64)),
+            (4, (4, 8), (0, 0, 8, 16)),
+            (4, (28, 56), (24, 48, 32, 64)),
         ]
     )
     def test_pan_data(self, zoom, center, edges):
@@ -448,11 +443,11 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, edges',
         [
-            (1, (512, 512), (0, 0, 1024, 1024)),
-            (2, (256, 256), (0, 0, 512, 512)),
-            (2, (768, 768), (512, 512, 1024, 1024)),
-            (4, (128, 128), (0, 0, 256, 256)),
-            (4, (896, 896), (768, 768, 1024, 1024)),
+            (1, (16, 32), (0, 0, 32, 64)),
+            (2, (8, 16), (0, 0, 16, 32)),
+            (2, (24, 48), (16, 32, 32, 64)),
+            (4, (4, 8), (0, 0, 8, 16)),
+            (4, (28, 56), (24, 48, 32, 64)),
         ]
     )
     def test_pan_roi_data(self, zoom, center, edges):
@@ -518,7 +513,7 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_erase_coords(self):
-        coords = np.array([[42, 42]])
+        coords = np.array([[42, 24]])
         rows, cols = np.column_stack(coords)
 
         self.test_set.add_coords_to_roi_data_with_color(coords, 'red')
@@ -547,7 +542,7 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_add_coords_to_roi_data_with_color(self):
-        coords = np.array([[42, 42]])
+        coords = np.array([[42, 24]])
         rows, cols = np.column_stack(coords)
         assert np.array_equal(
             self.test_set._roi_data[rows, cols],
@@ -579,12 +574,10 @@ class TestPDSSpectImageSet(object):
     @pytest.mark.parametrize(
         'zoom, center, expected',
         [
-            (2, (256, 256), (0.0, 0.0)),
-            (2, (768, 768), (512.0, 512.0)),
-            (4, (128, 128), (0.0, 0.0)),
-            (4, (896, 896), (768.0, 768.0)),
-            (4, (500, 500), (372.0, 372.0)),
-            (4, (200, 300), (72.0, 172.0))
+            (2, (8, 16), (0.0, 0.0)),
+            (2, (24, 48), (16.0, 32.0)),
+            (4, (4, 8), (0.0, 0.0)),
+            (4, (8, 16), (4.0, 8.0)),
         ]
     )
     def test_map_zoom_to_full_view(self, zoom, center, expected):
@@ -594,7 +587,7 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_get_coordinates_of_color(self):
-        coords1 = np.array([[24, 24], [42, 42]])
+        coords1 = np.array([[12, 12], [42, 24]])
         self.test_set.add_coords_to_roi_data_with_color(coords1, 'red')
         rows, cols = self.test_set.get_coordinates_of_color('red')
         test_coords = np.column_stack([rows, cols])
@@ -602,8 +595,8 @@ class TestPDSSpectImageSet(object):
         self.reset_test_set_state()
 
     def test_delete_rois_with_color(self):
-        coords1 = np.array([[42, 42]])
-        coords2 = np.array([[24, 24]])
+        coords1 = np.array([[12, 12]])
+        coords2 = np.array([[42, 24]])
         rows1, cols1 = np.column_stack(coords1)
         rows2, cols2 = np.column_stack(coords2)
         self.test_set.add_coords_to_roi_data_with_color(coords1, 'red')

@@ -146,6 +146,8 @@ class HistogramModel(object):
     def view_cuts(self):
         """:obj:`tuple` The image_view cut levels"""
         cut_low, cut_high = self.image_view.get_cut_levels()
+        if cut_low > cut_high:
+            cut_low, cut_high = cut_high, cut_low
         return cut_low, cut_high
 
     @property

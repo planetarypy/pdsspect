@@ -17,7 +17,7 @@ def test_abstract_base_class():
 
 
 class TestPolygon(object):
-    image_set = PDSSpectImageSet(TEST_FILES)
+    image_set = PDSSpectImageSet([FILE_1])
     view_canvas = PDSImageViewCanvas()
     shape1 = [
         (2.5, 5.5), (4.5, 3.5), (6.5, 5.5), (6.5, 2.5), (2.5, 2.5)

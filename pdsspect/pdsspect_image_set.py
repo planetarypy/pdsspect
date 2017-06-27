@@ -115,6 +115,18 @@ class PDSSpectImageSet(object):
                 self.images.append(image)
             except Exception:
                 warnings.warn("Unable to open %s" % (filepath))
+        shape = []
+        for image in self.images:
+            rows, cols = image.shape[:2]
+            if len(shape) == 0:
+                shape = [rows, cols]
+            else:
+                shape[0] = rows if shape[0] > rows else shape[0]
+                shape[1] = cols if shape[1] > cols else shape[1]
+        self.shape = tuple(shape)
+        s_ = np.s_[:self.shape[0], :self.shape[1]]
+        for image in self.images:
+            image.set_data(image.get_data()[s_])
         self._current_image_index = 0
         self.current_color_index = 0
         self._selection_index = 0
@@ -124,7 +136,7 @@ class PDSSpectImageSet(object):
         self._flip_x = False
         self._flip_y = False
         self._swap_xy = False
-        mask = np.zeros(self.current_image.shape, dtype=np.bool)
+        mask = np.zeros(self.shape, dtype=np.bool)
         self._maskrgb = masktorgb(mask, self.color, self.alpha)
         self._roi_data = self._maskrgb.get_data().astype(float)
         self._maskrgb_obj = Image(0, 0, self._maskrgb)
@@ -210,12 +222,12 @@ class PDSSpectImageSet(object):
     @property
     def x_radius(self):
         """:obj:`float` : Half the image width"""
-        return self.current_image.shape[1] / 2
+        return self.shape[1] / 2
 
     @property
     def y_radius(self):
         """:obj:`float` : Half the image height"""
-        return self.current_image.shape[0] / 2
+        return self.shape[0] / 2
 
     @property
     def pan_width(self):
@@ -245,7 +257,7 @@ class PDSSpectImageSet(object):
             True if the point is in the image. False otherwise.
         """
         data_x, data_y = point
-        height, width = self.current_image.shape[:2]
+        height, width = self.shape[:2]
         in_width = data_x >= -0.5 and data_x <= (width + 0.5)
         in_height = data_y >= -0.5 and data_y <= (height + 0.5)
         is_in_image = in_width and in_height
@@ -267,17 +279,15 @@ class PDSSpectImageSet(object):
         x_center : :obj:`float`
             The x coordinate of the center of the pan
         """
-        width = self.current_image.shape[1]
-        left_of_left_edge = x - self.pan_width < -0.5
-        right_of_right_edge = x + self.pan_width > (width + 0.5)
+        width = self.shape[1]
+        left_of_left_edge = x - self.pan_width < 0
+        right_of_right_edge = x + self.pan_width > (width)
         in_width = not left_of_left_edge and not right_of_right_edge
         if in_width:
             center_x = x
         elif left_of_left_edge:
-            self._move_roi = True
             center_x = self.pan_width
         elif right_of_right_edge:
-            self._move_rois = True
             center_x = width - self.pan_width
         return center_x
 
@@ -297,17 +307,15 @@ class PDSSpectImageSet(object):
         center_y : :obj:`float`
             The y coordinate of the center of the pan
         """
-        height = self.current_image.shape[0]
+        height = self.shape[0]
         below_bottom = y - self.pan_height < -0.5
         above_top = y + self.pan_height > (height + 0.5)
         in_height = not below_bottom and not above_top
         if in_height:
             center_y = y
         elif below_bottom:
-            self._move_rois = True
             center_y = self.pan_height
         elif above_top:
-            self._move_rois = True
             center_y = height - self.pan_height
         return center_y
 
