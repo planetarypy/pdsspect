@@ -1,6 +1,10 @@
-========
-pdsspect
-========
+.. include:: ../README.rst
+
+
+============
+pdsspect API
+============
+
 
 .. automodule:: pdsspect.pdsspect
 .. autoclass:: PDSSpect
