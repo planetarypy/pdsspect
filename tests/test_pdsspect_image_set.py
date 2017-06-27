@@ -42,15 +42,6 @@ class TestPDSSpectImageSet(object):
             float)
         self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
 
-    def ensure_correct_state(func):
-        @wraps(func)
-        def wrapper(self, *args, **kwargs):
-            self.reset_test_set_state()
-            result = func(self, *args, **kwargs)
-            self.reset_test_set_state()
-            return result
-        return wrapper
-
     def test_init(self):
         test_set = self.test_set
         assert test_set._views == []
@@ -77,24 +68,23 @@ class TestPDSSpectImageSet(object):
         assert not test_set._roi_data.any()
         assert isinstance(test_set._maskrgb_obj, Image)
 
-    @ensure_correct_state
     def test_register(self):
         assert self.test_set._views == []
         self.test_set.register('foo')
         assert 'foo' in self.test_set._views
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_unregister(self):
         self.test_set._views = ['foo']
         assert 'foo' in self.test_set._views
         self.test_set.unregister('foo')
         assert 'foo' not in self.test_set._views
         assert self.test_set._views == []
+        self.reset_test_set_state()
 
     def test_filenames(self):
         assert self.test_set.filenames == TEST_FILE_NAMES
 
-    @ensure_correct_state
     def test_current_image_index(self):
         test_set = self.test_set
         assert test_set._current_image_index == test_set.current_image_index
@@ -104,14 +94,15 @@ class TestPDSSpectImageSet(object):
         test_set.current_image_index = 1
         assert test_set._current_image_index == test_set.current_image_index
         assert test_set._current_image_index == 1
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_current_image(self):
         test_indices = [0, 1, 2, 3, 4, 0]
         for index in test_indices:
             self.test_set.current_image_index = index
             test_current_image = self.test_set.images[index]
             assert test_current_image == self.test_set.current_image
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'index, color, rgb',
@@ -133,13 +124,13 @@ class TestPDSSpectImageSet(object):
             (14, 'eraser', (0.0, 0.0, 0.0)),
         ]
     )
-    @ensure_correct_state
     def test_color(self, index, color, rgb):
         self.test_set.current_color_index = index
         assert self.test_set.color == color
         test_rgb = ginga_colors.lookup_color(color)
         for val, test_val in zip(rgb, test_rgb):
             assert val == round(test_val, 4)
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'index, expected',
@@ -157,12 +148,12 @@ class TestPDSSpectImageSet(object):
             (-4, 2),
         ]
     )
-    @ensure_correct_state
     def test_selection_index(self, index, expected):
         test_set = self.test_set
         test_set.selection_index = index
         assert test_set._selection_index == expected
         assert test_set._selection_index == test_set.selection_index
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'index, expected',
@@ -181,12 +172,11 @@ class TestPDSSpectImageSet(object):
             (0, 'filled rectangle'),
         ]
     )
-    @ensure_correct_state
     def test_selection_type(self, index, expected):
         self.test_set.selection_index = index
         assert self.test_set.selection_type == expected
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_zoom(self):
         assert self.test_set._zoom == 1.0
         assert self.test_set._zoom == self.test_set.zoom
@@ -198,6 +188,7 @@ class TestPDSSpectImageSet(object):
         self.test_set.zoom = 1.0
         assert self.test_set._zoom == 1.0
         assert self.test_set._zoom == self.test_set.zoom
+        self.reset_test_set_state()
 
     def test_x_radius(self):
         test_x_radius = 512
@@ -217,10 +208,10 @@ class TestPDSSpectImageSet(object):
             (4.0, 128),
         ]
     )
-    @ensure_correct_state
     def test_pan_width(self, zoom, expected):
         self.test_set.zoom = zoom
         assert self.test_set.pan_width == expected
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, expected',
@@ -230,10 +221,10 @@ class TestPDSSpectImageSet(object):
             (4.0, 128),
         ]
     )
-    @ensure_correct_state
     def test_pan_height(self, zoom, expected):
         self.test_set.zoom = zoom
         assert self.test_set.pan_height == expected
+        self.reset_test_set_state()
 
     def test_reset_center(self):
         test_center = (512, 512)
@@ -326,12 +317,12 @@ class TestPDSSpectImageSet(object):
             (1, (512, 512), (512, 512)),
         ]
     )
-    @ensure_correct_state
     def test_center1(self, zoom, center, expected):
         self.test_set.zoom = zoom
         self.test_set.center = center
         assert self.test_set.center == expected
         assert self.test_set._center == expected
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'alpha, expected',
@@ -342,10 +333,10 @@ class TestPDSSpectImageSet(object):
             (.25, 63.75),
         ]
     )
-    @ensure_correct_state
     def test_alpha255(self, alpha, expected):
         self.test_set._alpha = alpha
         assert self.test_set.alpha255 == expected
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'alpha, alpha255',
@@ -356,7 +347,6 @@ class TestPDSSpectImageSet(object):
             (.25, 63.75),
         ]
     )
-    @ensure_correct_state
     def test_alpha(self, alpha, alpha255):
         red_coords = np.array([[0, 0], [512, 512]])
         rgba = [255.0, 0.0, 0.0, 355.]
@@ -370,29 +360,29 @@ class TestPDSSpectImageSet(object):
         for red_coord in red_coords:
             row, col = red_coord
             assert self.test_set._roi_data[row, col, 3] == alpha255
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_flip_x(self):
         assert self.test_set._flip_x == self.test_set.flip_x
         self.test_set.flip_x = True
         assert self.test_set._flip_x
         assert self.test_set._flip_x == self.test_set.flip_x
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_flip_y(self):
         assert self.test_set._flip_y == self.test_set.flip_y
         self.test_set.flip_y = True
         assert self.test_set._flip_y
         assert self.test_set._flip_y == self.test_set.flip_y
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_swap_xy(self):
         assert self.test_set._swap_xy == self.test_set.swap_xy
         self.test_set.swap_xy = True
         assert self.test_set._swap_xy
         assert self.test_set._swap_xy == self.test_set.swap_xy
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_transforms(self):
         assert self.test_set.transforms == (False, False, False)
         self.test_set.flip_x = True
@@ -401,6 +391,7 @@ class TestPDSSpectImageSet(object):
         assert self.test_set.transforms == (True, True, False)
         self.test_set.swap_xy = True
         assert self.test_set.transforms == (True, True, True)
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, center, expected',
@@ -412,11 +403,11 @@ class TestPDSSpectImageSet(object):
             (4, (896, 896), (768, 768, 1024, 1024)),
         ]
     )
-    @ensure_correct_state
     def test_edges(self, zoom, center, expected):
         self.test_set.zoom = zoom
         self.test_set.center = center
         assert self.test_set.edges == expected
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, center, edges',
@@ -428,12 +419,12 @@ class TestPDSSpectImageSet(object):
             (4, (896, 896), (768, 768, 1024, 1024)),
         ]
     )
-    @ensure_correct_state
     def test_pan_slice(self, zoom, center, edges):
         self.test_set.zoom = zoom
         self.test_set.center = center
         x1, y1, x2, y2 = edges
         assert np.array_equal(self.test_set.pan_slice, np.s_[y1:y2:1, x1:x2:1])
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, center, edges',
@@ -445,7 +436,6 @@ class TestPDSSpectImageSet(object):
             (4, (896, 896), (768, 768, 1024, 1024)),
         ]
     )
-    @ensure_correct_state
     def test_pan_data(self, zoom, center, edges):
         self.test_set.zoom = zoom
         self.test_set.center = center
@@ -453,6 +443,7 @@ class TestPDSSpectImageSet(object):
         pan_slice = np.s_[y1:y2:1, x1:x2:1]
         pan_data = self.test_set.current_image.get_data()[pan_slice]
         assert np.array_equal(self.test_set.pan_data, pan_data)
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, center, edges',
@@ -464,7 +455,6 @@ class TestPDSSpectImageSet(object):
             (4, (896, 896), (768, 768, 1024, 1024)),
         ]
     )
-    @ensure_correct_state
     def test_pan_roi_data(self, zoom, center, edges):
         self.test_set.zoom = zoom
         self.test_set.center = center
@@ -472,6 +462,7 @@ class TestPDSSpectImageSet(object):
         pan_slice = np.s_[y1:y2:1, x1:x2:1]
         pan_roi_data = self.test_set._roi_data[pan_slice]
         assert np.array_equal(self.test_set.pan_roi_data, pan_roi_data)
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'color, rgb255',
@@ -493,11 +484,11 @@ class TestPDSSpectImageSet(object):
             ('eraser', (0.0, 0.0, 0.0)),
         ]
     )
-    @ensure_correct_state
     def test_get_rgb255_from_color(self, color, rgb255):
         test_rgb255 = self.test_set._get_rgb255_from_color(color)
         for val, test_val in zip(rgb255, test_rgb255):
             assert val == round(test_val, 4)
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'alpha, color, rgba',
@@ -519,14 +510,13 @@ class TestPDSSpectImageSet(object):
             (.25, 'eraser', [0.0, 0.0, 0.0, 63.75]),
         ]
     )
-    @ensure_correct_state
     def test_get_rgba_from_color(self, alpha, color, rgba):
         self.test_set.alpha = alpha
         test_rgba = self.test_set._get_rgba_from_color(color)
         for val, test_val in zip(rgba, test_rgba):
             assert val == round(test_val, 4)
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_erase_coords(self):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
@@ -554,8 +544,8 @@ class TestPDSSpectImageSet(object):
             self.test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_add_coords_to_roi_data_with_color(self):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
@@ -584,6 +574,7 @@ class TestPDSSpectImageSet(object):
             self.test_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
         )
+        self.reset_test_set_state()
 
     @pytest.mark.parametrize(
         'zoom, center, expected',
@@ -596,21 +587,20 @@ class TestPDSSpectImageSet(object):
             (4, (200, 300), (72.0, 172.0))
         ]
     )
-    @ensure_correct_state
     def test_map_zoom_to_full_view(self, zoom, center, expected):
         self.test_set.zoom = zoom
         self.test_set.center = center
         assert self.test_set.map_zoom_to_full_view() == expected
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_get_coordinates_of_color(self):
         coords1 = np.array([[24, 24], [42, 42]])
         self.test_set.add_coords_to_roi_data_with_color(coords1, 'red')
         rows, cols = self.test_set.get_coordinates_of_color('red')
         test_coords = np.column_stack([rows, cols])
         assert np.array_equal(coords1, test_coords)
+        self.reset_test_set_state()
 
-    @ensure_correct_state
     def test_delete_rois_with_color(self):
         coords1 = np.array([[42, 42]])
         coords2 = np.array([[24, 24]])
@@ -636,3 +626,4 @@ class TestPDSSpectImageSet(object):
             self.test_set._roi_data[rows2, cols2],
             np.array([[165.0, 42.0, 42.0, 191.25]])
         )
+        self.reset_test_set_state()
