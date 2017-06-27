@@ -1,9 +1,6 @@
-.. include:: README.rst
-
-
-============
-pdsspect API
-============
+========
+pdsspect
+========
 
 
 .. automodule:: pdsspect.pdsspect
