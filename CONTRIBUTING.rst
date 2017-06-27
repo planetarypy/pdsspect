@@ -3,7 +3,10 @@ Contributing
 ============
 
 Contributions are welcome, and they are greatly appreciated! Every
-little bit helps, and credit will always be given.
+little bit helps, and credit will always be given. To understand and better
+read the code, you should have an understanding of the `Model-View-Controller
+(MVC) architecture.
+<http://forthescience.org/books/modelviewcontroller/00_introduction/00_preface.html>`_
 
 You can contribute in many ways:
 

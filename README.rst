@@ -16,6 +16,8 @@ Features
 **NOTE:** This is alpha quality software.  It lacks many features and lacks
 support for many PDS image types.  This software is not produced by NASA.
 
+.. include:: ../CONTRIBUTING.rst
+
 Install
 -------
 
