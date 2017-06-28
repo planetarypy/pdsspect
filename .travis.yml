@@ -29,11 +29,10 @@ install:
   # Replace dep1 dep2 ... with your dependencies
   - conda create -q -n test-environment python=$TRAVIS_PYTHON_VERSION
   - source activate test-environment
-  - pip install -r requirements.txt
   - if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      pip install PySide;
+      pip install -r requirements2.txt
     else
-      pip install pyqt5;
+      pip install -r requirements3.txt
     fi
   - get_mission_data
   - conda list
