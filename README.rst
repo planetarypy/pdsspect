@@ -47,7 +47,7 @@ Open an image in the command line::
 
 This will open the default window:
 
-.. image:: docs/screenshots/default_window.png
+.. image:: screenshots/default_window.png
 
 The bottom left window is considered the main window. In this window, the user
 can adjust the position of the pan and open other windows. The bottom right
@@ -56,7 +56,7 @@ window if closed. However, it starts out open. In this window, the user can
 change the image in the views and adjust the cut levels by either moving the
 red lines or typing in the numbers in the cut boxes:
 
-.. image:: docs/screenshots/adjust_cut_levels.png
+.. image:: screenshots/adjust_cut_levels.png
 
 The top window is the ``pan window`` which displays the data in the main
 window's red box. The main function of this window is to make Region of
@@ -65,22 +65,22 @@ Interest (ROI) selections.
 In the ``zoom`` box in the main window, the user can change the size of the box
 and the data in the pan view:
 
-.. image:: docs/screenshots/change_zoom.png
+.. image:: screenshots/change_zoom.png
 
 The user can adjust the position of the box by clicking in the main window
 where the center of the pan should be.
 
 Clicking the ``Selection`` button will open the ``Selections Window``:
 
-.. image:: docs/screenshots/selection_window.png
+.. image:: screenshots/selection_window.png
 
 In this window, the user can change the ROI selection type:
 
-.. image:: docs/screenshots/selection_types.png
+.. image:: screenshots/selection_types.png
 
 and change the ROI color:
 
-.. image:: docs/screenshots/color_types.png
+.. image:: screenshots/color_types.png
 
 Furthermore, in this window, the user can clear the current color or clear all
 ROIs. Most importantly, the user can export ROIs to ``.npz`` files. These files
@@ -132,12 +132,12 @@ be in the ``files`` list in the ``.npz`` file.
 
 In the pan window, the user can make different types of ROI selections:
 
-.. image:: docs/screenshots/ROIs.png
+.. image:: screenshots/ROIs.png
 
 Change the opacity of the ROIs using the ``Opacity`` slider in the ``Selections
 Window``:
 
-.. image:: docs/screenshots/Opacity.png
+.. image:: screenshots/Opacity.png
 
 Note that when opening multiple images at the same time, it is best practice
 that they are all the same shape. Otherwise the images will have the smallest
