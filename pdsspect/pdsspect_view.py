@@ -164,8 +164,6 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             The view canvas
         zoom_event : :class:`ginga.Bindings.ScrollEvent`
             The zoom event
-
-            A foward direction is ``0`` and backward direction is ``180``
         """
 
         is_foward = zoom_event.direction == 0.0

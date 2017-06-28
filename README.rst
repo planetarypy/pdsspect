@@ -67,8 +67,11 @@ and the data in the pan view:
 
 .. image:: screenshots/change_zoom.png
 
+the mouse wheel can also be used to change the zoom. Rolling the wheel foward
+and backwards will adjust the zoom amount by ``+1`` or ``-1`` respectively.
 The user can adjust the position of the box by clicking in the main window
-where the center of the pan should be.
+where the center of the pan should be. Using the arrow keys will also adjust
+the position of the box by ``1`` in the direction of the arrow key.
 
 Clicking the ``Selection`` button will open the ``Selections Window``:
 
