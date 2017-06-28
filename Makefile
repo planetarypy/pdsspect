@@ -42,7 +42,6 @@ test:
 	py.test tests
 
 test-all:
-	get_mission_data
 	tox
 
 coverage:
