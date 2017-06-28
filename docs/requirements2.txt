@@ -1,8 +1,0 @@
-# Install pdsview itself
--e ../
-
-# Install our doc requirements
-sphinx
-sphinx_rtd_theme
-wheel
-pyside
