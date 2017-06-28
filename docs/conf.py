@@ -20,6 +20,8 @@
 import os
 import sys
 import shutil
+import pdsspect
+os.environ['QT_QPA_PLATFORM'] = 'offscreen'
 # sys.path.insert(0, os.path.abspath('.'))
 cwd = os.getcwd()
 project_root = os.path.dirname(cwd)

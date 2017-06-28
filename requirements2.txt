@@ -1,0 +1,13 @@
+# Install pdsview itself
+-e .
+
+# Install our development requirements
+flake8
+pytest
+pytest-qt
+planetary_test_data
+sphinx
+sphinx_rtd_theme
+tox
+wheel
+pyside
