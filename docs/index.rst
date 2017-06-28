@@ -10,6 +10,7 @@ Welcome to pdsspect's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   README
    pdsspect
    pdsspect_image_set
    pdsspect_view
@@ -20,6 +21,9 @@ Welcome to pdsspect's documentation!
    roi
    basic
    histogram
+   CONTRIBUTING
+   AUTHORS
+   HISTORY
 
 
 
