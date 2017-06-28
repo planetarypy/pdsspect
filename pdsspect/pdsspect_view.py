@@ -58,12 +58,12 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         pdsspect model
     controller : :class:`PDSSpectViewController`
-    main_layout : :class:`QtWidgets.QVBoxLayout`
-    zoom_layout : :class:`QtWidgets.QHBoxLayout`
+    main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
+    zoom_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Layout for :attr:`zoom_label` and :attr:`zoom_text`
-    zoom_label : :class:`QtWidgets.QLabel`
+    zoom_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label the :attr:`zoom_text` text box
-    zoom_text : :class:`QtWidgets.QLineEdit`
+    zoom_text : :class:`QtWidgets.QLineEdit <PySide.QtGui.QLineEdit>`
         Text box to enter the zoom factor. Zoom will change on ``return key``
     view_canvas : :class:`PDSImageViewCanvas`
         canvas to place the image on

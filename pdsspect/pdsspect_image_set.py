@@ -355,8 +355,8 @@ class PDSSpectImageSet(object):
 
     @property
     def all_rois_coordinates(self):
-        """:obj:`tuple` of two :class:`np.ndarray` : Coordinates of where there
-        is a pixel selected in a ROI
+        """:obj:`tuple` of two :class:`numpy.ndarray` : Coordinates of where
+        there is a pixel selected in a ROI
         """
         return np.where((self._roi_data != 0).any(axis=2))
 
@@ -444,19 +444,19 @@ class PDSSpectImageSet(object):
 
     @property
     def pan_slice(self):
-        """:class:`np.s_` : A slice of the pan to extract data from an array"""
+        """:obj:`numpy.s_` : Slice of pan to extract data from an array"""
         x1, y1, x2, y2 = self.edges
         pan_slice = np.s_[y1:y2:1, x1:x2:1]
         return pan_slice
 
     @property
     def pan_data(self):
-        """:class:`np.ndarray` : The data within the pan"""
+        """:class:`numpy.ndarray` : The data within the pan"""
         return self.current_image.get_data()[self.pan_slice]
 
     @property
     def pan_roi_data(self):
-        """:class:`np.ndarray` : The ROI data in the pan"""
+        """:class:`numpy.ndarray` : The ROI data in the pan"""
         return self._roi_data[self.pan_slice]
 
     def _get_rgb255_from_color(self, color):
@@ -498,7 +498,7 @@ class PDSSpectImageSet(object):
 
         Parameters
         ----------
-        coordinates : :class:`np.ndarray` or :obj:`tuple`
+        coordinates : :class:`numpy.ndarray` or :obj:`tuple`
             Either a ``(m x 2)`` array or a tuple of two arrays
 
             If an array, the first column are the x coordinates and the second
@@ -515,7 +515,7 @@ class PDSSpectImageSet(object):
 
         Parameters
         ----------
-        coordinates : :class:`np.ndarray` or :obj:`tuple`
+        coordinates : :class:`numpy.ndarray` or :obj:`tuple`
             Either a ``(m x 2)`` array or a tuple of two arrays
 
             If an array, the first column are the x coordinates and the second
@@ -558,7 +558,7 @@ class PDSSpectImageSet(object):
 
         Returns
         -------
-        coordinates : :obj:`tuple` of two :class:`np.ndarray`
+        coordinates : :obj:`tuple` of two :class:`numpy.ndarray`
             The first array are the x coordinates and the second are the
             corresponding y coordinates
         """

@@ -35,7 +35,7 @@ class PanViewController(object):
 
         Parameters
         ----------
-        coordinates : :class:`np.ndarray` or :obj:`tuple`
+        coordinates : :class:`numpy.ndarray` or :obj:`tuple`
             Either a ``(m x 2)`` array or a tuple of two arrays
 
             If an array, the first column are the x coordinates and the second
@@ -53,7 +53,7 @@ class PanViewController(object):
 
         Parameters
         ----------
-        coordinates : :class:`np.ndarray` or :obj:`tuple`
+        coordinates : :class:`numpy.ndarray` or :obj:`tuple`
             Either a ``(m x 2)`` array or a tuple of two arrays
 
             If an array, the first column are the x coordinates and the second
@@ -82,7 +82,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         The view's controller
     parent : None
         The view's parent
-    main_layout : :class:`QtWidgets.QVBoxLayout`
+    main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         The main layout of the view
     view_canvas : :class:`~pdsspect.pds_image_view_canvas.PDSImageViewCanvas`
         Canvas to view the image

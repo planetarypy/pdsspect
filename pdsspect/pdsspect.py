@@ -28,24 +28,24 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         The main viewer for panning
     pan_view : :class:`~.pdsspect.pan_view.PanView`
         The view in which the user makes ROI selections
-    selection_btn : :class:`~QtWidgets.QPushButton`
+    selection_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the selections window
     selection_window : :class:`Selection`
         The selection window to adjust ROI, import ROIs, and export ROIs
-    basic_btn : :class:`~QtWidgets.QPushButton`
+    basic_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the basic window
     basic_window : :class:`Basic`
         Window to adjust cut levels and change images
-    transforms_btn : :class:`QtWidgets.QPushButton`
+    transforms_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Open Transforms window
     transforms_window : :class:`Transforms`
         Window to flip x axis, flip y axis, or switch x and y axis
-    quit_btn : :class:`~QtWidgets.QPushButton`
+    quit_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Quit
-    button_layout : :class:`~QtWidgets.QHBoxLayout`
+    button_layout : :class:`~QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Layout for the buttons. If you want to re-adjust where the buttons
         go, override this attribute
-    main_layout : :class:`~QtWidgets.QVBoxLayout`
+    main_layout : :class:`~QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Place the image viewer over the buttons. Overide this attribute if
         changing overall layout
     """

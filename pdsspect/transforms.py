@@ -75,19 +75,19 @@ class Transforms(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         The view canvas to apply transformations to
     controller : :class:`TransformsController`
         The view's controller
-    flip_x_label : :class:`QtWidgets.QLabel`
+    flip_x_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for :attr:`flip_x_box`
-    flip_x_box : :class:`QtWidgets.QCheckBox`
+    flip_x_box : :class:`QtWidgets.QCheckBox <PySide.QtGui.QCheckBox>`
         Flip x axis when checked
-    flip_y_label : :class:`QtWidgets.QLabel`
+    flip_y_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for :attr:`flip_y_box`
-    flip_y_box : :class:`QtWidgets.QCheckBox`
+    flip_y_box : :class:`QtWidgets.QCheckBox <PySide.QtGui.QCheckBox>`
         Flip y axis when checked
-    swap_xy_label : :class:`QtWidgets.QLabel`
+    swap_xy_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for :attr:`swap_xy_box`
-    swap_xy_box : :class:`QtWidgets.QCheckBox`
+    swap_xy_box : :class:`QtWidgets.QCheckBox <PySide.QtGui.QCheckBox>`
         Swap x and y axis when checked
-    layout : :class:`QtWidgets.QGridLayout`
+    layout : :class:`QtWidgets.QGridLayout <PySide.QtGui.QGridLayout>`
         Layout for widget
     """
 

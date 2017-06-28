@@ -75,7 +75,7 @@ class SelectionController(object):
 
         Parameters
         ----------
-        coordinates : :class:`np.ndarray` or :obj:`tuple`
+        coordinates : :class:`numpy.ndarray` or :obj:`tuple`
             Either a ``(m x 2)`` array or a tuple of two arrays
 
             If an array, the first column are the x coordinates and the second
@@ -110,33 +110,34 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         Parent of the view
     controller : :class:`SelectionController`
         View controller
-    type_label : :class:`QtWidgets.QLabel`
+    type_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for the selection menu
-    selection_menu : :class:`QtWidgets.QComboBox`
+    selection_menu : :class:`QtWidgets.QComboBox <PySide.QtGui.QComboBox>`
         Drop down menu of selection types
-    type_layout : :class:`QtWidgets.QHBoxLayout`
+    type_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Horizontal box layout for selection
-    color_label : :class:`QtWidgets.QLabel`
+    color_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for the :attr:`color_menu`
-    color_menu : :class:`QtWidgets.QComboBox`
+    color_menu : :class:`QtWidgets.QComboBox <PySide.QtGui.QComboBox>`
         Drop down menu for color selection
-    color_layout : :class:`QtWidgets.QHBoxLayout`
+    color_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Horizontal box layout for color selection
-    opacity_label : :class:`QtWidgets.QLabel`
+    opacity_label : :class:`QtWidgets.QLabel <PySide.QtGui.QLabel>`
         Label for the :attr:`opacity_slider`
-    opacity_slider : :class:`QtWidgets.QSlider`
+    opacity_slider : :class:`QtWidgets.QSlider <PySide.QtGui.QSlider>`
         Slider to determine opacity for ROIs
-    opacity_layout : :class:`QtWidgets.QHBoxLayout`
+    opacity_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Horizontal box layout for opacity slider
-    clear_current_color_btn : :class:`QtWidgets.QPushButton`
+    clear_current_color_btn : :class:`QtWidgets.QPushButton
+        <PySide.QtGui.QPushButton>`
         Button to clear all ROIs will the current color
-    clear_all_btn : :class:`QtWidgets.QPushButton`
+    clear_all_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to clear all ROIs
-    export_btn : :class:`QtWidgets.QPushButton`
+    export_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Export ROIs to ``.npz`` file
-    load_btn : :class:`QtWidgets.QPushButton`
+    load_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Load ROIs from ``.npz`` file
-    main_layout : :class:`QtWidgets.QVBoxLayout`
+    main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Vertical Box layout for main layout
     """
 
