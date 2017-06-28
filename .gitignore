@@ -44,6 +44,7 @@ output/*/index.html
 
 # Sphinx
 docs/_build
+docs/screenshots
 
 # ignore the mission_data directory
 tests/mission_data
