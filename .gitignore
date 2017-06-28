@@ -50,3 +50,6 @@ tests/mission_data
 
 # Add your notes and experiments here
 goodies
+
+# ignore virtual environments that start with venv
+venv*
