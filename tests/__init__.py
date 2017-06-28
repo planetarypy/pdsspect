@@ -1,4 +1,6 @@
 import os
+import sys
+from qtpy import QtWidgets
 
 test_dir = os.path.join('tests', 'mission_data')
 
@@ -32,3 +34,8 @@ TEST_FILE_NAMES = [
 SAMPLE_ROI = os.path.join(
     'tests', 'sample_roi.npz'
 )
+
+
+app = QtWidgets.QApplication.instance()
+if not app:
+    app = QtWidgets.QApplication(sys.argv)

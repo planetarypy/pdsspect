@@ -5,7 +5,6 @@ from glob import glob
 
 from qtpy import QtWidgets, QtCore
 
-from . import app
 from .basic import Basic
 from .selection import Selection
 from .transforms import Transforms
@@ -170,6 +169,7 @@ def pdsspect(inlist=None):
     >>> pdsspect (['a1.img, b3.img, c1.img, d*img'])
     You can also pass in a list of files/globs
     """
+    app = QtWidgets.QApplication(sys.argv)
     files = []
     if isinstance(inlist, list):
         if inlist:
