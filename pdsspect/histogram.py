@@ -160,7 +160,7 @@ class HistogramModel(object):
 
         Parameters
         ----------
-        view : :class:`QtWidgets.QWidget`
+        view : :class:`QtWidgets.QWidget <PySide.QtGui.QWidget>`
             A view that utilizes this model
         """
         self._views.add(view)
@@ -170,7 +170,7 @@ class HistogramModel(object):
 
         Parameters
         ----------
-        view : :class:`QtWidgets.QWidget`
+        view : :class:`QtWidgets.QWidget <PySide.QtGui.QWidget>`
             A view that utilizes this model
         """
         self._views.remove(view)

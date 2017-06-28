@@ -101,7 +101,7 @@ class WarningTimerController(object):
     ----------
     model : :class:`WarningTimerModel`
         The Warning Timer Model
-    view : :class:`QtWidgets.QMessageBox`
+    view : :class:`QtWidgets.QMessageBox <PySide.QtGui.QMessageBox>`
         A message box with a :class:`WarningTimerModel` model
     """
 
@@ -128,7 +128,7 @@ class WarningTimer(QtWidgets.QMessageBox):
         The Warning Timer Model
     control : :class:`WarningTimerController`
         The controller
-    timer : :class:`QtCore.QTimer`
+    timer : :class:`QtCore.QTimer <PySide.QtCore.QTimer>`
         The timer
     """
 

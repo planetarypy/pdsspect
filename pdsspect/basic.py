@@ -74,13 +74,13 @@ class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         Canvas to view the image
     controller : :class:`BasicController`
         Controller for view
-    image_menu : :class:`QtWidgets.QComboBox`
+    image_menu : :class:`QtWidgets.QComboBox <PySide.QtGui.QComboBox>`
         Drop down menu to pick the current image
     histogram : :class:`~.histogram.HistogramModel`
         Model for the :attr:`histogram_widget`
     histogram_widget : :class:`BasicHistogramWidget`
         The histogram widget to adjust the cut levels
-    layout : :class:`QtWidgets.QVBoxLayout`
+    layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         The main layout
     """
 

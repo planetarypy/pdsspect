@@ -24,7 +24,7 @@ class PDSImageViewCanvas(ImageViewCanvas):
         Raises
         ------
         TypeError
-            When subview is an and :class:`ImageViewCanvas` object
+            When subview is not an :class:`ImageViewCanvas` object
         """
 
         if not isinstance(subview, ImageViewCanvas):

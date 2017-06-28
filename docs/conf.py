@@ -173,7 +173,13 @@ texinfo_documents = [
 
 
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/', None),
+    'numpy': ('http://numpy.readthedocs.io/en/latest/', None),
+    'pyside': ('https://srinikom.github.io/pyside-docs/', None),
+    'pyqt5': ('http://pyqt.sourceforge.net/Docs/PyQt5/', None),
+    'ginga': ('http://ginga.readthedocs.io/en/latest/', None),
+}
 
 import sphinx_rtd_theme
 html_theme = "sphinx_rtd_theme"

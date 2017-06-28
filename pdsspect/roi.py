@@ -139,7 +139,7 @@ class ROIBase(basic.Polygon):
 
         Returns
         -------
-        coordinates : :class:`np.ndarray`
+        coordinates : :class:`numpy.ndarray`
             ``m x 2`` array of coordinates.
         """
 
@@ -164,14 +164,14 @@ class ROIBase(basic.Polygon):
 
         Parameters
         ----------
-        x_arr : :class:`np.ndarray`
+        x_arr : :class:`numpy.ndarray`
             Array of x coodinates
-        y_arr : :class:`np.ndarray`
+        y_arr : :class:`numpy.ndarray`
             Array of y coordinates
 
         Returns
         -------
-        result : :class:`np.ndarray`
+        result : :class:`numpy.ndarray`
             Boolean array where coordinates that are in ROI are True
         """
         # NOTE: we use a version of the ray casting algorithm
@@ -230,12 +230,12 @@ class ROIBase(basic.Polygon):
         ----------
         roi : :class:`ROIBase`
             The region of interest
-        mask : :class:`np.ndarray`
+        mask : :class:`numpy.ndarray`
             Boolean array of the image
 
         Returns
         -------
-        mask : :class:`np.ndarray`
+        mask : :class:`numpy.ndarray`
             Boolean array of the image with ROI coordinates as ``True``
         """
 
@@ -515,7 +515,7 @@ class Pencil(ROIBase):
 
         Returns
         -------
-        coordinates : :class:`np.ndarray`
+        coordinates : :class:`numpy.ndarray`
             Coordinates of points selected
         """
 
