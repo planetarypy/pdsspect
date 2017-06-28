@@ -1,5 +1,5 @@
 """Window to pan the main image and open other dialog windows"""
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets
 from ginga.canvas.types import basic
 
 from .pan_view import PanView
