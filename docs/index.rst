@@ -21,6 +21,7 @@ Welcome to pdsspect's documentation!
    roi
    basic
    histogram
+   roi_histogram
    CONTRIBUTING
    AUTHORS
    HISTORY
