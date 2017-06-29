@@ -127,6 +127,9 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.image_set._maskrgb.set_data(self.image_set.pan_roi_data)
         self.view_canvas.redraw()
 
+    def change_roi_opacity(self):
+        self.set_roi_data()
+
     def set_image(self):
         """Set the data"""
         self.set_data()

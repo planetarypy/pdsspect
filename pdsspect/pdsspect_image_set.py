@@ -51,6 +51,10 @@ class ImageStamp(BaseImage):
         self.seen = False
         self.cuts = (None, None)
 
+    @property
+    def data(self):
+        return self.get_data()
+
 
 class PDSSpectImageSet(object):
     """Model for each view is pdsspect
@@ -380,7 +384,7 @@ class PDSSpectImageSet(object):
         rows, cols = self.all_rois_coordinates
         self._roi_data[rows, cols, 3] = self.alpha255
         for view in self._views:
-            view.set_roi_data()
+            view.change_roi_opacity()
 
     @property
     def flip_x(self):
@@ -612,4 +616,7 @@ class PDSSpectImageSetViewBase(object):
         pass
 
     def set_roi_data(self):
+        pass
+
+    def change_roi_opacity(self):
         pass
