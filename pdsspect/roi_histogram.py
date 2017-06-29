@@ -92,14 +92,18 @@ class ROIHistogramWidget(QtWidgets.QWidget):
             self.create_color_checkbox(color)
         roi_histogram = ROIHistogram(model)
         self.main_layout = QtWidgets.QGridLayout()
-        self.main_layout.addWidget(roi_histogram, 0, 0, 1, 2)
+        self.main_layout.addWidget(roi_histogram, 0, 0, 2, 2)
         self.main_layout.addLayout(self.checkbox_layout, 0, 2)
+        self.main_layout.setColumnStretch(1, 1)
+        self.main_layout.setRowStretch(0, 1)
         self.setLayout(self.main_layout)
         self.setWindowTitle('ROI Histogram')
 
     def create_color_checkbox(self, color):
+        name = color + '_checkbox'
         color_checkbox = ColorCheckBox(color)
         color_checkbox.stateChanged.connect(self.check_color)
+        setattr(self, name, color_checkbox)
         self.checkbox_layout.addWidget(color_checkbox)
 
     def check_color(self, checkbox_color):
@@ -138,9 +142,12 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
         self._ax.spines['left'].set_color('w')
         self._ax.tick_params(axis='x', colors='w', labelsize=8)
         self._ax.tick_params(axis='y', colors='w', labelsize=8)
+        self._ax.set_xlim(self.model.xlim)
         self.set_data()
 
     def set_data(self):
+        if not self.model.selected_colors:
+            return
         self._ax.cla()
         for color in self.model.selected_colors:
             rgb = ginga_colors.lookup_color(color)
