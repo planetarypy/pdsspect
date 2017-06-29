@@ -95,6 +95,8 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.view_canvas.set_desired_size(100, 100)
         self.view_canvas.set_callback('cursor-move', self.change_center)
         self.view_canvas.set_callback('cursor-down', self.change_center)
+        self.view_canvas.set_callback('key-press', self.arrow_key_move_center)
+        self.view_canvas.set_callback('zoom-scroll', self.zoom_with_scroll)
 
         centerx, centery = self.image_set.center
         self.pan = basic.Box(
@@ -147,10 +149,49 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.image_set.center = self.pan.get_center_pt()
         self.view_canvas.redraw()
         self.image_set._move_rois = True
+        self.zoom_text.setText(str(self.image_set.zoom))
 
     def resizeEvent(self, event):
         self.view_canvas.zoom_fit()
         self.view_canvas.delayed_redraw()
+
+    def zoom_with_scroll(self, view_canvas, zoom_event):
+        """Change the zoom by 1 with the mouse wheel
+
+        Parameters
+        ----------
+        view_canvas : :attr:`view_canvas`
+            The view canvas
+        zoom_event : :class:`ginga.Bindings.ScrollEvent`
+            The zoom event
+        """
+
+        is_foward = zoom_event.direction == 0.0
+        if self.image_set.zoom == 1.0 and not is_foward:
+            return
+        delta_zoom = 1 if is_foward else -1
+        self.controller.change_pan_size(self.image_set.zoom + delta_zoom)
+
+    def arrow_key_move_center(self, view_canvas, keyname):
+        """Adjust center with arrow press by a single pixel
+
+        Parameters
+        ----------
+        view_canvas : :attr:`view_canvas`
+            The view canvas
+        keyname : :obj:`str`
+            Name of the key
+        """
+
+        centerx, centery = self.image_set.center
+        if keyname == 'left':
+            self.controller.change_pan_center(centerx - 1, centery)
+        if keyname == 'right':
+            self.controller.change_pan_center(centerx + 1, centery)
+        if keyname == 'down':
+            self.controller.change_pan_center(centerx, centery - 1)
+        if keyname == 'up':
+            self.controller.change_pan_center(centerx, centery + 1)
 
     def change_center(self, view_canvas, button, data_x, data_y):
         """Adjust center to mouse position. Arguments supplied by callback
