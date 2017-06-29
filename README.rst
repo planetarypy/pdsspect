@@ -139,6 +139,22 @@ Window``:
 
 .. image:: screenshots/Opacity.png
 
+You can view the data within the ROIs with the ``ROI Histogram`` window. Open
+the window by pressing the ``ROI Histogram`` button in the main viewer.
+
+.. image:: screenshots/blank_histogram.png
+
+Display the data in the ROI by color by checking the checkbox next to the
+color:
+
+.. image:: screenshots/red_hist.png
+
+Overlay ROIs by checking other boxes. The order (depth) of the histogram data
+will be in the order that the user checks the boxes (i.e., checking red and
+then purple will result in purple overlaying the red):
+
+.. image:: screenshots/red_purple_hist.png
+
 Note that when opening multiple images at the same time, it is best practice
 that they are all the same shape. Otherwise the images will have the smallest
 common shape and not look as expected (i.e., If when loading two images where
