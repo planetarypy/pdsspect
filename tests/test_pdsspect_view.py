@@ -49,7 +49,10 @@ class TestPDSSpectView(object):
     view = PDSSpectView(image_set)
 
     @pytest.fixture
-    def test_set(self):
+    def test_set(self, qtbot):
+        self.view.show()
+        qtbot.add_widget(self.view)
+        qtbot.add_widget(self.view.pan_view)
         yield self.image_set
         self.image_set._current_image_index = 0
         self.image_set.images[0].cuts = (None, None)
@@ -60,16 +63,6 @@ class TestPDSSpectView(object):
         self.image_set._swap_xy = False
         self.image_set.zoom = 1
 
-    def add_view_to_qtbot(func):
-        @wraps(func)
-        def wrapper(self, qtbot, *args, **kwargs):
-            self.view.show()
-            qtbot.add_widget(self.view)
-            qtbot.add_widget(self.view.pan_view)
-            return func(self, qtbot, *args, **kwargs)
-        return wrapper
-
-    @add_view_to_qtbot
     def test_set_image(self, qtbot, test_set):
         view_image = self.view.view_canvas.get_image()
         assert view_image == test_set.current_image
@@ -86,7 +79,6 @@ class TestPDSSpectView(object):
         assert view_image == test_set.current_image
         assert self.view.view_canvas.get_cut_levels() == (10, 100)
 
-    @add_view_to_qtbot
     def test_set_transforms(self, qtbot, test_set):
         assert self.view.view_canvas.get_transforms() == (False, False, False)
         assert test_set.transforms == (False, False, False)
@@ -103,7 +95,6 @@ class TestPDSSpectView(object):
         self.view.set_transforms()
         assert self.view.view_canvas.get_transforms() == (False, False, False)
 
-    @add_view_to_qtbot
     def test_change_zoom(self, qtbot, test_set):
         assert float(self.view.zoom_text.text()) == test_set.zoom
         self.view.zoom_text.setText('2')
@@ -116,7 +107,6 @@ class TestPDSSpectView(object):
         qtbot.keyPress(self.view.zoom_text, QtCore.Qt.Key_Return)
         assert test_set.zoom == 1.0
 
-    @add_view_to_qtbot
     def test_adjust_pan_size(self, qtbot, test_set):
         assert self.view.pan.xradius == 16.5
         assert self.view.pan.yradius == 32.5
@@ -133,7 +123,6 @@ class TestPDSSpectView(object):
         assert self.view.pan.yradius == 32.5
         assert test_set.center == (16, 32)
 
-    @add_view_to_qtbot
     def test_change_center(self, qtbot, test_set):
         test_set.zoom = 2
         assert test_set.center == (16, 32)
@@ -146,7 +135,6 @@ class TestPDSSpectView(object):
         test_set.zoom = 1
         assert test_set.center == (16, 32)
 
-    @add_view_to_qtbot
     def test_move_pan(self, qtbot, test_set):
         test_set.zoom = 2
         test_set._center = (20, 30)
