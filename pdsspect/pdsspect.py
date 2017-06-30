@@ -9,6 +9,7 @@ from .basic import Basic
 from .selection import Selection
 from .transforms import Transforms
 from .pdsspect_view import PDSSpectView
+from .roi_histogram import ROIHistogramWidget, ROIHistogramModel
 from .pdsspect_image_set import PDSSpectImageSet, PDSSpectImageSetViewBase
 
 
@@ -70,6 +71,10 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.transforms_btn.clicked.connect(self.open_transforms)
         self.transforms_window = None
 
+        self.roi_histogram_btn = QtWidgets.QPushButton("ROI Histogram")
+        self.roi_histogram_btn.clicked.connect(self.open_roi_histogram)
+        self.roi_histogram_window = None
+
         self.quit_btn = QtWidgets.QPushButton("Quit")
         self.quit_btn.clicked.connect(self.quit)
 
@@ -77,6 +82,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.button_layout.addWidget(self.selection_btn)
         self.button_layout.addWidget(self.basic_btn)
         self.button_layout.addWidget(self.transforms_btn)
+        self.button_layout.addWidget(self.roi_histogram_btn)
         self.button_layout.addWidget(self.quit_btn)
 
         self.main_layout = QtWidgets.QVBoxLayout()
@@ -109,6 +115,12 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             )
         self.transforms_window.show()
 
+    def open_roi_histogram(self):
+        if not self.roi_histogram_window:
+            roi_histogram_model = ROIHistogramModel(self.image_set)
+            self.roi_histogram_window = ROIHistogramWidget(roi_histogram_model)
+        self.roi_histogram_window.show()
+
     def quit(self, *args):
         self.pdsspect_view.close()
         self.pan_view.close()
@@ -118,6 +130,8 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             self.basic_window.close()
         if self.transforms_window:
             self.transforms_window.close()
+        if self.roi_histogram_window:
+            self.roi_histogram_window.close()
         self.close()
 
 
