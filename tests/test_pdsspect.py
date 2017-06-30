@@ -1,6 +1,8 @@
 from . import *  # Import Test File Paths from __init__
 
+import pytest
 from qtpy import QtCore
+
 from pdsspect.basic import Basic
 from pdsspect.pdsspect import PDSSpect
 from pdsspect.selection import Selection
@@ -10,56 +12,59 @@ from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
 class TestPDSSpect(object):
     image_set = PDSSpectImageSet(TEST_FILES)
-    window = PDSSpect(image_set)
 
-    def test_init(self):
-        assert self.window.selection_window is None
-        assert self.window.basic_window is not None
-        assert self.window.transforms_window is None
+    @pytest.fixture
+    def window(self):
+        return PDSSpect(self.image_set)
 
-    def test_open_selection(self, qtbot):
-        self.window.show()
-        qtbot.add_widget(self.window)
-        qtbot.mouseClick(self.window.selection_btn, QtCore.Qt.LeftButton)
-        qtbot.add_widget(self.window.selection_window)
-        assert self.window.selection_window is not None
-        assert isinstance(self.window.selection_window, Selection)
-        assert self.window.selection_window.isVisible()
+    def test_init(self, window):
+        assert window.selection_window is None
+        assert window.basic_window is not None
+        assert window.transforms_window is None
 
-    def test_open_basic(self, qtbot):
-        self.window.show()
-        qtbot.add_widget(self.window)
-        qtbot.add_widget(self.window.basic_window)
-        self.window.basic_window.close()
-        qtbot.mouseClick(self.window.basic_btn, QtCore.Qt.LeftButton)
-        assert self.window.basic_window.isVisible()
-        assert isinstance(self.window.basic_window, Basic)
+    def test_open_selection(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        qtbot.mouseClick(window.selection_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.selection_window)
+        assert window.selection_window is not None
+        assert isinstance(window.selection_window, Selection)
+        assert window.selection_window.isVisible()
 
-    def test_open_transforms(self, qtbot):
-        self.window.show()
-        qtbot.add_widget(self.window)
-        assert self.window.transforms_window is None
-        qtbot.mouseClick(self.window.transforms_btn, QtCore.Qt.LeftButton)
-        qtbot.add_widget(self.window.transforms_window)
-        assert self.window.transforms_window is not None
-        assert self.window.transforms_window.isVisible()
-        assert isinstance(self.window.transforms_window, Transforms)
+    def test_open_basic(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        qtbot.add_widget(window.basic_window)
+        window.basic_window.close()
+        qtbot.mouseClick(window.basic_btn, QtCore.Qt.LeftButton)
+        assert window.basic_window.isVisible()
+        assert isinstance(window.basic_window, Basic)
 
-    def test_quit(self, qtbot):
-        self.window.show()
-        qtbot.add_widget(self.window)
-        qtbot.mouseClick(self.window.transforms_btn, QtCore.Qt.LeftButton)
-        qtbot.add_widget(self.window.transforms_window)
-        qtbot.mouseClick(self.window.basic_btn, QtCore.Qt.LeftButton)
-        qtbot.add_widget(self.window.basic_window)
-        qtbot.mouseClick(self.window.selection_btn, QtCore.Qt.LeftButton)
-        qtbot.add_widget(self.window.selection_window)
-        assert self.window.transforms_window.isVisible()
-        assert self.window.basic_window.isVisible()
-        assert self.window.selection_window.isVisible()
-        assert self.window.isVisible()
-        qtbot.mouseClick(self.window.quit_btn, QtCore.Qt.LeftButton)
-        assert not self.window.transforms_window.isVisible()
-        assert not self.window.basic_window.isVisible()
-        assert not self.window.selection_window.isVisible()
-        assert not self.window.isVisible()
+    def test_open_transforms(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        assert window.transforms_window is None
+        qtbot.mouseClick(window.transforms_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.transforms_window)
+        assert window.transforms_window is not None
+        assert window.transforms_window.isVisible()
+        assert isinstance(window.transforms_window, Transforms)
+
+    def test_quit(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        qtbot.mouseClick(window.transforms_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.transforms_window)
+        qtbot.mouseClick(window.basic_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.basic_window)
+        qtbot.mouseClick(window.selection_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.selection_window)
+        assert window.transforms_window.isVisible()
+        assert window.basic_window.isVisible()
+        assert window.selection_window.isVisible()
+        assert window.isVisible()
+        qtbot.mouseClick(window.quit_btn, QtCore.Qt.LeftButton)
+        assert not window.transforms_window.isVisible()
+        assert not window.basic_window.isVisible()
+        assert not window.selection_window.isVisible()
+        assert not window.isVisible()

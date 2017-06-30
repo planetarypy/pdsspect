@@ -5,7 +5,7 @@ from . import *  # Import Test File Paths from __init__
 import pytest
 import numpy as np
 
-from pdsspect.roi import Rectangle, Polygon
+from pdsspect.roi import Rectangle, Polygon, Pencil
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.pan_view import PanViewController, PanView
 
@@ -13,14 +13,21 @@ from pdsspect.pan_view import PanViewController, PanView
 class TestPanViewController(object):
     image_set = PDSSpectImageSet([FILE_1])
     controller = PanViewController(image_set, None)
+    default_roi_data = image_set._roi_data.copy()
 
-    def test_add_ROI(self):
-        assert self.image_set.current_color_index == 0
-        assert self.image_set.color == 'red'
+    @pytest.fixture
+    def test_set(self):
+        yield self.image_set
+        self.image_set._roi_data = self.default_roi_data
+        self.image_set._alpha = 1
+
+    def test_add_ROI(self, test_set):
+        assert test_set.current_color_index == 0
+        assert test_set.color == 'red'
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
         assert np.array_equal(
-            self.image_set._roi_data[rows, cols],
+            test_set._roi_data[rows, cols],
             np.array([[0., 0., 0., 0.]])
         )
 
@@ -46,31 +53,28 @@ class TestPanViewController(object):
             self.image_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
         )
-        self.image_set._roi_data[rows, cols] = np.array([[0., 0., 0., 0.]])
-        self.image_set.alpha = 1
 
-    def test_erase_ROI(self):
+    def test_erase_ROI(self, test_set):
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
-        self.image_set.add_coords_to_roi_data_with_color(coords, 'red')
+        test_set.add_coords_to_roi_data_with_color(coords, 'red')
         assert np.array_equal(
-            self.image_set._roi_data[rows, cols],
+            test_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
         )
         self.controller.erase_ROI(coords)
         assert np.array_equal(
-            self.image_set._roi_data[rows, cols],
+            test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
-        self.image_set.alpha = 1
-        self.image_set.add_coords_to_roi_data_with_color(coords, 'brown')
+        test_set.add_coords_to_roi_data_with_color(coords, 'brown')
         assert np.array_equal(
-            self.image_set._roi_data[rows, cols],
+            test_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 255.]])
         )
         self.controller.erase_ROI(coords)
         assert np.array_equal(
-            self.image_set._roi_data[rows, cols],
+            test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
 
@@ -169,6 +173,15 @@ class TestPanView(object):
         assert self.view._current_roi is not None
         assert self.image_set.selection_type == 'filled polygon'
         assert isinstance(self.view._current_roi, Polygon)
+        self.view._making_roi = False
+        self.view._current_roi = None
+        self.image_set._selection_index = 2
+        assert self.image_set.selection_type == 'pencil'
+        self.view.start_ROI(self.view.view_canvas, None, 512, 512)
+        assert self.view._making_roi
+        assert self.view._current_roi is not None
+        assert self.image_set.selection_type == 'pencil'
+        assert isinstance(self.view._current_roi, Pencil)
         self.view._making_roi = False
         self.view._current_roi = None
         self.image_set._selection_index = 0
