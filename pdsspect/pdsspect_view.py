@@ -91,8 +91,8 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.zoom_layout.addWidget(self.zoom_text)
 
         self.view_canvas = PDSImageViewCanvas()
+
         self.view_canvas.set_image(self.image_set.current_image)
-        self.view_canvas.set_desired_size(100, 100)
         self.view_canvas.set_callback('cursor-move', self.change_center)
         self.view_canvas.set_callback('cursor-down', self.change_center)
         self.view_canvas.set_callback('key-press', self.arrow_key_move_center)
@@ -217,3 +217,21 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def redraw(self):
         """Redraw the :attr:`view_canvas`"""
         self.view_canvas.redraw()
+
+
+class PDSSpectViewWidget(QtWidgets.QWidget):
+
+    def __init__(self, image_set):
+        super(PDSSpectViewWidget, self).__init__()
+        self.image_set = image_set
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.spect_views = []
+        self.create_spect_view(image_set)
+        self.setWindowTitle('PDSSpect')
+        self.setLayout(self.main_layout)
+
+    def create_spect_view(self, image_set):
+        spect_view = PDSSpectView(image_set)
+        self.spect_views.append(spect_view)
+        self.main_layout.addWidget(spect_view)
+        return spect_view

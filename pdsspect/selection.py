@@ -39,6 +39,8 @@ class SelectionController(object):
         """
 
         self.image_set.current_color_index = index
+        for subset in self.image_set.subsets:
+            subset.current_color_index = index
 
     def change_selection_index(self, index):
         """Change the selection index to a new index
@@ -50,6 +52,8 @@ class SelectionController(object):
         """
 
         self.image_set.selection_index = index
+        for subset in self.image_set.subsets:
+            subset.selection_index = index
 
     def change_alpha(self, new_alpha):
         """Change the alpha value to a new alpha value
@@ -59,16 +63,22 @@ class SelectionController(object):
         new_alpha : :obj:`float`
             Value between 0 and 100
         """
-
-        self.image_set.alpha = new_alpha / 100.
+        new_alpha /= 100.
+        self.image_set.alpha = new_alpha
+        for subset in self.image_set.subsets:
+            subset.alpha = new_alpha
 
     def clear_current_color(self):
         """Clear all the ROIs with the currently selcted color"""
         self.image_set.delete_rois_with_color(self.image_set.color)
+        for subset in self.image_set.subsets:
+            subset.delete_rois_with_color(subset.color)
 
     def clear_all(self):
         """Clear all ROIs"""
         self.image_set.delete_all_rois()
+        for subset in self.image_set.subsets:
+            subset.delete_all_rois()
 
     def add_ROI(self, coordinates, color):
         """Add ROI with the given coordinates and color
@@ -92,7 +102,7 @@ class SelectionController(object):
         )
 
 
-class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
+class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """Window to make/clear/load/export ROIs and choose selection mode/color
 
     Parameters
@@ -299,3 +309,21 @@ class Selection(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             filter='Selections(*.npz)',
         )
         self.load_selections(selected_files)
+
+
+class SelectionWidget(QtWidgets.QWidget):
+
+    def __init__(self, image_set, parent=None):
+        super(SelectionWidget, self).__init__()
+        self.image_set = image_set
+        self.parent = parent
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.selections = []
+        self.add_selection(image_set)
+        self.setWindowTitle('Selection')
+        self.setLayout(self.main_layout)
+
+    def add_selection(self, image_set):
+        selection = Selection(image_set, self.parent)
+        self.selections.append(selection)
+        self.main_layout.addWidget(selection)

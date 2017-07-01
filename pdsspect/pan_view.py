@@ -89,11 +89,10 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """
 
     def __init__(self, image_set, parent=None):
-        super(PanView, self).__init__()
+        super(PanView, self).__init__(parent)
         self.image_set = image_set
         self.image_set.register(self)
         self.controller = PanViewController(self.image_set, self)
-        self.parent = parent
         self._making_roi = False
         self._current_roi = None
 
@@ -228,3 +227,18 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def resizeEvent(self, event):
         self.view_canvas.zoom_fit()
         self.redraw()
+
+
+class PanViewWidget(QtWidgets.QDialog):
+
+    def __init__(self, pan, parent):
+        super(PanViewWidget, self).__init__(parent)
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.pans = []
+        self.add_pan(pan)
+        self.setWindowTitle('Pan View')
+        self.setLayout(self.main_layout)
+
+    def add_pan(self, pan):
+        self.pans.append(pan)
+        self.main_layout.addWidget(pan)

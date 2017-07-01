@@ -56,7 +56,7 @@ class BasicController(object):
         self.image_set.current_image_index = new_index
 
 
-class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
+class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """Window to apply cut levels and choose the current image
 
     Parameters
@@ -84,8 +84,8 @@ class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         The main layout
     """
 
-    def __init__(self, image_set, view_canvas):
-        super(Basic, self).__init__()
+    def __init__(self, image_set, view_canvas, parent=None):
+        super(Basic, self).__init__(parent)
         self.image_set = image_set
         self.image_set.register(self)
         self.controller = BasicController(image_set, self)
@@ -97,7 +97,7 @@ class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         self.image_menu.setCurrentIndex(image_set.current_image_index)
         self.image_menu.currentIndexChanged.connect(self.change_image)
         self.histogram = HistogramModel(self.view_canvas, bins=100)
-        self.histogram_widget = BasicHistogramWidget(self.histogram)
+        self.histogram_widget = BasicHistogramWidget(self.histogram, self)
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.addWidget(self.image_menu)
@@ -122,3 +122,22 @@ class Basic(QtWidgets.QDialog, PDSSpectImageSetViewBase):
         """When the image is set, adjust the histogram"""
         self.histogram.set_data()
         self.histogram.restore()
+
+
+class BasicWidget(QtWidgets.QWidget):
+
+    def __init__(self, image_set, view_canvas):
+        super(BasicWidget, self).__init__()
+        self.image_set = image_set
+        self.view_canvases = []
+        self.basics = []
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.setLayout(self.main_layout)
+        self.setWindowTitle('Basic')
+        self.add_basic(image_set, view_canvas)
+
+    def add_basic(self, image_set, view_canvas):
+        basic = Basic(image_set, view_canvas, self)
+        self.basics.append(basic)
+        self.view_canvases.append(view_canvas)
+        self.main_layout.addWidget(basic)

@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from ginga.util.dp import masktorgb
-
 from planetaryimage import PDS3Image
 from ginga.BaseImage import BaseImage
 from ginga import colors as ginga_colors
@@ -123,12 +122,24 @@ class PDSSpectImageSet(object):
         self._views = []
         self.images = []
         self.filepaths = filepaths
-        for filepath in filepaths:
-            try:
-                image = ImageStamp(filepath)
-                self.images.append(image)
-            except Exception:
-                warnings.warn("Unable to open %s" % (filepath))
+        self._create_image_list()
+        self._determin_shape()
+        self._current_image_index = 0
+        self.current_color_index = 0
+        self._selection_index = 0
+        self._zoom = 1.0
+        self._center = None
+        self._alpha = 1.0
+        self._flip_x = False
+        self._flip_y = False
+        self._swap_xy = False
+        mask = np.zeros(self.shape[:2], dtype=np.bool)
+        self._maskrgb = masktorgb(mask, self.color, self.alpha)
+        self._roi_data = self._maskrgb.get_data().astype(float)
+        self._maskrgb_obj = Image(0, 0, self._maskrgb)
+        self._subsets = []
+
+    def _determin_shape(self):
         shape = []
         for image in self.images:
             rows, cols = image.shape[:2]
@@ -140,26 +151,29 @@ class PDSSpectImageSet(object):
         self.shape = tuple(shape)
         s_ = np.s_[:self.shape[0], :self.shape[1]]
         for image in self.images:
-            image.set_data(image.get_data()[s_])
-        self._current_image_index = 0
-        self.current_color_index = 0
-        self._selection_index = 0
-        self._zoom = 1.0
-        self._center = None
-        self._alpha = 1.0
-        self._flip_x = False
-        self._flip_y = False
-        self._swap_xy = False
-        mask = np.zeros(self.shape, dtype=np.bool)
-        self._maskrgb = masktorgb(mask, self.color, self.alpha)
-        self._roi_data = self._maskrgb.get_data().astype(float)
-        self._maskrgb_obj = Image(0, 0, self._maskrgb)
+            image.set_data(image.data[s_])
+
+    def _create_image_list(self):
+        self.images = []
+        for filepath in self.filepaths:
+            try:
+                image = ImageStamp(filepath)
+                self.images.append(image)
+            except Exception:
+                warnings.warn("Unable to open %s" % (filepath))
 
     def register(self, view):
         self._views.append(view)
 
     def unregister(self, view):
         self._views.remove(view)
+
+    @property
+    def all_views(self):
+        subset_views = [
+            view for subset in self._subsets for view in subset._views
+        ]
+        return self._views + subset_views
 
     @property
     def filenames(self):
@@ -591,6 +605,48 @@ class PDSSpectImageSet(object):
         self._erase_coords(self.all_rois_coordinates)
         for view in self._views:
             view.set_roi_data()
+
+    @property
+    def subsets(self):
+        return list(self._subsets)
+
+    def create_subset(self):
+        subset = SubPDSSpectImageSet(self)
+        self.add_subset(subset)
+        return subset
+
+    def add_subset(self, subset):
+        if isinstance(subset, SubPDSSpectImageSet):
+            self._subsets.append(subset)
+
+    def remove_subset(self, subset):
+        if isinstance(subset, SubPDSSpectImageSet) and subset in self._subsets:
+            self._subsets.remove(subset)
+
+
+class SubPDSSpectImageSet(PDSSpectImageSet):
+    """docstring for SubPDSSpectImageSet"""
+    def __init__(self, parent_set):
+        self.parent_set = parent_set
+        super(SubPDSSpectImageSet, self).__init__(parent_set.filepaths)
+        self._views = []
+        self._current_image_index = parent_set.current_image_index
+        self.current_color_index = parent_set.current_color_index
+        self._zoom = parent_set.zoom
+        self._center = parent_set.center
+        self._alpha = parent_set.alpha
+        self._roi_data = parent_set._roi_data.copy()
+        self._roi_data.fill(0)
+        self._selection_index = parent_set.selection_index
+        self._flip_x = parent_set.flip_x
+        self._flip_y = parent_set.flip_y
+        self._swap_xy = parent_set.swap_xy
+
+    def _determin_shape(self):
+        self.shape = self.parent_set.shape
+
+    def _create_image_list(self):
+        self.images = list(self.parent_set.images)
 
 
 class PDSSpectImageSetViewBase(object):
