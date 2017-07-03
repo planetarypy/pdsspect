@@ -1,11 +1,105 @@
+from functools import wraps
+from collections import Counter
+
 from qtpy import QtWidgets
 
-from .histogram import HistogramWidget, HistogramModel
+from .histogram import HistogramWidget, HistogramModel, HistogramController
 from .pdsspect_image_set import PDSSpectImageSetViewBase
+
+
+class BasicHistogramModel(HistogramModel):
+
+    def __init__(self, *args, **kwargs):
+        super(BasicHistogramModel, self).__init__(*args, **kwargs)
+        self.connected_models = []
+
+    def connect_model(self, model):
+        if model not in self.connected_models:
+            self.connected_models.append(model)
+            model.cuts = self.cuts
+
+    def disconnect_model(self, model):
+        if model in self.connected_models:
+            self.connected_models.remove(model)
+
+    def disconnect_from_all_models(self):
+        self.connected_models = []
+
+
+class BasicHistogramController(HistogramController):
+    """Controller for histogram views
+
+    Parameters
+    ----------
+    model : :class:`HistogramModel`
+        histogram model
+    view : :class:`object`
+        View with :class:`HistogramModel` as its model
+
+    Attributes
+    ----------
+    model : :class:`HistogramModel`
+        histogram model
+    view : :class:`object`
+        View with :class:`HistogramModel` as its model
+    """
+
+    def set_cut_low(self, cut_low):
+        """Set the low cut level to a new value
+
+        Parameters
+        ----------
+        cut_low : :obj:`float`
+            New low cut value
+        """
+        super(BasicHistogramController, self).set_cut_low(cut_low)
+        for model in self.model.connected_models:
+            model.cut_low = cut_low
+
+    def set_cut_high(self, cut_high):
+        """Set the high cut level to a new value
+
+        Parameters
+        ----------
+        cut_high : :obj:`float`
+            New high cut value
+        """
+
+        super(BasicHistogramController, self).set_cut_high(cut_high)
+        for model in self.model.connected_models:
+            model.cut_high = cut_high
+
+    def set_cuts(self, cut_low, cut_high):
+        """Set both the low and high cut levels
+
+        Parameters
+        ----------
+        cut_low : :obj:`float`
+            New low cut value
+        cut_high : :obj:`float`
+            New high cut value
+        """
+
+        super(BasicHistogramController, self).set_cuts(cut_low, cut_high)
+        for model in self.model.connected_models:
+            model.cuts = cut_low, cut_high
+
+    def restore(self):
+        """Restore the histogram"""
+        super(BasicHistogramController, self).restore()
+        for model in self.model.connected_models:
+            model.restore()
 
 
 class BasicHistogramWidget(HistogramWidget):
     """:class:`.pdsspect.histogram.HistogramWidget` in a different layout"""
+
+    def __init__(self, *args, **kwargs):
+        super(BasicHistogramWidget, self).__init__(*args, **kwargs)
+        self.controller = BasicHistogramController(self.model, self)
+        self.histogram.controller = BasicHistogramController(
+            self.model, self.histogram
+        )
 
     def _create_layout(self):
         layout = QtWidgets.QGridLayout()
@@ -86,6 +180,7 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     def __init__(self, image_set, view_canvas, parent=None):
         super(Basic, self).__init__(parent)
+
         self.image_set = image_set
         self.image_set.register(self)
         self.controller = BasicController(image_set, self)
@@ -96,7 +191,7 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             self.image_menu.addItem(image.image_name)
         self.image_menu.setCurrentIndex(image_set.current_image_index)
         self.image_menu.currentIndexChanged.connect(self.change_image)
-        self.histogram = HistogramModel(self.view_canvas, bins=100)
+        self.histogram = BasicHistogramModel(self.view_canvas, bins=100)
         self.histogram_widget = BasicHistogramWidget(self.histogram, self)
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -105,6 +200,10 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
         self.setLayout(self.layout)
         self.histogram.set_data()
+
+    @property
+    def parent(self):
+        return self.parent()
 
     def change_image(self, new_index):
         """Change the image when new image selected in :attr:`image_menu`
@@ -117,6 +216,7 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
         self.image_set.current_image.cuts = self.histogram.cuts
         self.controller.change_current_image_index(new_index)
+        self.parent.connect_model(self)
 
     def set_image(self):
         """When the image is set, adjust the histogram"""
@@ -141,3 +241,16 @@ class BasicWidget(QtWidgets.QWidget):
         self.basics.append(basic)
         self.view_canvases.append(view_canvas)
         self.main_layout.addWidget(basic)
+        self.connect_model(basic)
+
+    def connect_model(self, basic):
+        other_basics = list(self.basics)
+        other_basics.remove(basic)
+        for other_basic in other_basics:
+            image = other_basic.image_set.current_image
+            if image == basic.image_set.current_image:
+                other_basic.histogram.connect_model(basic.histogram)
+                basic.histogram.connect_model(other_basic.histogram)
+            else:
+                other_basic.histogram.disconnect_model(basic.histogram)
+                basic.histogram.disconnect_model(other_basic.histogram)
