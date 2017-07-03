@@ -115,6 +115,7 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.pan_view = PanView(image_set, self)
         self.view_canvas.add_subview(self.pan_view.view_canvas)
         self.pan_view.show()
+        self.view_canvas.transform(*image_set.transforms)
 
     def set_image(self):
         """Set image on :attr:`view_canvas`"""
