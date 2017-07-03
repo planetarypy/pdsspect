@@ -80,7 +80,7 @@ class SelectionController(object):
         for subset in self.image_set.subsets:
             subset.delete_all_rois()
 
-    def add_ROI(self, coordinates, color):
+    def add_ROI(self, coordinates, color, image_set=None):
         """Add ROI with the given coordinates and color
 
         Parameters
@@ -96,7 +96,9 @@ class SelectionController(object):
             :attr:`~pdsspect.pdsspect_image_set.PDSSpectImageSet.colors`
         """
 
-        self.image_set.add_coords_to_roi_data_with_color(
+        image_set = self.image_set if image_set is None else image_set
+
+        image_set.add_coords_to_roi_data_with_color(
             coordinates=coordinates,
             color=color
         )
@@ -235,22 +237,20 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     def _get_rois_masks_to_export(self):
         exported_rois = {}
-        for color in self.image_set.colors:
-            mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
-            rows, cols = self.image_set.get_coordinates_of_color(color)
-            mask[rows, cols] = True
-            exported_rois[color] = mask
-        return exported_rois
 
-    def open_save_dialog(self):
-        """Open save file dialog and save rois to given filename"""
-        save_file, _ = QtWidgets.QFileDialog.getSaveFileName(
-            parent=self,
-            caption='Export ROIs',
-            filter='*.npz',
-        )
-        if save_file != '':
-            self.export(save_file)
+        def add_mask_to_exported_rois(image_set, color, name):
+            mask = np.zeros(image_set.shape, dtype=np.bool)
+            rows, cols = image_set.get_coordinates_of_color(color)
+            mask[rows, cols] = True
+            exported_rois[name] = mask
+
+        for color in self.image_set.colors:
+            add_mask_to_exported_rois(self.image_set, color, color)
+            for i, subset in enumerate(self.image_set._subsets):
+                name = color + str(i + 2)
+                add_mask_to_exported_rois(subset, color, name)
+
+        return exported_rois
 
     def export(self, save_file):
         """Export ROIS to the given filename
@@ -263,7 +263,18 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         exported_rois = self._get_rois_masks_to_export()
         exported_rois['files'] = np.array(self.image_set.filenames)
         exported_rois['shape'] = self.image_set.shape
+        exported_rois['views'] = len(self.image_set._subsets) + 1
         np.savez(save_file, **exported_rois)
+
+    def open_save_dialog(self):
+        """Open save file dialog and save rois to given filename"""
+        save_file, _ = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption='Export ROIs',
+            filter='*.npz',
+        )
+        if save_file != '':
+            self.export(save_file)
 
     def _check_pdsspect_selection_is_file(self, filepath):
         base, ext = os.path.splitext(filepath)
@@ -296,10 +307,28 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             arr_dict = np.load(selected_file)
             self._check_files_in_selection_file_compatible(arr_dict['files'])
             self._check_shape_is_the_same(arr_dict['shape'])
+            num_load_views = arr_dict['views']
+            num_current_views = len(self.image_set._subsets) + 1
+            has_multiple_views = all(
+                (num_load_views > 1, num_current_views > 1)
+            )
+            if has_multiple_views:
+                if num_load_views < num_current_views:
+                    num_views = num_load_views
+                else:
+                    num_views = num_current_views
+            else:
+                num_views = 0
             for color in self.image_set.colors:
                 coords = np.column_stack(np.where(arr_dict[color]))
                 if coords.size > 0:
                     self.controller.add_ROI(coords, color)
+                for num_view in range(num_views - 1):
+                    subset = self.image_set._subsets[num_view]
+                    name = color + str(num_view + 2)
+                    coords = np.column_stack(np.where(arr_dict[name]))
+                    if coords.size > 0:
+                        self.controller.add_ROI(coords, color, subset)
 
     def show_open_dialog(self):
         """Open file dialog to select ``.npz`` files to load ROIs"""
