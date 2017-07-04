@@ -163,10 +163,12 @@ class PDSSpectImageSet(object):
                 warnings.warn("Unable to open %s" % (filepath))
 
     def register(self, view):
-        self._views.append(view)
+        if view not in self._views:
+            self._views.append(view)
 
     def unregister(self, view):
-        self._views.remove(view)
+        if view in self._views:
+            self._views.remove(view)
 
     @property
     def all_views(self):

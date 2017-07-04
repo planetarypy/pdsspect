@@ -10,7 +10,7 @@ from .pan_view import PanViewWidget
 from .selection import SelectionWidget
 from .transforms import Transforms
 from .pdsspect_view import PDSSpectViewWidget
-from .roi_plot import ROIPlotWidget, ROIPlotModel
+from .roi_histogram import ROIHistogramWidget, ROIHistogramModel
 from .pdsspect_image_set import PDSSpectImageSet, PDSSpectImageSetViewBase
 
 
@@ -129,8 +129,8 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
 
     def open_roi_histogram(self):
         if not self.roi_histogram_window:
-            roi_histogram_model = ROIPlotModel(self.image_set)
-            self.roi_histogram_window = ROIPlotWidget(roi_histogram_model)
+            roi_histogram_model = ROIHistogramModel(self.image_set)
+            self.roi_histogram_window = ROIHistogramWidget(roi_histogram_model)
         self.roi_histogram_window.show()
 
     def add_window(self):
