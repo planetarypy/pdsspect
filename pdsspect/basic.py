@@ -201,10 +201,6 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.setLayout(self.layout)
         self.histogram.set_data()
 
-    @property
-    def parent(self):
-        return self.parent()
-
     def change_image(self, new_index):
         """Change the image when new image selected in :attr:`image_menu`
 
@@ -216,7 +212,7 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
         self.image_set.current_image.cuts = self.histogram.cuts
         self.controller.change_current_image_index(new_index)
-        self.parent.connect_model(self)
+        self.parent().connect_model(self)
 
     def set_image(self):
         """When the image is set, adjust the histogram"""
