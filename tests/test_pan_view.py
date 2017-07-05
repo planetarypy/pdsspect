@@ -6,8 +6,8 @@ import pytest
 import numpy as np
 
 from pdsspect.roi import Rectangle, Polygon, Pencil
-from pdsspect.pdsspect_image_set import PDSSpectImageSet
-from pdsspect.pan_view import PanViewController, PanView
+from pdsspect.pan_view import PanViewController, PanView, PanViewWidget
+from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
 
 
 class TestPanViewController(object):
@@ -193,3 +193,26 @@ class TestPanView(object):
         assert isinstance(self.view._current_roi, Rectangle)
         self.view._making_roi = False
         self.view._current_roi = None
+
+
+class TestPanViewWidget(object):
+    image_set = PDSSpectImageSet([FILE_1])
+    pan = PanView(image_set)
+
+    @pytest.fixture
+    def pan_widget(self):
+        self.image_set = PDSSpectImageSet([FILE_1])
+        self.pan = PanView(self.image_set)
+        return PanViewWidget(self.pan, None)
+
+    def test_init(self, pan_widget):
+        assert len(pan_widget.pans) == 1
+        assert pan_widget.pans[0] == self.pan
+        assert pan_widget.main_layout.itemAt(0).widget() == self.pan
+
+    def test_add_pan(self, pan_widget):
+        subset = SubPDSSpectImageSet(self.image_set)
+        pan2 = PanView(subset)
+        pan_widget.add_pan(pan2)
+        assert pan_widget.pans[1] == pan2
+        assert pan_widget.main_layout.itemAt(1).widget() == pan2

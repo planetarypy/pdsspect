@@ -35,7 +35,7 @@ class TransformsController(object):
             True to flip x axis, otherwise, False
         """
         self.image_set.flip_x = flip_x
-        for image_set in self.image_set._subsets:
+        for image_set in self.image_set.subsets:
             image_set.flip_x = flip_x
 
     def set_flip_y(self, flip_y):
@@ -47,7 +47,7 @@ class TransformsController(object):
             True to flip y axis, otherwise, False
         """
         self.image_set.flip_y = flip_y
-        for image_set in self.image_set._subsets:
+        for image_set in self.image_set.subsets:
             image_set.flip_y = flip_y
 
     def set_swap_xy(self, swap_xy):
@@ -59,7 +59,7 @@ class TransformsController(object):
             True to swap x and y axis, otherwise, False
         """
         self.image_set.swap_xy = swap_xy
-        for image_set in self.image_set._subsets:
+        for image_set in self.image_set.subsets:
             image_set.swap_xy = swap_xy
 
 

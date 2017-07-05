@@ -7,7 +7,7 @@ from qtpy import QtWidgets, QtCore
 
 from .basic import BasicWidget
 from .pan_view import PanViewWidget
-from .selection import SelectionWidget
+from .selection import Selection
 from .transforms import Transforms
 from .pdsspect_view import PDSSpectViewWidget
 from .roi_histogram import ROIHistogramWidget, ROIHistogramModel
@@ -108,7 +108,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
 
     def open_selection(self):
         if not self.selection_window:
-            self.selection_window = SelectionWidget(self.image_set, self)
+            self.selection_window = Selection(self.image_set, self)
         self.selection_window.show()
 
     def open_basic(self):

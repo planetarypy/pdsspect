@@ -1,12 +1,14 @@
-from functools import wraps
-
 from . import *  # Import Test File Paths from __init__
 
 import pytest
 from qtpy import QtCore
 
-from pdsspect.pdsspect_image_set import PDSSpectImageSet
-from pdsspect.pdsspect_view import PDSSpectViewController, PDSSpectView
+from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
+from pdsspect.pdsspect_view import (
+    PDSSpectView,
+    PDSSpectViewWidget,
+    PDSSpectViewController
+)
 
 
 class TestPDSSpectViewController(object):
@@ -148,3 +150,23 @@ class TestPDSSpectView(object):
         assert self.view.pan.x == 16
         assert self.view.pan.y == 32
         test_set.zoom = 1
+
+
+class TestPDSSpectViewWidget(object):
+    image_set = PDSSpectImageSet(TEST_FILES)
+
+    @pytest.fixture
+    def view_widget(self):
+        self.image_set = PDSSpectImageSet(TEST_FILES)
+        return PDSSpectViewWidget(self.image_set)
+
+    def test_init(self, view_widget):
+        assert view_widget.image_set == self.image_set
+        spect_view = view_widget.spect_views[0]
+        assert view_widget.main_layout.itemAt(0).widget() == spect_view
+
+    def test_create_spect_view(self, view_widget):
+        subset = SubPDSSpectImageSet(self.image_set)
+        spect_view = view_widget.create_spect_view(subset)
+        spect_view == view_widget.spect_views[1]
+        assert view_widget.main_layout.itemAt(1).widget() == spect_view

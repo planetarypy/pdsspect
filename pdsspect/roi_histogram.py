@@ -126,6 +126,8 @@ class ROIHistogramModel(object):
         return data
 
     def ydata(self, color):
+        if not self.compare_data:
+            raise RuntimeError('Cannot call when not comparing images')
         rows, cols = self.image_set.get_coordinates_of_color(color)
         data = self.image_set.images[self.image_index].data[rows, cols]
         return data
@@ -140,6 +142,8 @@ class ROIHistogramModel(object):
     @property
     def ylim(self):
         """:obj:`list` of two :obj:`float` : min max of yaxis image"""
+        if not self.compare_data:
+            raise RuntimeError('Cannot call when not comparing images')
         data = self.image_set.images[self.image_index].data
         ylim = [data.min(), data.max()]
         return ylim
@@ -310,14 +314,14 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.checkbox_layout = QtWidgets.QVBoxLayout()
         for color in self.model.image_set.colors[:-1]:
             self.create_color_checkbox(color)
-        self.roi_plot = ROIHistogram(model)
+        self.roi_histogram = ROIHistogram(model)
         self.view_boxes_layout = QtWidgets.QHBoxLayout()
         self.main_layout = QtWidgets.QGridLayout()
         self.image_menu = None
         self._create_image_menu()
         self.main_layout.addLayout(self.view_boxes_layout, 0, 1, 1, 2)
         self.main_layout.addWidget(self.image_menu, 1, 0, 1, 1)
-        self.main_layout.addWidget(self.roi_plot, 1, 1, 2, 2)
+        self.main_layout.addWidget(self.roi_histogram, 1, 1, 2, 2)
         self.main_layout.addLayout(self.checkbox_layout, 1, 3)
         self.main_layout.setColumnStretch(1, 1)
         self.main_layout.setRowStretch(1, 1)
@@ -326,7 +330,7 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         if self.model.has_multiple_views:
             self.add_view()
         else:
-            self.model.image_sets[0].register(self.roi_plot)
+            self.model.image_sets[0].register(self.roi_histogram)
             self.model.image_sets[0].register(self)
 
     def _create_image_menu(self):
@@ -377,10 +381,11 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         view_box = ViewCheckBox(index)
         view_box.stateChanged.connect(self.check_view_checkbox)
         self.view_boxes_layout.addWidget(view_box)
-        self.model.image_sets[index].register(self.roi_plot)
+        self.model.image_sets[index].register(self.roi_histogram)
         self.model.image_sets[index].register(self)
         box = self.view_boxes_layout.itemAt(self.model._view_index).widget()
         box.setChecked(True)
+        self.check_view_checkbox(self.model._view_index)
 
     def check_view_checkbox(self, index):
         for item_index in range(self.view_boxes_layout.count()):

@@ -7,7 +7,7 @@ from ginga.RGBImage import RGBImage
 from ginga.canvas.types.image import Image
 
 from pdsspect.pdsspect_image_set import (
-    ImageStamp, PDSSpectImageSet, ginga_colors
+    ImageStamp, PDSSpectImageSet, ginga_colors, SubPDSSpectImageSet
 )
 
 
@@ -41,6 +41,7 @@ class TestPDSSpectImageSet(object):
         self.test_set._roi_data = self.test_set._maskrgb.get_data().astype(
             float)
         self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
+        self.test_set._subsets = []
 
     def test_init(self):
         test_set = self.test_set
@@ -590,3 +591,67 @@ class TestPDSSpectImageSet(object):
             self.test_set._roi_data[rows2, cols2],
             np.array([[165.0, 42.0, 42.0, 191.25]])
         )
+
+    def test_create_subset(self):
+        assert len(self.test_set.subsets) == 0
+        subset = self.test_set.create_subset()
+        assert isinstance(subset, SubPDSSpectImageSet)
+        assert len(self.test_set.subsets) == 1
+        assert subset in self.test_set.subsets
+
+    def test_subsets(self):
+        assert len(self.test_set.subsets) == 0
+        assert len(self.test_set._subsets) == 0
+        subset = self.test_set.create_subset()
+        assert len(self.test_set.subsets) == 1
+        assert len(self.test_set._subsets) == 1
+        assert subset in self.test_set._subsets
+        assert subset in self.test_set.subsets
+        assert self.test_set.subsets == self.test_set._subsets
+
+    def test_add_subset(self):
+        subset = SubPDSSpectImageSet(self.test_set)
+        assert len(self.test_set.subsets) == 0
+        self.test_set.add_subset(subset)
+        assert len(self.test_set.subsets) == 1
+        assert subset in self.test_set.subsets
+        self.test_set.add_subset('foo')
+        assert len(self.test_set.subsets) == 1
+        assert 'foo' not in self.test_set.subsets
+
+    def test_remove_subset(self):
+        subset = SubPDSSpectImageSet(self.test_set)
+        subset2 = SubPDSSpectImageSet(self.test_set)
+        self.test_set.add_subset(subset)
+        assert len(self.test_set.subsets) == 1
+        self.test_set.remove_subset(subset2)
+        assert len(self.test_set.subsets) == 1
+        assert subset in self.test_set.subsets
+        self.test_set.remove_subset('foo')
+        assert len(self.test_set.subsets) == 1
+        assert subset in self.test_set.subsets
+        self.test_set.remove_subset(subset)
+        assert len(self.test_set.subsets) == 0
+        assert subset not in self.test_set.subsets
+
+
+class TestSubPDSSpectImageSet(object):
+    image_set = PDSSpectImageSet(TEST_FILES)
+    subset = SubPDSSpectImageSet(image_set)
+
+    def test_init(self):
+        subset = self.subset
+        assert subset.parent_set == self.image_set
+        assert not subset._views
+        assert subset.current_image_index == self.image_set.current_image_index
+        assert subset.current_color_index == self.image_set.current_color_index
+        assert subset.zoom == self.image_set.zoom
+        assert subset.center == self.image_set.center
+        assert subset.alpha == self.image_set.alpha
+        assert not subset._roi_data.any()
+        assert subset.selection_index == self.image_set.selection_index
+        assert subset.flip_x == self.image_set.flip_x
+        assert subset.flip_y == self.image_set.flip_y
+        assert subset.swap_xy == self.image_set.swap_xy
+        assert subset.shape == self.image_set.shape
+        assert subset.images == self.image_set.images

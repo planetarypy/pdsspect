@@ -24,58 +24,92 @@ def make_temp_directory():
 
 class TestSelectionController(object):
     image_set = PDSSpectImageSet(TEST_FILES)
-    controller = SelectionController(image_set, None)
+    subset = image_set.create_subset()
 
-    def test_change_current_color_index(self):
+    @pytest.fixture
+    def controller(self):
+        self.image_set = PDSSpectImageSet(TEST_FILES)
+        self.subset = self.image_set.create_subset()
+        return SelectionController(self.image_set, None)
+
+    def test_change_current_color_index(self, controller):
         assert self.image_set.current_color_index == 0
-        self.controller.change_current_color_index(1)
+        assert self.subset.current_color_index == 0
+        controller.change_current_color_index(1)
         assert self.image_set.current_color_index == 1
-        self.controller.change_current_color_index(0)
+        assert self.subset.current_color_index == 1
+        controller.change_current_color_index(0)
         assert self.image_set.current_color_index == 0
+        assert self.subset.current_color_index == 0
 
-    def test_selection_index(self):
+    def test_selection_index(self, controller):
         assert self.image_set.selection_index == 0
-        self.controller.change_selection_index(1)
+        assert self.subset.selection_index == 0
+        controller.change_selection_index(1)
         assert self.image_set.selection_index == 1
-        self.controller.change_selection_index(0)
+        assert self.subset.selection_index == 1
+        controller.change_selection_index(0)
         assert self.image_set.selection_index == 0
+        assert self.subset.selection_index == 0
 
-    def test_change_alpha(self):
+    def test_change_alpha(self, controller):
         assert self.image_set.alpha == 1.0
-        self.controller.change_alpha(50)
-        assert self.image_set.alpha == .5
-        self.controller.change_alpha(100)
+        assert self.subset.alpha == 1.0
+        controller.change_alpha(50)
+        assert self.image_set.alpha == 0.5
+        assert self.subset.alpha == 0.5
+        controller.change_alpha(100)
         assert self.image_set.alpha == 1.0
+        assert self.subset.alpha == 1.0
 
-    def test_clear_current_color(self):
+    def test_clear_current_color(self, controller):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.controller.clear_current_color()
+        self.subset._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
+        controller.clear_current_color()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
+        assert np.array_equal(
+            self.subset._roi_data[4, 2], [0, 0, 0, 0]
+        )
 
-    def test_clear_all(self):
+    def test_clear_all(self, controller):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.controller.clear_all()
+        self.subset._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
+        self.subset._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
+        controller.clear_all()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
         assert np.array_equal(
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
         )
+        assert np.array_equal(
+            self.subset._roi_data[4, 2], [0, 0, 0, 0]
+        )
+        assert np.array_equal(
+            self.subset._roi_data[2, 4], [0, 0, 0, 0]
+        )
 
-    def test_add_ROI(self):
+    def test_add_ROI(self, controller):
         coords = np.array([[4, 2]])
-        self.controller.add_ROI(coords, 'red')
+        controller.add_ROI(coords, 'red')
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [255.0, 0.0, 0.0, 255.]
+        )
+        assert not np.array_equal(
+            self.subset._roi_data[4, 2], [255.0, 0.0, 0.0, 255.]
+        )
+        controller.add_ROI(coords, 'red', self.subset)
+        assert np.array_equal(
+            self.subset._roi_data[4, 2], [255.0, 0.0, 0.0, 255.]
         )
 
 
 class TestSelection(object):
     image_set = PDSSpectImageSet([FILE_1])
-    sel = Selection(image_set)
+    subset = image_set.create_subset()
     roi_coords = np.array(
         [
             [512, 509],
@@ -85,69 +119,90 @@ class TestSelection(object):
         ]
     )
 
-    def test_change_color(self, qtbot):
+    @pytest.fixture
+    def selection(self):
+        self.image_set = PDSSpectImageSet([FILE_1])
+        self.subset = self.image_set.create_subset()
+        return Selection(self.image_set)
+
+    def test_change_color(self, qtbot, selection):
         assert self.image_set.current_color_index == 0
-        self.sel.change_color(1)
+        assert self.subset.current_color_index == 0
+        selection.change_color(1)
         assert self.image_set.current_color_index == 1
-        self.sel.change_color(0)
+        assert self.subset.current_color_index == 1
+        selection.change_color(0)
         assert self.image_set.current_color_index == 0
+        assert self.subset.current_color_index == 0
 
-        self.sel.show()
-        qtbot.add_widget(self.sel)
-        self.sel.color_menu.setCurrentIndex(1)
+        selection.show()
+        qtbot.add_widget(selection)
+        selection.color_menu.setCurrentIndex(1)
         assert self.image_set.current_color_index == 1
-        self.sel.color_menu.setCurrentIndex(0)
+        assert self.subset.current_color_index == 1
+        selection.color_menu.setCurrentIndex(0)
         assert self.image_set.current_color_index == 0
+        assert self.subset.current_color_index == 0
 
-    def test_change_selection_type(self, qtbot):
+    def test_change_selection_type(self, qtbot, selection):
         assert self.image_set.selection_index == 0
-        self.sel.change_selection_type(1)
+        assert self.subset.selection_index == 0
+        selection.change_selection_type(1)
         assert self.image_set.selection_index == 1
-        self.sel.change_selection_type(0)
+        assert self.subset.selection_index == 1
+        selection.change_selection_type(0)
         assert self.image_set.selection_index == 0
+        assert self.subset.selection_index == 0
 
-        self.sel.show()
-        qtbot.add_widget(self.sel)
-        self.sel.selection_menu.setCurrentIndex(1)
+        selection.show()
+        qtbot.add_widget(selection)
+        selection.selection_menu.setCurrentIndex(1)
         assert self.image_set.selection_index == 1
-        self.sel.selection_menu.setCurrentIndex(0)
+        assert self.subset.selection_index == 1
+        selection.selection_menu.setCurrentIndex(0)
         assert self.image_set.selection_index == 0
+        assert self.subset.selection_index == 0
 
-    def test_change_alpah(self, qtbot):
+    def test_change_alpah(self, qtbot, selection):
         assert self.image_set.alpha == 1.0
-        self.sel.change_alpha(50)
+        assert self.subset.alpha == 1.0
+        selection.change_alpha(50)
         assert self.image_set.alpha == .5
-        self.sel.change_alpha(100)
+        assert self.subset.alpha == .5
+        selection.change_alpha(100)
         assert self.image_set.alpha == 1.0
+        assert self.subset.alpha == 1.0
 
-        self.sel.show()
-        qtbot.add_widget(self.sel)
-        self.sel.opacity_slider.setValue(50)
+        selection.show()
+        qtbot.add_widget(selection)
+        selection.opacity_slider.setValue(50)
         assert self.image_set.alpha == .5
-        self.sel.opacity_slider.setValue(100)
+        assert self.subset.alpha == .5
+        selection.opacity_slider.setValue(100)
         assert self.image_set.alpha == 1.0
+        assert self.subset.alpha == 1.0
 
-    def test_clear_current_color(self, qtbot):
+    def test_clear_current_color(self, qtbot, selection):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.sel.clear_current_color()
+        selection.clear_current_color()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        self.sel.show()
-        qtbot.add_widget(self.sel)
+        selection.show()
+        qtbot.add_widget(selection)
         qtbot.mouseClick(
-            self.sel.clear_current_color_btn, QtCore.Qt.LeftButton
+            selection.clear_current_color_btn, QtCore.Qt.LeftButton
         )
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
 
-    def test_clear_all(self, qtbot):
+    def test_clear_all(self, qtbot, selection):
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.sel.clear_all()
+        selection.clear_all()
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
         )
@@ -157,10 +212,10 @@ class TestSelection(object):
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        self.sel.show()
-        qtbot.add_widget(self.sel)
+        selection.show()
+        qtbot.add_widget(selection)
         qtbot.mouseClick(
-            self.sel.clear_all_btn, QtCore.Qt.LeftButton
+            selection.clear_all_btn, QtCore.Qt.LeftButton
         )
         assert np.array_equal(
             self.image_set._roi_data[4, 2], [0, 0, 0, 0]
@@ -169,49 +224,70 @@ class TestSelection(object):
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
         )
 
-    def test_get_rois_masks_to_export(self):
-        self.sel.controller.add_ROI(self.roi_coords, 'red')
-        test_rois_dict = self.sel._get_rois_masks_to_export()
+    def test_get_rois_masks_to_export(self, selection):
+        selection.controller.add_ROI(self.roi_coords, 'red')
+        selection.controller.add_ROI(self.roi_coords, 'darkgreen', self.subset)
+        test_rois_dict = selection._get_rois_masks_to_export()
+        rows, cols = np.column_stack(self.roi_coords)
         assert np.array_equal(
-            np.where(test_rois_dict['red'])[0], np.array([512, 512, 513, 513])
+            np.where(test_rois_dict['red'])[0], rows
         )
         assert np.array_equal(
-            np.where(test_rois_dict['red'])[1], np.array([509, 510, 509, 510])
+            np.where(test_rois_dict['red'])[1], cols
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[0], rows
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[1], cols
         )
 
-    def test_export(self):
-        self.sel.controller.add_ROI(self.roi_coords, 'red')
+    def test_export(self, selection):
+        selection.controller.add_ROI(self.roi_coords, 'red')
+        selection.controller.add_ROI(self.roi_coords, 'darkgreen', self.subset)
+        rows, cols = np.column_stack(self.roi_coords)
         with make_temp_directory() as tmpdirname:
             save_file = os.path.join(tmpdirname, 'temp.npz')
-            self.sel.export(save_file)
+            selection.export(save_file)
             np_file = np.load(save_file)
             assert np.array_equal(
-                np.where(np_file['red'])[0], np.array([512, 512, 513, 513])
+                np.where(np_file['red'])[0], rows
             )
             assert np.array_equal(
-                np.where(np_file['red'])[1], np.array([509, 510, 509, 510])
+                np.where(np_file['red'])[1], cols
+            )
+            assert np.array_equal(
+                np.where(np_file['darkgreen2'])[0], rows
+            )
+            assert np.array_equal(
+                np.where(np_file['darkgreen2'])[1], cols
             )
             assert np_file['files'] == FILE_1_NAME
+            assert np_file['views'] == 2
 
-    def test_check_pdsspect_selection_is_file(self):
-        self.sel._check_pdsspect_selection_is_file('foo.npz')
+    def test_check_pdsspect_selection_is_file(self, selection):
+        selection._check_pdsspect_selection_is_file('foo.npz')
         with pytest.raises(RuntimeError):
-            self.sel._check_pdsspect_selection_is_file('foo.txt')
+            selection._check_pdsspect_selection_is_file('foo.txt')
 
-    def test_check_files_in_selection_file_compatible(self):
-        self.sel._check_files_in_selection_file_compatible([FILE_1])
+    def test_check_files_in_selection_file_compatible(self, selection):
+        selection._check_files_in_selection_file_compatible([FILE_1])
         with pytest.raises(RuntimeError):
-            self.sel._check_files_in_selection_file_compatible(TEST_FILES)
+            selection._check_files_in_selection_file_compatible(TEST_FILES)
 
-    def test_check_shape_is_the_same(self):
+    def test_check_shape_is_the_same(self, selection):
         fail_shape = (self.image_set.shape[0] - 1, self.image_set.shape[1] + 5)
         with pytest.raises(RuntimeError):
-            self.sel._check_shape_is_the_same(fail_shape)
+            selection._check_shape_is_the_same(fail_shape)
 
-    def test_load_selections(self):
-        self.sel.load_selections([SAMPLE_ROI])
+    def test_load_selections(self, selection):
+        selection.load_selections([SAMPLE_ROI])
         rows, cols = np.column_stack(self.roi_coords)
         for pixel in self.image_set._roi_data[rows, cols]:
             assert np.array_equal(
                 pixel, [255.0, 0.0, 0.0, 255.]
+            )
+        for pixel in self.subset._roi_data[rows, cols]:
+            assert np.array_equal(
+                pixel, [0.0, 100.0, 0.0, 255.]
             )

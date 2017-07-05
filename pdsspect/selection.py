@@ -286,7 +286,7 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def _check_files_in_selection_file_compatible(self, files):
         for file in files:
             if os.path.basename(file) not in self.image_set.filenames:
-                raise RuntimeError('%s not an opened image')
+                raise RuntimeError('%s not an opened image' % file)
 
     def _check_shape_is_the_same(self, shape):
         if not np.array_equal(self.image_set.shape, shape):
@@ -338,21 +338,3 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             filter='Selections(*.npz)',
         )
         self.load_selections(selected_files)
-
-
-class SelectionWidget(QtWidgets.QWidget):
-
-    def __init__(self, image_set, parent=None):
-        super(SelectionWidget, self).__init__()
-        self.image_set = image_set
-        self.parent = parent
-        self.main_layout = QtWidgets.QHBoxLayout()
-        self.selections = []
-        self.add_selection(image_set)
-        self.setWindowTitle('Selection')
-        self.setLayout(self.main_layout)
-
-    def add_selection(self, image_set):
-        selection = Selection(image_set, self.parent)
-        self.selections.append(selection)
-        self.main_layout.addWidget(selection)

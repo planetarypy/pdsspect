@@ -171,13 +171,6 @@ class PDSSpectImageSet(object):
             self._views.remove(view)
 
     @property
-    def all_views(self):
-        subset_views = [
-            view for subset in self._subsets for view in subset._views
-        ]
-        return self._views + subset_views
-
-    @property
     def filenames(self):
         """:obj:`list` of :obj:`str` : Basenames of the :attr:`filepaths`"""
         return [os.path.basename(filepath) for filepath in self.filepaths]
@@ -608,14 +601,14 @@ class PDSSpectImageSet(object):
         for view in self._views:
             view.set_roi_data()
 
-    @property
-    def subsets(self):
-        return list(self._subsets)
-
     def create_subset(self):
         subset = SubPDSSpectImageSet(self)
         self.add_subset(subset)
         return subset
+
+    @property
+    def subsets(self):
+        return list(self._subsets)
 
     def add_subset(self, subset):
         if isinstance(subset, SubPDSSpectImageSet):

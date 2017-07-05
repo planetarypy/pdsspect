@@ -1,6 +1,3 @@
-from functools import wraps
-from collections import Counter
-
 from qtpy import QtWidgets
 
 from .histogram import HistogramWidget, HistogramModel, HistogramController
@@ -150,6 +147,36 @@ class BasicController(object):
         self.image_set.current_image_index = new_index
 
 
+class BasicWidget(QtWidgets.QWidget):
+
+    def __init__(self, image_set, view_canvas):
+        super(BasicWidget, self).__init__()
+        self.image_set = image_set
+        self.basics = []
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.setLayout(self.main_layout)
+        self.setWindowTitle('Basic')
+        self.add_basic(image_set, view_canvas)
+
+    def add_basic(self, image_set, view_canvas):
+        basic = Basic(image_set, view_canvas, self)
+        self.basics.append(basic)
+        self.main_layout.addWidget(basic)
+        self.connect_model(basic)
+
+    def connect_model(self, basic):
+        other_basics = list(self.basics)
+        other_basics.remove(basic)
+        for other_basic in other_basics:
+            image = other_basic.image_set.current_image
+            if image == basic.image_set.current_image:
+                other_basic.histogram.connect_model(basic.histogram)
+                basic.histogram.connect_model(other_basic.histogram)
+            else:
+                other_basic.histogram.disconnect_model(basic.histogram)
+                basic.histogram.disconnect_model(other_basic.histogram)
+
+
 class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """Window to apply cut levels and choose the current image
 
@@ -178,11 +205,12 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         The main layout
     """
 
-    def __init__(self, image_set, view_canvas, parent=None):
-        super(Basic, self).__init__(parent)
+    def __init__(self, image_set, view_canvas, basic_widget):
+        super(Basic, self).__init__(basic_widget)
 
         self.image_set = image_set
         self.image_set.register(self)
+        self.basic_widget = basic_widget
         self.controller = BasicController(image_set, self)
         self.view_canvas = view_canvas
 
@@ -212,41 +240,9 @@ class Basic(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
         self.image_set.current_image.cuts = self.histogram.cuts
         self.controller.change_current_image_index(new_index)
-        self.parent().connect_model(self)
+        self.basic_widget.connect_model(self)
 
     def set_image(self):
         """When the image is set, adjust the histogram"""
         self.histogram.set_data()
         self.histogram.restore()
-
-
-class BasicWidget(QtWidgets.QWidget):
-
-    def __init__(self, image_set, view_canvas):
-        super(BasicWidget, self).__init__()
-        self.image_set = image_set
-        self.view_canvases = []
-        self.basics = []
-        self.main_layout = QtWidgets.QHBoxLayout()
-        self.setLayout(self.main_layout)
-        self.setWindowTitle('Basic')
-        self.add_basic(image_set, view_canvas)
-
-    def add_basic(self, image_set, view_canvas):
-        basic = Basic(image_set, view_canvas, self)
-        self.basics.append(basic)
-        self.view_canvases.append(view_canvas)
-        self.main_layout.addWidget(basic)
-        self.connect_model(basic)
-
-    def connect_model(self, basic):
-        other_basics = list(self.basics)
-        other_basics.remove(basic)
-        for other_basic in other_basics:
-            image = other_basic.image_set.current_image
-            if image == basic.image_set.current_image:
-                other_basic.histogram.connect_model(basic.histogram)
-                basic.histogram.connect_model(other_basic.histogram)
-            else:
-                other_basic.histogram.disconnect_model(basic.histogram)
-                basic.histogram.disconnect_model(other_basic.histogram)
