@@ -33,6 +33,8 @@ install:
       pip install -r requirements2.txt;
     else
       pip install -r requirements3.txt;
+      wget http://launchpadlibrarian.net/151932048/libc6_2.17-0ubuntu5.1_i386.deb;
+      sudo dpkg -i ipts libc6_2.17-0ubuntu5.1_i386.deb;
     fi
   - get_mission_data
   - conda list
