@@ -9,7 +9,7 @@ before_install:
   - "export DISPLAY=:99.0"
   - "sh -e /etc/init.d/xvfb start"
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-sudo: false
+sudo: required
 install: 
   # We do this conditionally because it saves us some downloading if the
   # version is the same.
@@ -34,7 +34,7 @@ install:
     else
       pip install -r requirements3.txt;
       wget http://launchpadlibrarian.net/151932048/libc6_2.17-0ubuntu5.1_i386.deb;
-      dpkg -i ipts libc6_2.17-0ubuntu5.1_i386.deb;
+      sudo dpkg -i ipts libc6_2.17-0ubuntu5.1_i386.deb;
     fi
   - get_mission_data
   - conda list
