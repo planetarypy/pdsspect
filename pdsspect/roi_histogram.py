@@ -466,7 +466,7 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         for item_index in range(self.view_boxes_layout.count()):
             if item_index != index:
                 box = self.view_boxes_layout.itemAt(item_index).widget()
-                box.setCheckState(False)
+                box.setChecked(False)
         self.controller.set_view_index(index)
 
     def select_image(self, index):
