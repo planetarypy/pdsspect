@@ -59,7 +59,10 @@ class ROIHistogramModel(object):
         corresponds with the current view
         """
 
-        return self.image_sets[self._view_index]
+        if not self.has_multiple_views:
+            return self._image_set
+        else:
+            return self.image_sets[self._view_index]
 
     @property
     def has_multiple_views(self):
