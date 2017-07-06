@@ -12,6 +12,9 @@ roi_histogram
 .. autoclass:: ColorCheckBox
     :members:
     :show-inheritance:
+.. autoclass:: ViewCheckBox
+    :members:
+    :show-inheritance:
 .. autoclass:: ROIHistogramWidget
     :members:
     :show-inheritance:

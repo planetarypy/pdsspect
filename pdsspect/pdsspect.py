@@ -5,10 +5,11 @@ from glob import glob
 
 from qtpy import QtWidgets, QtCore
 
-from .basic import Basic
+from .basic import BasicWidget
+from .pan_view import PanViewWidget
 from .selection import Selection
 from .transforms import Transforms
-from .pdsspect_view import PDSSpectView
+from .pdsspect_view import PDSSpectViewWidget
 from .roi_histogram import ROIHistogramWidget, ROIHistogramModel
 from .pdsspect_image_set import PDSSpectImageSet, PDSSpectImageSetViewBase
 
@@ -25,28 +26,34 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
     ----------
     image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         The model for each view
-    pdsspect_view : :class:`PDSSpectView`
+    pdsspect_view : :class:`~.pdsspect_view.PDSSpectViewWidget`
         The main viewer for panning
     pan_view : :class:`~.pdsspect.pan_view.PanView`
         The view in which the user makes ROI selections
-    selection_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    selection_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the selections window
-    selection_window : :class:`Selection`
+    selection_window : :class:`~.selection.Selection`
         The selection window to adjust ROI, import ROIs, and export ROIs
-    basic_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    basic_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the basic window
-    basic_window : :class:`Basic`
+    basic_window : :class:`~.basic.BasicWidget`
         Window to adjust cut levels and change images
     transforms_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Open Transforms window
-    transforms_window : :class:`Transforms`
+    transforms_window : :class:`~.transforms.Transforms`
         Window to flip x axis, flip y axis, or switch x and y axis
-    quit_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    roi_histogram_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
+        Open ROI Histogram window
+    roi_histogram_window : :class:`~.roi_histogram.ROIHistogramWidget`
+        The ROI Histogram Window
+    add_window_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
+        Add another window
+    quit_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Quit
-    button_layout : :class:`~QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
+    button_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Layout for the buttons. If you want to re-adjust where the buttons
         go, override this attribute
-    main_layout : :class:`~QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
+    main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Place the image viewer over the buttons. Overide this attribute if
         changing overall layout
     """
@@ -56,26 +63,32 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.image_set = image_set
         self.image_set.register(self)
 
-        self.pdsspect_view = PDSSpectView(image_set)
-        self.pan_view = self.pdsspect_view.pan_view
+        self.pdsspect_view = PDSSpectViewWidget(image_set)
+        self.pan_view = PanViewWidget(
+            self.pdsspect_view.spect_views[0].pan_view,
+            self
+        )
 
-        self.selection_btn = QtWidgets.QPushButton("Selection")
+        self.selection_btn = QtWidgets.QPushButton('Selection')
         self.selection_btn.clicked.connect(self.open_selection)
         self.selection_window = None
 
-        self.basic_btn = QtWidgets.QPushButton("Basic")
+        self.basic_btn = QtWidgets.QPushButton('Basic')
         self.basic_btn.clicked.connect(self.open_basic)
         self.basic_window = None
 
-        self.transforms_btn = QtWidgets.QPushButton("Transforms")
+        self.transforms_btn = QtWidgets.QPushButton('Transforms')
         self.transforms_btn.clicked.connect(self.open_transforms)
         self.transforms_window = None
 
-        self.roi_histogram_btn = QtWidgets.QPushButton("ROI Histogram")
+        self.roi_histogram_btn = QtWidgets.QPushButton('ROI Histogram')
         self.roi_histogram_btn.clicked.connect(self.open_roi_histogram)
         self.roi_histogram_window = None
 
-        self.quit_btn = QtWidgets.QPushButton("Quit")
+        self.add_window_btn = QtWidgets.QPushButton('Add Window')
+        self.add_window_btn.clicked.connect(self.add_window)
+
+        self.quit_btn = QtWidgets.QPushButton('Quit')
         self.quit_btn.clicked.connect(self.quit)
 
         self.button_layout = QtWidgets.QHBoxLayout()
@@ -83,6 +96,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.button_layout.addWidget(self.basic_btn)
         self.button_layout.addWidget(self.transforms_btn)
         self.button_layout.addWidget(self.roi_histogram_btn)
+        self.button_layout.addWidget(self.add_window_btn)
         self.button_layout.addWidget(self.quit_btn)
 
         self.main_layout = QtWidgets.QVBoxLayout()
@@ -94,34 +108,58 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.setCentralWidget(central_widget)
         self.open_basic()
 
+    @property
+    def image_sets(self):
+        """:obj:`list` : All the image sets, including the current one"""
+        return [self.image_set] + self.image_set.subsets
+
     def open_selection(self):
+        """Open the Selection Window"""
         if not self.selection_window:
             self.selection_window = Selection(self.image_set, self)
         self.selection_window.show()
 
     def open_basic(self):
+        """Open the Basic Window"""
         if not self.basic_window:
-            self.basic_window = Basic(
+            self.basic_window = BasicWidget(
                 self.image_set,
-                self.pdsspect_view.view_canvas
+                self.pdsspect_view.spect_views[0].view_canvas
             )
         self.basic_window.show()
 
     def open_transforms(self):
+        """Open the Transforms Window"""
         if not self.transforms_window:
             self.transforms_window = Transforms(
                 self.image_set,
-                self.pdsspect_view.view_canvas
+                self.pdsspect_view.spect_views[0].view_canvas
             )
         self.transforms_window.show()
 
     def open_roi_histogram(self):
+        """Open the ROI Histogram Window"""
         if not self.roi_histogram_window:
             roi_histogram_model = ROIHistogramModel(self.image_set)
             self.roi_histogram_window = ROIHistogramWidget(roi_histogram_model)
         self.roi_histogram_window.show()
 
+    def add_window(self):
+        """Add another window to make more ROIs"""
+        subset = self.image_set.create_subset()
+        spect_view = self.pdsspect_view.create_spect_view(subset)
+        self.pan_view.add_pan(spect_view.pan_view)
+        if self.basic_window:
+            self.basic_window.add_basic(subset, spect_view.view_canvas)
+        if self.roi_histogram_window:
+            self.roi_histogram_window.add_view()
+        spect_view.show()
+        spect_view.pan_view.show()
+        spect_view.pan_view.resizeEvent(None)
+        spect_view.resizeEvent(None)
+
     def quit(self, *args):
+        """Quit pdsspect"""
         self.pdsspect_view.close()
         self.pan_view.close()
         if self.selection_window:
@@ -213,15 +251,15 @@ def pdsspect(inlist=None):
     window.resize(window_width, window_height)
     window.move(center)
     window.show()
+    window.pan_view.show()
     pan_width = width * .35
     pan_height = pan_width / width_to_height
     window.pan_view.resize(pan_width, pan_height)
     window.basic_window.resize(pan_width, pan_height)
     window.pan_view.move(center.x(), center.y() - window_height * .9)
-    window.pan_view.show()
     window.basic_window.move(center.x() + window_width, center.y())
-    window.pdsspect_view.view_canvas.zoom_fit()
-    window.pan_view.view_canvas.zoom_fit()
+    window.pdsspect_view.spect_views[0].view_canvas.zoom_fit()
+    window.pan_view.pans[0].view_canvas.zoom_fit()
     app.setActiveWindow(window)
     app.setActiveWindow(window.pan_view)
     sys.exit(app.exec_())

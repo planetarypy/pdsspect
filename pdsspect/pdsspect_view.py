@@ -32,6 +32,7 @@ class PDSSpectViewController(object):
         y : :obj:`float`
             The y coordinate of the center of the pan
         """
+
         self.image_set.center = x, y
 
     def change_pan_size(self, zoom):
@@ -42,6 +43,7 @@ class PDSSpectViewController(object):
         zoom : :obj:`float`
             The new zoom factor
         """
+
         self.image_set.zoom = zoom
 
 
@@ -91,8 +93,8 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.zoom_layout.addWidget(self.zoom_text)
 
         self.view_canvas = PDSImageViewCanvas()
+
         self.view_canvas.set_image(self.image_set.current_image)
-        self.view_canvas.set_desired_size(100, 100)
         self.view_canvas.set_callback('cursor-move', self.change_center)
         self.view_canvas.set_callback('cursor-down', self.change_center)
         self.view_canvas.set_callback('key-press', self.arrow_key_move_center)
@@ -115,6 +117,7 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.pan_view = PanView(image_set, self)
         self.view_canvas.add_subview(self.pan_view.view_canvas)
         self.pan_view.show()
+        self.view_canvas.transform(*image_set.transforms)
 
     def set_image(self):
         """Set image on :attr:`view_canvas`"""
@@ -207,6 +210,7 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         data_y : :obj:`float`
             y coordinate of the mouse
         """
+
         self.controller.change_pan_center(data_x, data_y)
 
     def move_pan(self):
@@ -217,3 +221,46 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def redraw(self):
         """Redraw the :attr:`view_canvas`"""
         self.view_canvas.redraw()
+
+
+class PDSSpectViewWidget(QtWidgets.QWidget):
+    """Widget to hold the the differen :class:`PDSSpectView`
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    """
+
+    def __init__(self, image_set):
+        super(PDSSpectViewWidget, self).__init__()
+        self.image_set = image_set
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.spect_views = []
+        self.create_spect_view(image_set)
+        self.setWindowTitle('PDSSpect')
+        self.setLayout(self.main_layout)
+
+    def create_spect_view(self, image_set):
+        """Create a :class:`PDSSpectView` and add to the widget
+
+        Parameters
+        ----------
+        image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+            pdsspect model
+
+        Returns
+        -------
+        spect_view : :class:`PDSSpectView`
+            :class:`PDSSpectView` added to the widget
+        """
+
+        spect_view = PDSSpectView(image_set)
+        self.spect_views.append(spect_view)
+        self.main_layout.addWidget(spect_view)
+        return spect_view

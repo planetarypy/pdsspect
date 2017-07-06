@@ -4,7 +4,6 @@ import warnings
 
 import numpy as np
 from ginga.util.dp import masktorgb
-
 from planetaryimage import PDS3Image
 from ginga.BaseImage import BaseImage
 from ginga import colors as ginga_colors
@@ -30,7 +29,7 @@ class ImageStamp(BaseImage):
 
     Attributes
     ----------
-    pds_image : :class:`PDS3Image`
+    pds_image : :class:`~planetaryimage.pds3image.PDS3Image`
         Image object that holds data and the image label
     image_name : :obj:`str`
         The basename of the filepath
@@ -84,8 +83,10 @@ class PDSSpectImageSet(object):
         ``goldenrod``, ``sienna``, ``darkblue``, ``crimson``, ``maroon``,
         ``purple``, and ``eraser (black)``
     selection_types : :obj:`list` of :obj:`str`
-        Selection types for making ROIs. The possible types are ``filled
-        rectangle``, ``filled polygon``, and ``pencil`` (single points)
+        Selection types for making ROIs. The possible types are
+        :class:`Filled Rectangle <.pdsspect.roi.Rectangle>`,
+        :class:`Filled Polygon <.pdsspect.roi.Polygon>`, and
+        :class:`Filled Rectangle <.pdsspect.roi.Pencil>`, (single points).
     images : :obj:`list` of :class:`ImageStamp`
         Images to view and make selections. Must all have the same dimensions
     filepaths : :obj:`list`
@@ -123,12 +124,25 @@ class PDSSpectImageSet(object):
         self._views = []
         self.images = []
         self.filepaths = filepaths
-        for filepath in filepaths:
-            try:
-                image = ImageStamp(filepath)
-                self.images.append(image)
-            except Exception:
-                warnings.warn("Unable to open %s" % (filepath))
+        self._create_image_list()
+        self._determin_shape()
+        self._current_image_index = 0
+        self.current_color_index = 0
+        self._selection_index = 0
+        self._zoom = 1.0
+        self._center = None
+        self._alpha = 1.0
+        self._flip_x = False
+        self._flip_y = False
+        self._swap_xy = False
+        mask = np.zeros(self.shape[:2], dtype=np.bool)
+        self._maskrgb = masktorgb(mask, self.color, self.alpha)
+        self._roi_data = self._maskrgb.get_data().astype(float)
+        self._maskrgb_obj = Image(0, 0, self._maskrgb)
+        self._subsets = []
+        self._simultaneous_roi = False
+
+    def _determin_shape(self):
         shape = []
         for image in self.images:
             rows, cols = image.shape[:2]
@@ -140,26 +154,26 @@ class PDSSpectImageSet(object):
         self.shape = tuple(shape)
         s_ = np.s_[:self.shape[0], :self.shape[1]]
         for image in self.images:
-            image.set_data(image.get_data()[s_])
-        self._current_image_index = 0
-        self.current_color_index = 0
-        self._selection_index = 0
-        self._zoom = 1.0
-        self._center = None
-        self._alpha = 1.0
-        self._flip_x = False
-        self._flip_y = False
-        self._swap_xy = False
-        mask = np.zeros(self.shape, dtype=np.bool)
-        self._maskrgb = masktorgb(mask, self.color, self.alpha)
-        self._roi_data = self._maskrgb.get_data().astype(float)
-        self._maskrgb_obj = Image(0, 0, self._maskrgb)
+            image.set_data(image.data[s_])
+
+    def _create_image_list(self):
+        self.images = []
+        for filepath in self.filepaths:
+            try:
+                image = ImageStamp(filepath)
+                self.images.append(image)
+            except Exception:
+                warnings.warn("Unable to open %s" % (filepath))
 
     def register(self, view):
-        self._views.append(view)
+        """Register a View with the model"""
+        if view not in self._views:
+            self._views.append(view)
 
     def unregister(self, view):
-        self._views.remove(view)
+        """Unregister a View with the model"""
+        if view in self._views:
+            self._views.remove(view)
 
     @property
     def filenames(self):
@@ -223,6 +237,7 @@ class PDSSpectImageSet(object):
         and the height would be half the image height. Setting the zoom will
         adjust the pan size in the views.
         """
+
         return self._zoom
 
     @zoom.setter
@@ -270,6 +285,7 @@ class PDSSpectImageSet(object):
         is_in_image : :obj:`bool`
             True if the point is in the image. False otherwise.
         """
+
         data_x, data_y = point
         height, width = self.shape[:2]
         in_width = -0.5 <= data_x <= (width + 0.5)
@@ -293,6 +309,7 @@ class PDSSpectImageSet(object):
         x_center : :obj:`float`
             The x coordinate of the center of the pan
         """
+
         width = self.shape[1]
         left_of_left_edge = x - self.pan_width < 0
         right_of_right_edge = x + self.pan_width > (width)
@@ -321,6 +338,7 @@ class PDSSpectImageSet(object):
         center_y : :obj:`float`
             The y coordinate of the center of the pan
         """
+
         height = self.shape[0]
         below_bottom = y - self.pan_height < -0.5
         above_top = y + self.pan_height > (height + 0.5)
@@ -342,6 +360,7 @@ class PDSSpectImageSet(object):
         points cannot result in the pan being out of the image. If they are
         they will be changed so the pan only goes to the edge.
         """
+
         if self._center is None:
             self.reset_center()
         return self._center
@@ -376,6 +395,7 @@ class PDSSpectImageSet(object):
         Setting the alpha value will change the opacity of all the ROIs and
         then set the data in the views
         """
+
         return self._alpha
 
     @alpha.setter
@@ -392,6 +412,7 @@ class PDSSpectImageSet(object):
 
         Setting the ``flip_x`` will display the transformation in the views
         """
+
         return self._flip_x
 
     @flip_x.setter
@@ -420,6 +441,7 @@ class PDSSpectImageSet(object):
 
         Setting the ``swap_xy`` will display the transformation in the views
         """
+
         return self._swap_xy
 
     @swap_xy.setter
@@ -476,6 +498,7 @@ class PDSSpectImageSet(object):
         rgb : :obj:`list` of four :obj:`float`
             The red, green, and blue values normalized between 0 and 255
         """
+
         rgb = np.array(ginga_colors.lookup_color(color)) * 255.
         return rgb
 
@@ -492,6 +515,7 @@ class PDSSpectImageSet(object):
         rgba : :obj:`list` of four :obj:`float`
             The red, green, blue, and alpha values normalized between 0 and 255
         """
+
         r, g, b = self._get_rgb255_from_color(color)
         a = self.alpha * 255.
         rgba = [r, g, b, a]
@@ -509,6 +533,7 @@ class PDSSpectImageSet(object):
             are the y coordinates. If a tuple or arrays, the first array are x
             coordinates and the second are the corresponding y coordinates.
         """
+
         if isinstance(coordinates, np.ndarray):
             coordinates = np.column_stack(coordinates)
         rows, cols = coordinates
@@ -528,6 +553,7 @@ class PDSSpectImageSet(object):
         color : :obj:`str`
             The name a color in :attr:`colors`
         """
+
         if isinstance(coordinates, np.ndarray):
             coordinates = np.column_stack(coordinates)
         rows, cols = coordinates
@@ -546,6 +572,7 @@ class PDSSpectImageSet(object):
         delta_y : :obj:`float`
             The vertical distance to the center of the full image
         """
+
         center_x1, center_y1 = self.current_image.get_center()
         center_x2, center_y2 = self.center
         delta_x = (self.x_radius - self.pan_width) + (center_x2 - center_x1)
@@ -566,6 +593,7 @@ class PDSSpectImageSet(object):
             The first array are the x coordinates and the second are the
             corresponding y coordinates
         """
+
         rgba = self._get_rgba_from_color(color)
         coordinates = np.where(
             (self._roi_data == rgba).all(axis=2)
@@ -581,6 +609,7 @@ class PDSSpectImageSet(object):
         color : :obj:`str`
             The name a color in :attr:`colors`
         """
+
         coords = self.get_coordinates_of_color(color)
         self._erase_coords(coords)
         for view in self._views:
@@ -591,6 +620,110 @@ class PDSSpectImageSet(object):
         self._erase_coords(self.all_rois_coordinates)
         for view in self._views:
             view.set_roi_data()
+
+    def create_subset(self):
+        """Create a subset and add it to the list of subsets
+
+        Returns
+        -------
+        subset : :class:`SubPDSSpectImageSet`
+            The newly created subset
+        """
+
+        subset = SubPDSSpectImageSet(self)
+        self.add_subset(subset)
+        return subset
+
+    @property
+    def subsets(self):
+        """:obj:`list` of :class:`SubPDSSpectImageSet` : The list of subsets"""
+        return list(self._subsets)
+
+    def add_subset(self, subset):
+        """Add a subset to the list of subsets
+
+        Parameters
+        ----------
+        subset : :class:`SubPDSSpectImageSet`
+            Subset to add to the list of subsets
+        """
+
+        if isinstance(subset, SubPDSSpectImageSet):
+            self._subsets.append(subset)
+
+    def remove_subset(self, subset):
+        """Remove a subset to the list of subsets
+
+        Parameters
+        ----------
+        subset : :class:`SubPDSSpectImageSet`
+            Subset to remove to the list of subsets
+        """
+
+        if isinstance(subset, SubPDSSpectImageSet) and subset in self._subsets:
+            self._subsets.remove(subset)
+
+    @property
+    def simultaneous_roi(self):
+        """:obj:`bool` : If true, new ROIs appear in every view
+
+        Setting :attr:`simultaneous_roi` will set all windows to have the same
+        ROIs as the first window. Any new ROI created will appear in each
+        window
+        """
+
+        return self._simultaneous_roi
+
+    @simultaneous_roi.setter
+    def simultaneous_roi(self, state):
+        self._simultaneous_roi = state
+        if state:
+            for subset in self.subsets:
+                subset._simultaneous_roi = state
+                subset._roi_data = self._roi_data.copy()
+                for view in subset._views:
+                    view.set_roi_data()
+        else:
+            for subset in self.subsets:
+                subset._simultaneous_roi = state
+
+
+class SubPDSSpectImageSet(PDSSpectImageSet):
+    """A Subset of an :class:`PDSSpectImageSet`
+
+    Parameters
+    ----------
+    parent_set : :class:`PDSSpectImageSet`
+        The subset's parent
+
+    Attributes
+    ----------
+    parent_set : :class:`PDSSpectImageSet`
+        The subset's parent
+    """
+
+    def __init__(self, parent_set):
+        self.parent_set = parent_set
+        super(SubPDSSpectImageSet, self).__init__(parent_set.filepaths)
+        self._views = []
+        self._current_image_index = parent_set.current_image_index
+        self.current_color_index = parent_set.current_color_index
+        self._zoom = parent_set.zoom
+        self._center = parent_set.center
+        self._alpha = parent_set.alpha
+        self._roi_data = parent_set._roi_data.copy()
+        self._roi_data.fill(0)
+        self._selection_index = parent_set.selection_index
+        self._flip_x = parent_set.flip_x
+        self._flip_y = parent_set.flip_y
+        self._swap_xy = parent_set.swap_xy
+        self._simultaneous_roi = parent_set.simultaneous_roi
+
+    def _determin_shape(self):
+        self.shape = self.parent_set.shape
+
+    def _create_image_list(self):
+        self.images = list(self.parent_set.images)
 
 
 class PDSSpectImageSetViewBase(object):

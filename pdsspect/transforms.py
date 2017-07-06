@@ -34,7 +34,10 @@ class TransformsController(object):
         flip_x : :obj:`bool`
             True to flip x axis, otherwise, False
         """
+
         self.image_set.flip_x = flip_x
+        for image_set in self.image_set.subsets:
+            image_set.flip_x = flip_x
 
     def set_flip_y(self, flip_y):
         """Set :attr:`~.pdsspect_image_set.PDSSpectImageSet.flip_y`
@@ -44,7 +47,10 @@ class TransformsController(object):
         flip_y : :obj:`bool`
             True to flip y axis, otherwise, False
         """
+
         self.image_set.flip_y = flip_y
+        for image_set in self.image_set.subsets:
+            image_set.flip_y = flip_y
 
     def set_swap_xy(self, swap_xy):
         """Set :attr:`~.pdsspect_image_set.PDSSpectImageSet.swap_xy`
@@ -54,7 +60,10 @@ class TransformsController(object):
         swap_xy : :obj:`bool`
             True to swap x and y axis, otherwise, False
         """
+
         self.image_set.swap_xy = swap_xy
+        for image_set in self.image_set.subsets:
+            image_set.swap_xy = swap_xy
 
 
 class Transforms(QtWidgets.QDialog, PDSSpectImageSetViewBase):
@@ -131,6 +140,7 @@ class Transforms(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             The state of the checkbox (this argument is ignored and the state
             is checked in a more explicit way)
         """
+
         if self.flip_x_box.isChecked():
             self.controller.set_flip_x(True)
         else:
@@ -145,6 +155,7 @@ class Transforms(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             The state of the checkbox (this argument is ignored and the state
             is checked in a more explicit way)
         """
+
         if self.flip_y_box.isChecked():
             self.controller.set_flip_y(True)
         else:
@@ -159,6 +170,7 @@ class Transforms(QtWidgets.QDialog, PDSSpectImageSetViewBase):
             The state of the checkbox (this argument is ignored and the state
             is checked in a more explicit way)
         """
+
         if self.swap_xy_box.isChecked():
             self.controller.set_swap_xy(True)
         else:

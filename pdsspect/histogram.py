@@ -316,9 +316,9 @@ class HistogramWidget(QtWidgets.QWidget):
         The histogram itself
     """
 
-    def __init__(self, model):
+    def __init__(self, model, parent=None):
 
-        super(HistogramWidget, self).__init__()
+        super(HistogramWidget, self).__init__(parent)
         self.model = model
         self.model.register(self)
         self.controller = HistogramController(self.model, self)

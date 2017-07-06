@@ -9,3 +9,6 @@ pdsspect_view
 .. autoclass:: PDSSpectView
     :members:
     :show-inheritance:
+.. autoclass:: PDSSpectViewWidget
+    :members:
+    :show-inheritance:

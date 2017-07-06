@@ -5,7 +5,7 @@ from qtpy import QtWidgets
 
 from .roi import Polygon, Rectangle, Pencil
 from .pds_image_view_canvas import PDSImageViewCanvas
-from .pdsspect_image_set import PDSSpectImageSetViewBase
+from .pdsspect_image_set import PDSSpectImageSetViewBase, SubPDSSpectImageSet
 
 
 class PanViewController(object):
@@ -30,6 +30,13 @@ class PanViewController(object):
         self.image_set = image_set
         self.view = view
 
+    def _get_parent_set(self):
+        if isinstance(self.image_set, SubPDSSpectImageSet):
+            image_set = self.image_set.parent_set
+        else:
+            image_set = self.image_set
+        return image_set
+
     def add_ROI(self, coordinates):
         """Add a region of interest
 
@@ -43,10 +50,18 @@ class PanViewController(object):
             coordinates and the second are the corresponding y coordinates.
         """
 
-        self.image_set.add_coords_to_roi_data_with_color(
-            coordinates=coordinates,
-            color=self.image_set.color,
-        )
+        if self.image_set.simultaneous_roi:
+            parent_set = self._get_parent_set()
+            for image_set in [parent_set] + parent_set.subsets:
+                image_set.add_coords_to_roi_data_with_color(
+                    coordinates=coordinates,
+                    color=image_set.color,
+                )
+        else:
+            self.image_set.add_coords_to_roi_data_with_color(
+                coordinates=coordinates,
+                color=self.image_set.color,
+            )
 
     def erase_ROI(self, coordinates):
         """Erase any region of interest inside coordinates
@@ -61,7 +76,12 @@ class PanViewController(object):
             coordinates and the second are the corresponding y coordinates.
         """
 
-        self.image_set._erase_coords(coordinates)
+        if self.image_set.simultaneous_roi:
+            parent_set = self._get_parent_set()
+            for image_set in [parent_set] + parent_set.subsets:
+                image_set._erase_coords(coordinates)
+        else:
+            self.image_set._erase_coords(coordinates)
 
 
 class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
@@ -89,11 +109,10 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """
 
     def __init__(self, image_set, parent=None):
-        super(PanView, self).__init__()
+        super(PanView, self).__init__(parent)
         self.image_set = image_set
         self.image_set.register(self)
         self.controller = PanViewController(self.image_set, self)
-        self.parent = parent
         self._making_roi = False
         self._current_roi = None
 
@@ -228,3 +247,40 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def resizeEvent(self, event):
         self.view_canvas.zoom_fit()
         self.redraw()
+
+
+class PanViewWidget(QtWidgets.QDialog):
+    """Widget to hold the different pan windows
+
+    Parameters
+    ----------
+    pan : :class:`PanView`
+        First :class:`PanView` to include in the widget
+    parent : :class:`QWidget <PySide.QtWidgets.QWidget>`
+        The parent widget
+
+    Attributes
+    ----------
+    pans : :obj:`list` of :class:`PanView`
+        The :class:`PanView`s in the widget
+    """
+
+    def __init__(self, pan, parent):
+        super(PanViewWidget, self).__init__(parent)
+        self.main_layout = QtWidgets.QHBoxLayout()
+        self.pans = []
+        self.add_pan(pan)
+        self.setWindowTitle('Pan View')
+        self.setLayout(self.main_layout)
+
+    def add_pan(self, pan):
+        """Add a :class:`PanView` to the widget
+
+        Parameters
+        ----------
+        pan : :class:`PanView`
+            First :class:`PanView` to include in the widget
+        """
+
+        self.pans.append(pan)
+        self.main_layout.addWidget(pan)

@@ -179,6 +179,9 @@ intersphinx_mapping = {
     'pyside': ('https://srinikom.github.io/pyside-docs/', None),
     'pyqt5': ('http://pyqt.sourceforge.net/Docs/PyQt5/', None),
     'ginga': ('http://ginga.readthedocs.io/en/latest/', None),
+    'planetaryimage': (
+        'https://planetaryimage.readthedocs.io/en/latest/', None
+    ),
 }
 
 import sphinx_rtd_theme
