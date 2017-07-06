@@ -8,3 +8,7 @@ pdsspect_image_set
 .. autoclass:: PDSSpectImageSet
     :members:
     :show-inheritance:
+.. autoclass:: SubPDSSpectImageSet
+    :members:
+    :show-inheritance:
+    :inherited-members:

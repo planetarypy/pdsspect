@@ -32,6 +32,7 @@ class PDSSpectViewController(object):
         y : :obj:`float`
             The y coordinate of the center of the pan
         """
+
         self.image_set.center = x, y
 
     def change_pan_size(self, zoom):
@@ -42,6 +43,7 @@ class PDSSpectViewController(object):
         zoom : :obj:`float`
             The new zoom factor
         """
+
         self.image_set.zoom = zoom
 
 
@@ -208,6 +210,7 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         data_y : :obj:`float`
             y coordinate of the mouse
         """
+
         self.controller.change_pan_center(data_x, data_y)
 
     def move_pan(self):
@@ -221,6 +224,18 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
 
 class PDSSpectViewWidget(QtWidgets.QWidget):
+    """Widget to hold the the differen :class:`PDSSpectView`
+
+    Parameters
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+
+    Attributes
+    ----------
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+    """
 
     def __init__(self, image_set):
         super(PDSSpectViewWidget, self).__init__()
@@ -232,6 +247,19 @@ class PDSSpectViewWidget(QtWidgets.QWidget):
         self.setLayout(self.main_layout)
 
     def create_spect_view(self, image_set):
+        """Create a :class:`PDSSpectView` and add to the widget
+
+        Parameters
+        ----------
+        image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+            pdsspect model
+
+        Returns
+        -------
+        spect_view : :class:`PDSSpectView`
+            :class:`PDSSpectView` added to the widget
+        """
+
         spect_view = PDSSpectView(image_set)
         self.spect_views.append(spect_view)
         self.main_layout.addWidget(spect_view)

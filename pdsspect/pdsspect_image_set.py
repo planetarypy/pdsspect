@@ -163,10 +163,12 @@ class PDSSpectImageSet(object):
                 warnings.warn("Unable to open %s" % (filepath))
 
     def register(self, view):
+        """Register a View with the model"""
         if view not in self._views:
             self._views.append(view)
 
     def unregister(self, view):
+        """Unregister a View with the model"""
         if view in self._views:
             self._views.remove(view)
 
@@ -232,6 +234,7 @@ class PDSSpectImageSet(object):
         and the height would be half the image height. Setting the zoom will
         adjust the pan size in the views.
         """
+
         return self._zoom
 
     @zoom.setter
@@ -279,6 +282,7 @@ class PDSSpectImageSet(object):
         is_in_image : :obj:`bool`
             True if the point is in the image. False otherwise.
         """
+
         data_x, data_y = point
         height, width = self.shape[:2]
         in_width = -0.5 <= data_x <= (width + 0.5)
@@ -302,6 +306,7 @@ class PDSSpectImageSet(object):
         x_center : :obj:`float`
             The x coordinate of the center of the pan
         """
+
         width = self.shape[1]
         left_of_left_edge = x - self.pan_width < 0
         right_of_right_edge = x + self.pan_width > (width)
@@ -330,6 +335,7 @@ class PDSSpectImageSet(object):
         center_y : :obj:`float`
             The y coordinate of the center of the pan
         """
+
         height = self.shape[0]
         below_bottom = y - self.pan_height < -0.5
         above_top = y + self.pan_height > (height + 0.5)
@@ -351,6 +357,7 @@ class PDSSpectImageSet(object):
         points cannot result in the pan being out of the image. If they are
         they will be changed so the pan only goes to the edge.
         """
+
         if self._center is None:
             self.reset_center()
         return self._center
@@ -385,6 +392,7 @@ class PDSSpectImageSet(object):
         Setting the alpha value will change the opacity of all the ROIs and
         then set the data in the views
         """
+
         return self._alpha
 
     @alpha.setter
@@ -401,6 +409,7 @@ class PDSSpectImageSet(object):
 
         Setting the ``flip_x`` will display the transformation in the views
         """
+
         return self._flip_x
 
     @flip_x.setter
@@ -429,6 +438,7 @@ class PDSSpectImageSet(object):
 
         Setting the ``swap_xy`` will display the transformation in the views
         """
+
         return self._swap_xy
 
     @swap_xy.setter
@@ -485,6 +495,7 @@ class PDSSpectImageSet(object):
         rgb : :obj:`list` of four :obj:`float`
             The red, green, and blue values normalized between 0 and 255
         """
+
         rgb = np.array(ginga_colors.lookup_color(color)) * 255.
         return rgb
 
@@ -501,6 +512,7 @@ class PDSSpectImageSet(object):
         rgba : :obj:`list` of four :obj:`float`
             The red, green, blue, and alpha values normalized between 0 and 255
         """
+
         r, g, b = self._get_rgb255_from_color(color)
         a = self.alpha * 255.
         rgba = [r, g, b, a]
@@ -518,6 +530,7 @@ class PDSSpectImageSet(object):
             are the y coordinates. If a tuple or arrays, the first array are x
             coordinates and the second are the corresponding y coordinates.
         """
+
         if isinstance(coordinates, np.ndarray):
             coordinates = np.column_stack(coordinates)
         rows, cols = coordinates
@@ -537,6 +550,7 @@ class PDSSpectImageSet(object):
         color : :obj:`str`
             The name a color in :attr:`colors`
         """
+
         if isinstance(coordinates, np.ndarray):
             coordinates = np.column_stack(coordinates)
         rows, cols = coordinates
@@ -555,6 +569,7 @@ class PDSSpectImageSet(object):
         delta_y : :obj:`float`
             The vertical distance to the center of the full image
         """
+
         center_x1, center_y1 = self.current_image.get_center()
         center_x2, center_y2 = self.center
         delta_x = (self.x_radius - self.pan_width) + (center_x2 - center_x1)
@@ -575,6 +590,7 @@ class PDSSpectImageSet(object):
             The first array are the x coordinates and the second are the
             corresponding y coordinates
         """
+
         rgba = self._get_rgba_from_color(color)
         coordinates = np.where(
             (self._roi_data == rgba).all(axis=2)
@@ -590,6 +606,7 @@ class PDSSpectImageSet(object):
         color : :obj:`str`
             The name a color in :attr:`colors`
         """
+
         coords = self.get_coordinates_of_color(color)
         self._erase_coords(coords)
         for view in self._views:
@@ -602,25 +619,62 @@ class PDSSpectImageSet(object):
             view.set_roi_data()
 
     def create_subset(self):
+        """Create a subset and add it to the list of subsets
+
+        Returns
+        -------
+        subset : :class:`SubPDSSpectImageSet`
+            The newly created subset
+        """
+
         subset = SubPDSSpectImageSet(self)
         self.add_subset(subset)
         return subset
 
     @property
     def subsets(self):
+        """:obj:`list` of :class:`SubPDSSpectImageSet` : The list of subsets"""
         return list(self._subsets)
 
     def add_subset(self, subset):
+        """Add a subset to the list of subsets
+
+        Parameters
+        ----------
+        subset : :class:`SubPDSSpectImageSet`
+            Subset to add to the list of subsets
+        """
+
         if isinstance(subset, SubPDSSpectImageSet):
             self._subsets.append(subset)
 
     def remove_subset(self, subset):
+        """Remove a subset to the list of subsets
+
+        Parameters
+        ----------
+        subset : :class:`SubPDSSpectImageSet`
+            Subset to remove to the list of subsets
+        """
+
         if isinstance(subset, SubPDSSpectImageSet) and subset in self._subsets:
             self._subsets.remove(subset)
 
 
 class SubPDSSpectImageSet(PDSSpectImageSet):
-    """docstring for SubPDSSpectImageSet"""
+    """A Subset of an :class:`PDSSpectImageSet`
+
+    Parameters
+    ----------
+    parent_set : :class:`PDSSpectImageSet`
+        The subset's parent
+
+    Attributes
+    ----------
+    parent_set : :class:`PDSSpectImageSet`
+        The subset's parent
+    """
+
     def __init__(self, parent_set):
         self.parent_set = parent_set
         super(SubPDSSpectImageSet, self).__init__(parent_set.filepaths)

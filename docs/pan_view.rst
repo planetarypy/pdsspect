@@ -9,3 +9,6 @@ pan_view
 .. autoclass:: PanView
     :members:
     :show-inheritance:
+.. autoclass:: PanView
+    :members:
+    :show-inheritance:

@@ -32,9 +32,9 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         The view in which the user makes ROI selections
     selection_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the selections window
-    selection_window : :class:`SelectionWidget`
+    selection_window : :class:`Selection`
         The selection window to adjust ROI, import ROIs, and export ROIs
-    basic_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    basic_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the basic window
     basic_window : :class:`BasicWidget`
         Window to adjust cut levels and change images
@@ -42,12 +42,18 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         Open Transforms window
     transforms_window : :class:`Transforms`
         Window to flip x axis, flip y axis, or switch x and y axis
-    quit_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    roi_histogram_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
+        Open ROI Histogram window
+    roi_histogram_window : :class:`ROIHistogramWidget`
+        The ROI Histogram Window
+    add_window_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
+        Add another window
+    quit_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Quit
-    button_layout : :class:`~QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
+    button_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Layout for the buttons. If you want to re-adjust where the buttons
         go, override this attribute
-    main_layout : :class:`~QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
+    main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Place the image viewer over the buttons. Overide this attribute if
         changing overall layout
     """
@@ -104,14 +110,17 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
 
     @property
     def image_sets(self):
+        """:obj:`list` : All the image sets, including the current one"""
         return [self.image_set] + self.image_set.subsets
 
     def open_selection(self):
+        """Open the Selection Window"""
         if not self.selection_window:
             self.selection_window = Selection(self.image_set, self)
         self.selection_window.show()
 
     def open_basic(self):
+        """Open the Basic Window"""
         if not self.basic_window:
             self.basic_window = BasicWidget(
                 self.image_set,
@@ -120,6 +129,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.basic_window.show()
 
     def open_transforms(self):
+        """Open the Transforms Window"""
         if not self.transforms_window:
             self.transforms_window = Transforms(
                 self.image_set,
@@ -128,12 +138,14 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.transforms_window.show()
 
     def open_roi_histogram(self):
+        """Open the ROI Histogram Window"""
         if not self.roi_histogram_window:
             roi_histogram_model = ROIHistogramModel(self.image_set)
             self.roi_histogram_window = ROIHistogramWidget(roi_histogram_model)
         self.roi_histogram_window.show()
 
     def add_window(self):
+        """Add another window to make more ROIs"""
         subset = self.image_set.create_subset()
         spect_view = self.pdsspect_view.create_spect_view(subset)
         self.pan_view.add_pan(spect_view.pan_view)
@@ -147,6 +159,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         spect_view.resizeEvent(None)
 
     def quit(self, *args):
+        """Quit pdsspect"""
         self.pdsspect_view.close()
         self.pan_view.close()
         if self.selection_window:

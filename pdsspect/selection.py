@@ -63,6 +63,7 @@ class SelectionController(object):
         new_alpha : :obj:`float`
             Value between 0 and 100
         """
+
         new_alpha /= 100.
         self.image_set.alpha = new_alpha
         for subset in self.image_set.subsets:

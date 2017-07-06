@@ -230,6 +230,20 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
 
 class PanViewWidget(QtWidgets.QDialog):
+    """Widget to hold the different pan windows
+
+    Parameters
+    ----------
+    pan : :class:`PanView`
+        First :class:`PanView` to include in the widget
+    parent : :class:`QWidget <PySide.QtWidgets.QWidget>`
+        The parent widget
+
+    Attributes
+    ----------
+    pans : :obj:`list` of :class:`PanView`
+        The :class:`PanView`s in the widget
+    """
 
     def __init__(self, pan, parent):
         super(PanViewWidget, self).__init__(parent)
@@ -240,5 +254,13 @@ class PanViewWidget(QtWidgets.QDialog):
         self.setLayout(self.main_layout)
 
     def add_pan(self, pan):
+        """Add a :class:`PanView` to the widget
+
+        Parameters
+        ----------
+        pan : :class:`PanView`
+            First :class:`PanView` to include in the widget
+        """
+
         self.pans.append(pan)
         self.main_layout.addWidget(pan)
