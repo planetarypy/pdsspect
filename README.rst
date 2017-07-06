@@ -47,7 +47,9 @@ Open an image in the command line::
 
 This will open the default window:
 
-.. image:: screenshots/default_window.png
+.. image:: screenshots/default1.png
+.. image:: screenshots/default2.png
+.. image:: screenshots/default3.png
 
 The bottom left window is considered the main window. In this window, the user
 can adjust the position of the pan and open other windows. The bottom right
@@ -56,7 +58,8 @@ window if closed. However, it starts out open. In this window, the user can
 change the image in the views and adjust the cut levels by either moving the
 red lines or typing in the numbers in the cut boxes:
 
-.. image:: screenshots/adjust_cut_levels.png
+.. image:: screenshots/set_cuts1.png
+.. image:: screenshots/set_cuts2.png
 
 The top window is the ``pan window`` which displays the data in the main
 window's red box. The main function of this window is to make Region of
@@ -65,7 +68,8 @@ Interest (ROI) selections.
 In the ``zoom`` box in the main window, the user can change the size of the box
 and the data in the pan view:
 
-.. image:: screenshots/change_zoom.png
+.. image:: screenshots/zoom1.png
+.. image:: screenshots/zoom2.png
 
 the mouse wheel can also be used to change the zoom. Rolling the wheel foward
 and backwards will adjust the zoom amount by ``+1`` or ``-1`` respectively.
@@ -73,90 +77,102 @@ The user can adjust the position of the box by clicking in the main window
 where the center of the pan should be. Using the arrow keys will also adjust
 the position of the box by ``1`` in the direction of the arrow key.
 
+Clicking the ``Add Window`` button will open another view. This view will have
+the same image, cut levels, and zoom by default. If the image's are the same,
+chaning the cut levels on one image will automatically change the cut levels
+on another image. However, one can change the zoom on one view without
+changing the zoom another view.
+
+.. image:: screenshots/multiple_window1.png
+.. image:: screenshots/multiple_window2.png
+.. image:: screenshots/multiple_window3.png
+
+When the images are different, adjusting the cut levels on one image will only
+change the cut levels on that image:
+
+.. image:: screenshots/different_cuts1.png
+.. image:: screenshots/different_cuts2.png
+
+The user can create separate ROIs in each view:
+
+.. image:: screenshots/roi1.png
+
 Clicking the ``Selection`` button will open the ``Selections Window``:
 
-.. image:: screenshots/selection_window.png
+.. image:: screenshots/selection1.png
 
-In this window, the user can change the ROI selection type:
-
-.. image:: screenshots/selection_types.png
-
-and change the ROI color:
-
-.. image:: screenshots/color_types.png
+In this window, the user can choose the color of the ROI. The possible choices
+for colors: ``red``, ``brown``, ``lightblue``, ``lightcyan``, ``darkgreen``,
+``yellow``, ``pink``, ``teal``, ``goldenrod``, ``sienna``, ``darkblue``,
+``crimson``, ``maroon``, ``purple``, and ``eraser (black)``. The selection type
+can be changed in this window as well. The possible types are ``filled
+rectangle``, ``filled polygon``, and ``pencil`` (single points).
 
 Furthermore, in this window, the user can clear the current color or clear all
 ROIs. Most importantly, the user can export ROIs to ``.npz`` files. These files
 contain boolean masks and of the images and a list of files open at the time
-of export. For example, to see the data in an example file
-``selections_ex.npz``, use `numpy load method
+of export. The ROIs in the 2nd, 3rd, 4th, etc. views will be labeled as 
+``color#view`` while the ROIs in the first view is still labeled as ``color``.
+For example, to see the data in an example file ``example.npz``, use `numpy
+load method
 <https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.load.html>`_
 to view and utilize data.
 
 .. code-block:: python
 
     >>> import numpy as np
-    >>> with np.load('selections_ex.npz') as selections:
-    ...     red = selections['red']
-    ...     print(np.where(red))
-    ...     print(red.dtype)
-    ...     print(red.shape)
-    ...     print(selections['files'])
-    ...     print(selections.files)
-    ...
-    (
-        array([384, 384, 384, ..., 429, 429, 429]),
-        array([398, 399, 400, ..., 454, 455, 456])
-    )
-    bool
-    (1024, 1024)
-    ['2m132591087cfd1800p2977m2f1.img']
-    [
-        'purple',
-        'pink',
-        'files',
-        'eraser',
-        'sienna',
-        'goldenrod',
-        'brown',
-        'yellow', 
-        'darkblue',
-        'red',
-        'lightblue',
-        'lightcyan',
-        'crimson',
-        'maroon',
-        'teal',
-        'darkgreen'
-    ]
+    >>> selections = np.load('example.npz')
+    >>> selections['red'][114:118, 142:146]
+    array([[ True,  True,  True,  True],
+           [ True,  True,  True,  True],
+           [ True,  True,  True,  True],
+           [ True,  True,  True,  True]], dtype=bool)
+    >>> selections['purple2'][48:52, 146:150]
+    array([[False, False, False, False],
+           [False,  True,  True,  True],
+           [ True,  True,  True,  True],
+           [ True,  True,  True,  True]], dtype=bool)
 
 The user can also import ROI selections. However the images that are open must
 be in the ``files`` list in the ``.npz`` file.
 
-In the pan window, the user can make different types of ROI selections:
+Changing the opacity in the Selecitons window will change the opacity on all
+the ROIs in every view:
 
-.. image:: screenshots/ROIs.png
+.. image:: screenshots/opacity1.png
+.. image:: screenshots/opacity2.png
 
-Change the opacity of the ROIs using the ``Opacity`` slider in the ``Selections
-Window``:
-
-.. image:: screenshots/Opacity.png
 
 You can view the data within the ROIs with the ``ROI Histogram`` window. Open
 the window by pressing the ``ROI Histogram`` button in the main viewer.
 
-.. image:: screenshots/blank_histogram.png
+.. image:: screenshots/histogram1.png
 
 Display the data in the ROI by color by checking the checkbox next to the
-color:
+color. When the image in the menu and the current image in the checked view are
+the same, the plot will be a histogram:
 
-.. image:: screenshots/red_hist.png
+.. image:: screenshots/histogram2.png
+
+When the menu and the current image are different, the plot will compare the
+data:
+
+.. image:: screenshots/histogram3.png
+
+To view the data in the other view, check the view number:
+
+.. image:: screenshots/histogram4.png
 
 Overlay ROIs by checking other boxes. The order (depth) of the histogram data
 will be in the order that the user checks the boxes (i.e., checking red and
-then purple will result in purple overlaying the red):
+then purple will result in purple overlaying the red).
 
-.. image:: screenshots/red_purple_hist.png
+The user can flip the image over different axis with the Transforms window.
+The transformation will apply to each image in all the views:
+
+.. image:: screenshots/transforms1.png
+.. image:: screenshots/transforms2.png
+.. image:: screenshots/transforms3.png
 
 Note that when opening multiple images at the same time, it is best practice
 that they are all the same shape. Otherwise the images will have the smallest
@@ -167,3 +183,47 @@ first image to have the right side cut off and the second image to have the
 top cut off). This is done so all ROIs created can apply to the entire list
 of images. To avoid this behavior, either only open images that have the same
 shape or open images one at a time.
+
+
+Images In Example
++++++++++++++++++
+
+* `2p235913308radau37p2111l2c1.img 
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913308radau37p2111l2c1.img>`_
+* `2p235913328radau37p2111l3c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913328radau37p2111l3c1.img>`_
+* `2p235913348radau37p2111l4c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913348radau37p2111l4c1.img>`_
+* `2p235913368radau37p2111l5c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913368radau37p2111l5c1.img>`_
+* `2p235913399radau37p2111l6c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913399radau37p2111l6c1.img>`_
+* `2p235913431radau37p2111l7c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913431radau37p2111l7c1.img>`_
+* `2p235913458radau37p2111r1c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913458radau37p2111r1c1.img>`_
+* `2p235913479radau37p2111r2c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913479radau37p2111r2c1.img>`_
+* `2p235913499radau37p2111r3c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913499radau37p2111r3c1.img>`_
+* `2p235913519radau37p2111r4c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913519radau37p2111r4c1.img>`_
+* `2p235913539radau37p2111r5c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913539radau37p2111r5c1.img>`_
+* `2p235913559radau37p2111r6c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913559radau37p2111r6c1.img>`_
+* `2p235913580radau37p2111r7c1.img
+  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
+  mer2pc_1xxx/data/sol1234/2p235913580radau37p2111r7c1.img>`_

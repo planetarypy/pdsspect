@@ -26,25 +26,25 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
     ----------
     image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         The model for each view
-    pdsspect_view : :class:`PDSSpectViewWidget`
+    pdsspect_view : :class:`~.pdsspect_view.PDSSpectViewWidget`
         The main viewer for panning
     pan_view : :class:`~.pdsspect.pan_view.PanView`
         The view in which the user makes ROI selections
-    selection_btn : :class:`~QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+    selection_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the selections window
-    selection_window : :class:`Selection`
+    selection_window : :class:`~.selection.Selection`
         The selection window to adjust ROI, import ROIs, and export ROIs
     basic_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to open the basic window
-    basic_window : :class:`BasicWidget`
+    basic_window : :class:`~.basic.BasicWidget`
         Window to adjust cut levels and change images
     transforms_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Open Transforms window
-    transforms_window : :class:`Transforms`
+    transforms_window : :class:`~.transforms.Transforms`
         Window to flip x axis, flip y axis, or switch x and y axis
     roi_histogram_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
         Open ROI Histogram window
-    roi_histogram_window : :class:`ROIHistogramWidget`
+    roi_histogram_window : :class:`~.roi_histogram.ROIHistogramWidget`
         The ROI Histogram Window
     add_window_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
         Add another window

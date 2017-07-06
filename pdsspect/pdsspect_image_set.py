@@ -29,7 +29,7 @@ class ImageStamp(BaseImage):
 
     Attributes
     ----------
-    pds_image : :class:`PDS3Image`
+    pds_image : :class:`~planetaryimage.pds3image.PDS3Image`
         Image object that holds data and the image label
     image_name : :obj:`str`
         The basename of the filepath
@@ -83,8 +83,10 @@ class PDSSpectImageSet(object):
         ``goldenrod``, ``sienna``, ``darkblue``, ``crimson``, ``maroon``,
         ``purple``, and ``eraser (black)``
     selection_types : :obj:`list` of :obj:`str`
-        Selection types for making ROIs. The possible types are ``filled
-        rectangle``, ``filled polygon``, and ``pencil`` (single points)
+        Selection types for making ROIs. The possible types are
+        :class:`Filled Rectangle <.pdsspect.roi.Rectangle>`,
+        :class:`Filled Polygon <.pdsspect.roi.Polygon>`, and
+        :class:`Filled Rectangle <.pdsspect.roi.Pencil>`, (single points).
     images : :obj:`list` of :class:`ImageStamp`
         Images to view and make selections. Must all have the same dimensions
     filepaths : :obj:`list`
