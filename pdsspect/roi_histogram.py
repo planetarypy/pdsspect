@@ -59,10 +59,7 @@ class ROIHistogramModel(object):
         corresponds with the current view
         """
 
-        if not self.has_multiple_views:
-            return self._image_set
-        else:
-            return self.image_sets[self._view_index]
+        return self.image_sets[self._view_index]
 
     @property
     def has_multiple_views(self):
@@ -300,13 +297,13 @@ class ViewCheckBox(QtWidgets.QCheckBox):
     index : :obj:`int`
         The index of the view
     stateChanged : :obj:`QtCore.Signal`
-        Signal that emits an :obj:`int` when check box changes its state
+        Signal that emits the box itself when check box changes its state
 
         Read more about `Signals here
         <http://pyqt.sourceforge.net/Docs/PyQt5/signals_slots.html>`_
     """
 
-    stateChanged = QtCore.Signal(int)
+    stateChanged = QtCore.Signal(object)
 
     def __init__(self, index):
         view_number = index + 1
@@ -318,10 +315,10 @@ class ViewCheckBox(QtWidgets.QCheckBox):
 
     def set_check_state(self):
         self.setChecked(not self.isChecked())
-        self.stateChanged.emit(self.index)
+        self.stateChanged.emit(self)
 
     def nextCheckState(self):
-        """Adjust checkbox's toggle & emit color when checkbox is clicked"""
+        """Adjust checkbox's toggle & emit checkbox when checkbox is clicked"""
         if not self.isChecked():
             self.set_check_state()
 
@@ -455,22 +452,25 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.model.image_sets[index].register(self)
         box = self.view_boxes_layout.itemAt(self.model._view_index).widget()
         box.setChecked(True)
-        self.check_view_checkbox(self.model._view_index)
+        self.check_view_checkbox(box)
 
-    def check_view_checkbox(self, index):
+    def check_view_checkbox(self, view_checkbox):
         """Check the view box at the given index
 
         Parameters
         ----------
-        index : :obj:`int`
-            The index of the view box
+        view_checkbox : :class:`ViewCheckBox`
+            The view check box whose state changed
         """
 
+        index = view_checkbox.index
         for item_index in range(self.view_boxes_layout.count()):
             if item_index != index:
                 box = self.view_boxes_layout.itemAt(item_index).widget()
                 box.setChecked(False)
-        self.controller.set_view_index(index)
+
+        if view_checkbox.isChecked():
+            self.controller.set_view_index(index)
 
     def select_image(self, index):
         """Select an image when image is selected in the menu
