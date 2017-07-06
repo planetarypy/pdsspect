@@ -106,6 +106,13 @@ class TestSelectionController(object):
             self.subset._roi_data[4, 2], [255.0, 0.0, 0.0, 255.]
         )
 
+    def test_set_simultaneous_roi(self, controller):
+        assert not self.image_set.simultaneous_roi
+        controller.set_simultaneous_roi(True)
+        assert self.image_set.simultaneous_roi
+        controller.set_simultaneous_roi(False)
+        assert not self.image_set.simultaneous_roi
+
 
 class TestSelection(object):
     image_set = PDSSpectImageSet([FILE_1])
@@ -291,3 +298,12 @@ class TestSelection(object):
             assert np.array_equal(
                 pixel, [0.0, 100.0, 0.0, 255.]
             )
+
+    def test_select_simultaneous_roi(self, qtbot, selection):
+        selection.show()
+        qtbot.add_widget(selection)
+        assert not self.image_set.simultaneous_roi
+        selection.simultaneous_roi_box.setChecked(True)
+        assert self.image_set.simultaneous_roi
+        selection.simultaneous_roi_box.setChecked(False)
+        assert not self.image_set.simultaneous_roi

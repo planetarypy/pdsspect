@@ -20,15 +20,27 @@ class TestPanViewController(object):
         yield self.image_set
         self.image_set._roi_data = self.default_roi_data
         self.image_set._alpha = 1
+        self.image_set._subsets = []
+
+    def test_get_parent_set(self, test_set):
+        subset = test_set.create_subset()
+        assert self.controller._get_parent_set() == test_set
+        controller2 = PanViewController(subset, None)
+        assert controller2._get_parent_set() == test_set
 
     def test_add_ROI(self, test_set):
+        subset = test_set.create_subset()
         assert test_set.current_color_index == 0
         assert test_set.color == 'red'
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
         assert np.array_equal(
             test_set._roi_data[rows, cols],
-            np.array([[0., 0., 0., 0.]])
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
         )
 
         self.image_set.alpha = 1
@@ -36,6 +48,10 @@ class TestPanViewController(object):
         assert np.array_equal(
             self.image_set._roi_data[rows, cols],
             np.array([[255.0, 0.0, 0.0, 255.]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
         )
 
         self.image_set.alpha = .75
@@ -45,6 +61,10 @@ class TestPanViewController(object):
             self.image_set._roi_data[rows, cols],
             np.array([[165.0, 42.0, 42.0, 191.25]])
         )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
 
         self.image_set.alpha = .25
         self.image_set.current_color_index = 13
@@ -53,28 +73,78 @@ class TestPanViewController(object):
             self.image_set._roi_data[rows, cols],
             np.array([[160.0, 32.0, 240.0, 63.75]])
         )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
+
+        self.image_set.alpha = 1
+        self.image_set.current_color_index = 0
+        test_set.simultaneous_roi = True
+        self.controller.add_ROI(coords)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        self.image_set.current_color_index = 1
+        test_set.simultaneous_roi = False
+        self.controller.add_ROI(coords)
+        assert np.array_equal(
+            self.image_set._roi_data[rows, cols],
+            np.array([[165.0, 42.0, 42.0, 255.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
 
     def test_erase_ROI(self, test_set):
+        subset = test_set.create_subset()
         coords = np.array([[42, 42]])
         rows, cols = np.column_stack(coords)
         test_set.add_coords_to_roi_data_with_color(coords, 'red')
+        subset.add_coords_to_roi_data_with_color(coords, 'red')
         assert np.array_equal(
             test_set._roi_data[rows, cols],
-            np.array([[255.0, 0.0, 0.0, 255.]])
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
         )
         self.controller.erase_ROI(coords)
         assert np.array_equal(
             test_set._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
         test_set.add_coords_to_roi_data_with_color(coords, 'brown')
         assert np.array_equal(
             test_set._roi_data[rows, cols],
-            np.array([[165.0, 42.0, 42.0, 255.]])
+            np.array([[165.0, 42.0, 42.0, 255.0]])
         )
         self.controller.erase_ROI(coords)
         assert np.array_equal(
             test_set._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
+        test_set.simultaneous_roi = True
+        test_set.add_coords_to_roi_data_with_color(coords, 'red')
+        subset.add_coords_to_roi_data_with_color(coords, 'red')
+        self.controller.erase_ROI(coords)
+        assert np.array_equal(
+            test_set._roi_data[rows, cols],
+            np.array([[0.0, 0.0, 0.0, 0.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows, cols],
             np.array([[0.0, 0.0, 0.0, 0.0]])
         )
 

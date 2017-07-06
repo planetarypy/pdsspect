@@ -42,6 +42,7 @@ class TestPDSSpectImageSet(object):
             float)
         self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
         self.test_set._subsets = []
+        self.test_set._simultaneous_roi = False
 
     def test_init(self):
         test_set = self.test_set
@@ -70,6 +71,7 @@ class TestPDSSpectImageSet(object):
         assert isinstance(test_set._maskrgb_obj, Image)
         test_shape = (self.centerV * 2, self.centerH * 2)
         assert np.array_equal(test_set.shape, test_shape)
+        assert not test_set._simultaneous_roi
 
     def test_register(self):
         assert self.test_set._views == []
@@ -634,6 +636,41 @@ class TestPDSSpectImageSet(object):
         assert len(self.test_set.subsets) == 0
         assert subset not in self.test_set.subsets
 
+    def test_simultaneous_roi(self):
+        subset = self.test_set.create_subset()
+        assert not self.test_set._simultaneous_roi
+        assert not self.test_set.simultaneous_roi
+        assert not subset._simultaneous_roi
+        assert not subset.simultaneous_roi
+        coords1 = np.array([[12, 12]])
+        rows1, cols1 = np.column_stack(coords1)
+        self.test_set.add_coords_to_roi_data_with_color(coords1, 'red')
+        assert np.array_equal(
+            self.test_set._roi_data[rows1, cols1],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        assert not np.array_equal(
+            subset._roi_data[rows1, cols1],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        self.test_set.simultaneous_roi = True
+        assert self.test_set._simultaneous_roi
+        assert subset._simultaneous_roi
+        assert np.array_equal(
+            subset._roi_data[rows1, cols1],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+        self.test_set.simultaneous_roi = False
+        self.test_set.add_coords_to_roi_data_with_color(coords1, 'brown')
+        assert np.array_equal(
+            self.test_set._roi_data[rows1, cols1],
+            np.array([[165.0, 42.0, 42.0, 255.0]])
+        )
+        assert np.array_equal(
+            subset._roi_data[rows1, cols1],
+            np.array([[255.0, 0.0, 0.0, 255.0]])
+        )
+
 
 class TestSubPDSSpectImageSet(object):
     image_set = PDSSpectImageSet(TEST_FILES)
@@ -655,3 +692,4 @@ class TestSubPDSSpectImageSet(object):
         assert subset.swap_xy == self.image_set.swap_xy
         assert subset.shape == self.image_set.shape
         assert subset.images == self.image_set.images
+        assert not subset._simultaneous_roi

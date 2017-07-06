@@ -104,6 +104,9 @@ class SelectionController(object):
             color=color
         )
 
+    def set_simultaneous_roi(self, state):
+        self.image_set.simultaneous_roi = state
+
 
 class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """Window to make/clear/load/export ROIs and choose selection mode/color
@@ -141,8 +144,8 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         Slider to determine opacity for ROIs
     opacity_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Horizontal box layout for opacity slider
-    clear_current_color_btn : :class:`QtWidgets.QPushButton
-        <PySide.QtGui.QPushButton>`
+    clear_current_color_btn : :class:`QtWidgets.QPushButton\
+    <PySide.QtGui.QPushButton>`
         Button to clear all ROIs will the current color
     clear_all_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Button to clear all ROIs
@@ -150,6 +153,9 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         Export ROIs to ``.npz`` file
     load_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Load ROIs from ``.npz`` file
+    simultaneous_roi_box : :class:`QtWidgets.QPushButton\
+    <PySide.QtGui.QPushButton>`
+        When checked, new ROIs appear in every window
     main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Vertical Box layout for main layout
     """
@@ -205,6 +211,13 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.load_btn = QtWidgets.QPushButton("Load ROIs")
         self.load_btn.clicked.connect(self.show_open_dialog)
 
+        self.simultaneous_roi_box = QtWidgets.QCheckBox(
+            'Select ROIs simultaneously'
+        )
+        self.simultaneous_roi_box.stateChanged.connect(
+            self.select_simultaneous_roi
+        )
+
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addLayout(self.type_layout)
         self.main_layout.addLayout(self.color_layout)
@@ -213,6 +226,7 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.main_layout.addWidget(self.clear_all_btn)
         self.main_layout.addWidget(self.export_btn)
         self.main_layout.addWidget(self.load_btn)
+        self.main_layout.addWidget(self.simultaneous_roi_box)
 
         self.setLayout(self.main_layout)
 
@@ -339,3 +353,8 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             filter='Selections(*.npz)',
         )
         self.load_selections(selected_files)
+
+    def select_simultaneous_roi(self, state):
+        self.controller.set_simultaneous_roi(
+            self.simultaneous_roi_box.isChecked()
+        )

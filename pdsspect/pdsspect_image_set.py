@@ -140,6 +140,7 @@ class PDSSpectImageSet(object):
         self._roi_data = self._maskrgb.get_data().astype(float)
         self._maskrgb_obj = Image(0, 0, self._maskrgb)
         self._subsets = []
+        self._simultaneous_roi = False
 
     def _determin_shape(self):
         shape = []
@@ -662,6 +663,30 @@ class PDSSpectImageSet(object):
         if isinstance(subset, SubPDSSpectImageSet) and subset in self._subsets:
             self._subsets.remove(subset)
 
+    @property
+    def simultaneous_roi(self):
+        """:obj:`bool` : If true, new ROIs appear in every view
+
+        Setting :attr:`simultaneous_roi` will set all windows to have the same
+        ROIs as the first window. Any new ROI created will appear in each
+        window
+        """
+
+        return self._simultaneous_roi
+
+    @simultaneous_roi.setter
+    def simultaneous_roi(self, state):
+        self._simultaneous_roi = state
+        if state:
+            for subset in self.subsets:
+                subset._simultaneous_roi = state
+                subset._roi_data = self._roi_data.copy()
+                for view in subset._views:
+                    view.set_roi_data()
+        else:
+            for subset in self.subsets:
+                subset._simultaneous_roi = state
+
 
 class SubPDSSpectImageSet(PDSSpectImageSet):
     """A Subset of an :class:`PDSSpectImageSet`
@@ -692,6 +717,7 @@ class SubPDSSpectImageSet(PDSSpectImageSet):
         self._flip_x = parent_set.flip_x
         self._flip_y = parent_set.flip_y
         self._swap_xy = parent_set.swap_xy
+        self._simultaneous_roi = parent_set.simultaneous_roi
 
     def _determin_shape(self):
         self.shape = self.parent_set.shape
