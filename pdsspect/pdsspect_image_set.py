@@ -3,6 +3,7 @@ import os
 import warnings
 
 import numpy as np
+from astropy import units as astro_units
 from ginga.util.dp import masktorgb
 from planetaryimage import PDS3Image
 from ginga.BaseImage import BaseImage
@@ -13,6 +14,12 @@ from ginga.canvas.types.image import Image
 ginga_colors.add_color('crimson', (0.86275, 0.07843, 0.23529))
 ginga_colors.add_color('teal', (0.0, 0.50196, 0.50196))
 ginga_colors.add_color('eraser', (0.0, 0.0, 0.0))
+
+ACCEPTED_UNITS = [
+    'nm',
+    'um',
+    'AA',
+]
 
 
 class ImageStamp(BaseImage):
@@ -40,7 +47,10 @@ class ImageStamp(BaseImage):
         The cut levels of the image. Default is two `None` types
     """
 
-    def __init__(self, filepath, metadata=None, logger=None):
+    accepted_units = ACCEPTED_UNITS
+
+    def __init__(self, filepath, metadata=None, logger=None,
+                 wavelength=float('nan'), unit='nm'):
         self.pds_image = PDS3Image.open(filepath)
         data = self.pds_image.image.astype(float)
         BaseImage.__init__(self, data_np=data,
@@ -49,10 +59,35 @@ class ImageStamp(BaseImage):
         self.image_name = os.path.basename(filepath)
         self.seen = False
         self.cuts = (None, None)
+        unit = astro_units.Unit(unit)
+        self._wavelength = wavelength * unit
 
     @property
     def data(self):
         return self.get_data()
+
+    @property
+    def wavelength(self):
+        return round(self._wavelength.value, 3)
+
+    @wavelength.setter
+    def wavelength(self, new_wavelength):
+        self._wavelength = new_wavelength * self._wavelength.unit
+
+    @property
+    def unit(self):
+        return self._wavelength.unit
+
+    @unit.setter
+    def unit(self, new_unit):
+        if new_unit not in self.accepted_units:
+            raise ValueError(
+                'Unit mus be one of the following %s' % (
+                    ', '.join(self.accepted_units)
+                )
+            )
+        new_unit = astro_units.Unit(new_unit)
+        self._wavelength = self._wavelength.to(new_unit)
 
 
 class PDSSpectImageSet(object):
@@ -120,6 +155,8 @@ class PDSSpectImageSet(object):
         'pencil'
     ]
 
+    accepted_units = ACCEPTED_UNITS
+
     def __init__(self, filepaths):
         self._views = []
         self.images = []
@@ -141,6 +178,8 @@ class PDSSpectImageSet(object):
         self._maskrgb_obj = Image(0, 0, self._maskrgb)
         self._subsets = []
         self._simultaneous_roi = False
+        self._unit = 'nm'
+        self.set_unit()
 
     def _determin_shape(self):
         shape = []
@@ -687,6 +726,27 @@ class PDSSpectImageSet(object):
             for subset in self.subsets:
                 subset._simultaneous_roi = state
 
+    @property
+    def unit(self):
+        return self._unit
+
+    def set_unit(self):
+        for image in self.images:
+            image.unit = self.unit
+
+    @unit.setter
+    def unit(self, new_unit):
+        if new_unit not in self.accepted_units:
+            raise ValueError(
+                'Unit mus be one of the following %s' % (
+                    ', '.join(self.accepted_units)
+                )
+            )
+        self._unit = new_unit
+        self.set_unit()
+        for subset in self.subsets:
+            subset._units = new_unit
+
 
 class SubPDSSpectImageSet(PDSSpectImageSet):
     """A Subset of an :class:`PDSSpectImageSet`
@@ -723,7 +783,7 @@ class SubPDSSpectImageSet(PDSSpectImageSet):
         self.shape = self.parent_set.shape
 
     def _create_image_list(self):
-        self.images = list(self.parent_set.images)
+        self.images = self.parent_set.images
 
 
 class PDSSpectImageSetViewBase(object):

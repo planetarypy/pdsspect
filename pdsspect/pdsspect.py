@@ -5,6 +5,7 @@ from glob import glob
 
 from qtpy import QtWidgets, QtCore
 
+from .set_wavelength import SetWavelengthWidget, SetWavelengthModel
 from .basic import BasicWidget
 from .pan_view import PanViewWidget
 from .selection import Selection
@@ -88,6 +89,10 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.add_window_btn = QtWidgets.QPushButton('Add Window')
         self.add_window_btn.clicked.connect(self.add_window)
 
+        self.set_wavelengths_btn = QtWidgets.QPushButton('Set Wavelengths')
+        self.set_wavelengths_btn.clicked.connect(self.open_set_wavelengths)
+        self.set_wavelength_window = None
+
         self.quit_btn = QtWidgets.QPushButton('Quit')
         self.quit_btn.clicked.connect(self.quit)
 
@@ -97,6 +102,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.button_layout.addWidget(self.transforms_btn)
         self.button_layout.addWidget(self.roi_histogram_btn)
         self.button_layout.addWidget(self.add_window_btn)
+        self.button_layout.addWidget(self.set_wavelengths_btn)
         self.button_layout.addWidget(self.quit_btn)
 
         self.main_layout = QtWidgets.QVBoxLayout()
@@ -158,6 +164,14 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         spect_view.pan_view.resizeEvent(None)
         spect_view.resizeEvent(None)
 
+    def open_set_wavelengths(self):
+        if not self.set_wavelength_window:
+            set_wavelength_model = SetWavelengthModel(self.image_set)
+            self.set_wavelength_window = SetWavelengthWidget(
+                set_wavelength_model
+            )
+        self.set_wavelength_window.show()
+
     def quit(self, *args):
         """Quit pdsspect"""
         self.pdsspect_view.close()
@@ -170,6 +184,8 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             self.transforms_window.close()
         if self.roi_histogram_window:
             self.roi_histogram_window.close()
+        if self.set_wavelength_window:
+            self.set_wavelength_window.close()
         self.close()
 
 
