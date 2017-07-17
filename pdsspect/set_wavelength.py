@@ -74,11 +74,12 @@ class SetWavelengthController(object):
         self.model.display_current_wavelength()
 
 
-class SetWavelengthWidget(QtWidgets.QWidget):
+class SetWavelengthWidget(QtWidgets.QMainWindow):
 
     def __init__(self, model):
         super(SetWavelengthWidget, self).__init__()
         self.model = model
+        self.central_widget = QtWidgets.QWidget()
         model.register(self)
         self.controller = SetWavelengthController(model, self)
 
@@ -101,8 +102,10 @@ class SetWavelengthWidget(QtWidgets.QWidget):
         self.main_layout.addWidget(self.image_menu)
         self.main_layout.addWidget(self.wavelength_text)
         self.main_layout.addWidget(self.units_menu)
-        self.setLayout(self.main_layout)
+        self.central_widget.setLayout(self.main_layout)
+        self.setCentralWidget(self.central_widget)
         self.setWindowTitle("Set Wavelengths")
+        self.statusBar()
 
     def select_image(self, index):
         self.controller.set_current_image_index(index)
@@ -118,8 +121,13 @@ class SetWavelengthWidget(QtWidgets.QWidget):
         try:
             wavelength = float(self.wavelength_text.text())
             self.controller.set_image_wavelength(wavelength)
+            self.show_status_bar_wavelength_set()
         except ValueError:
             self.display_current_wavelength()
 
     def change_unit(self, index):
         self.controller.change_unit(index)
+        self.show_status_bar_wavelength_set()
+
+    def show_status_bar_wavelength_set(self):
+        self.statusBar().showMessage("Wavelength Set", 1000)
