@@ -21,7 +21,9 @@ Welcome to pdsspect's documentation!
    roi
    basic
    histogram
+   roi_plot
    roi_histogram
+   roi_line_plot
    set_wavelength
    CONTRIBUTING
    AUTHORS

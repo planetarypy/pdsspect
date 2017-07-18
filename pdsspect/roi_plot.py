@@ -1,3 +1,4 @@
+"""Parent classes for any widget that plots data"""
 from qtpy import QT_VERSION
 from qtpy import QtWidgets, QtCore
 from matplotlib.figure import Figure
@@ -12,7 +13,7 @@ elif qt_ver == 5:
 
 
 class ROIPlotModel(object):
-    """Model for ROI histogram and accompanying widget
+    """Model for ROI Plot and accompanying widget
 
     Parameters
     ----------
@@ -23,6 +24,9 @@ class ROIPlotModel(object):
     ----------
     selected_colors : :obj:`list`
         Colors to display in the histogram
+    latex_units : :obj:`list` of 3 :obj:`str`
+        The latex strings of
+        :attr:`.pdsspect_image_set.PDSSpectImageSet.accepted_units`
     """
 
     latex_units = ['nm', '\mu m', '\AA']
@@ -54,7 +58,7 @@ class ROIPlotModel(object):
 
     @property
     def image_set(self):
-        """:class:`.pdsspect_image_set.PDSSpectImageSet` : Image set that
+        """:class:`~.pdsspect_image_set.PDSSpectImageSet` : Image set that
         corresponds with the current view
         """
 
@@ -70,10 +74,6 @@ class ROIPlotModel(object):
         """:obj:`int` : The index of the view to display the ROI data
 
         If there are not multiple views, view_index is automatically ``-1``.
-        When setting the ``view_index``, the :attr:`image_index` may be changed
-        to ``-1`` if the ``view_index`` and the
-        :attr:`~.pdsspect_image_set.PDSSpectImageSet.current_image_index` are
-        the same.
         """
 
         if not self.has_multiple_views:
@@ -114,19 +114,27 @@ class ROIPlotModel(object):
 
     @property
     def unit(self):
-        """:obj:`int` Index of :attr`unit` in :attr:`accepted_units`"""
+        """:obj:`str` : Latex version of
+        :attr:`.pdsspect_image_set.PDSSpectImageSet.unit`"""
         index = self.image_set.accepted_units.index(self.image_set.unit)
         return self.latex_units[index]
 
 
 class ROIPlotController(object):
-    """Controller for ROI histogram and accompanying widget
+    """Controller for ROI plot and accompanying widget
 
     Parameters
     ----------
     model : :class:`ROIPlotModel`
         The model
-    view : :class:`ROIHistogramWidget` or :class:`ROIHistogram`
+    view : :class:`QtWidgets.QWidget <PySide.QtGui.QWidget>`
+        The view
+
+    Attributes
+    ----------
+    model : :class:`ROIPlotModel`
+        The model
+    view : :class:`QtWidgets.QWidget <PySide.QtGui.QWidget>`
         The view
     """
 
@@ -258,16 +266,23 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     Checkboxes are created in :meth:`create_color_checkbox` which is why they
     do not appear in the :meth:`__init__` method.
 
+    Parameters
+    ----------
+    model : :class:`ROIPlotModel`
+        The model
+
     Attributes
     ----------
-    model : :class:`ROIHistogramModel`
+    model : :class:`ROIPlotModel`
         The model
-    controller : :class:`ROIHistogramController`
+    controller : :class:`ROIPlotController`
         The controller
     checkbox_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
         Place the checkboxes vertically
     main_layout : :class:`QtWidgets.QGridLayout <PySide.QtGui.QGridLayout>`
         Place in grid layout so histogram stretches while boxes are stationary
+    roi_plot : :class:`ROIPlot`
+        The plot of ROI data
     red_checkbox : :class:`ColorCheckBox`
         Red checkbox that displays red ROI data when checked
     brown_checkbox : :class:`ColorCheckBox`
@@ -394,19 +409,25 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
 
 class ROIPlot(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
-    """Histogram view of the data in each ROI color
+    """Plot of the data in each ROI color
 
     Parameters
     ----------
-    model : :class:`ROIHistogramModel`
+    model : :class:`ROIPlotModel`
         The model
-    controller : :class:`ROIHistogramController`
-        The controller
+    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
+        pdsspect model
+
+    Attributes
+    ----------
+    model : :class:`ROIPlotModel`
+        The model
     image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
         pdsspect model
     """
 
     def __init__(self, model):
+        self.model = model
         self.image_set = model.image_set
         fig = Figure(figsize=(6, 4), dpi=100, facecolor='black')
         fig.subplots_adjust(

@@ -5,9 +5,11 @@ from .roi_plot import ROIPlotModel, ROIPlotController, ROIPlotWidget, ROIPlot
 
 
 class ROILinePlotModel(ROIPlotModel):
+    """Model for ROI Line plot and widget"""
 
     @property
     def wavelengths(self):
+        """:obj:`list` : Sorted list of wavelengths in the :attr:`image_set`"""
         wavelengths = []
         for image in self.image_set.images:
             if not np.isnan(image.wavelength):
@@ -15,20 +17,52 @@ class ROILinePlotModel(ROIPlotModel):
         return sorted(wavelengths)
 
     def data_with_color(self, color):
+        """Get the data inside the ROI color if the image has a wavelength
+
+        Parameters
+        ----------
+        color : :obj:`str`
+            The color of the ROI
+
+        Returns
+        -------
+        data : :obj:`list` or :class:`numpy.ndarray`
+            Sorted list of arrays of data by wavelength
+        """
+
         images = []
         rows, cols = self.image_set.get_coordinates_of_color(color)
         for image in self.image_set.images:
             if not np.isnan(image.wavelength):
                 images.append(image)
         images = sorted(images, key=lambda image: image.wavelength)
-        return [image.data[rows, cols] for image in images]
+        data = [image.data[rows, cols] for image in images]
+        return data
 
 
 class ROILinePlotController(ROIPlotController):
+    """Controller for :class:`ROILinePlotWidget`"""
+
     pass
 
 
 class ROILinePlotWidget(ROIPlotWidget):
+    """Widget to hold line plot and check boxes
+
+    Parameters
+    ----------
+    model : :class:`ROILinePlotModel`
+        The model
+
+    Attributes
+    ----------
+    model : :class:`ROILinePlotModel`
+        The model
+    controller : :class:`ROILinePlotController`
+        The controller
+    roi_line_plot : :class:`ROILinePlot`
+        Line plot of ROI data
+    """
 
     def __init__(self, model):
         self.model = model
@@ -51,6 +85,18 @@ class ROILinePlotWidget(ROIPlotWidget):
 
 
 class ROILinePlot(ROIPlot):
+    """Line plot of ROI data
+
+    Parameters
+    ----------
+    model : :class:`ROILinePlotModel`
+        The model
+
+    Attributes
+    ----------
+    model : :class:`ROILinePlotModel`
+        The model
+    """
 
     def __init__(self, model):
         self.model = model
@@ -59,6 +105,7 @@ class ROILinePlot(ROIPlot):
         super(ROILinePlot, self).__init__(model)
 
     def set_data(self):
+        """Set the data of the selected colors on the line plot"""
         self._ax.cla()
         wavelengths = self.model.wavelengths
         for color in self.model.selected_colors:

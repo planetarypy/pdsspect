@@ -7,18 +7,7 @@ from .roi_plot import ROIPlotModel, ROIPlotController, ROIPlotWidget, ROIPlot
 
 
 class ROIHistogramModel(ROIPlotModel):
-    """Model for ROI histogram and accompanying widget
-
-    Parameters
-    ----------
-    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
-        pdsspect model
-
-    Attributes
-    ----------
-    selected_colors : :obj:`list`
-        Colors to display in the histogram
-    """
+    """Model for ROI histogram and accompanying widget"""
 
     def __init__(self, image_set):
         super(ROIHistogramModel, self).__init__(image_set)
@@ -29,7 +18,11 @@ class ROIHistogramModel(ROIPlotModel):
         """:obj:`int` : The index of the image to which to compare data with
 
         When setting :attr:`image_index`, it may be changed to ``-1`` if the
-        image is the same as the current image
+        image is the same as the current image. Furthermore, when setting the
+        :attr:`view_index`, the :attr:`image_index` may be changed to ``-1`` if
+        the :attr:`view_index` and the
+        :attr:`~.pdsspect_image_set.PDSSpectImageSet.current_image_index` are
+        the same.
         """
 
         return self._image_index
@@ -52,6 +45,11 @@ class ROIHistogramModel(ROIPlotModel):
         ----------
         color : :obj:`str`
             The color of the ROI
+
+        Returns
+        -------
+        data : :class:`numpy.ndarray`
+            Data in ROI color for the xaxis
         """
 
         rows, cols = self.image_set.get_coordinates_of_color(color)
@@ -65,6 +63,11 @@ class ROIHistogramModel(ROIPlotModel):
         ----------
         color : :obj:`str`
             The color of the ROI
+
+        Returns
+        -------
+        data : :class:`numpy.ndarray`
+            Data in ROI color for the yaxis
         """
 
         if not self.compare_data:
@@ -99,6 +102,13 @@ class ROIHistogramController(ROIPlotController):
         The model
     view : :class:`ROIHistogramWidget` or :class:`ROIHistogram`
         The view
+
+    Attributes
+    ----------
+    model : :class:`ROIHistogramModel`
+        The model
+    view : :class:`ROIHistogramWidget` or :class:`ROIHistogram`
+        The view
     """
 
     def set_image_index(self, index):
@@ -114,10 +124,12 @@ class ROIHistogramController(ROIPlotController):
 
 
 class ROIHistogramWidget(ROIPlotWidget):
-    """Widget to hold the histogram and checkboxs
+    """Widget to hold the histogram and check boxes
 
-    Checkboxes are created in :meth:`create_color_checkbox` which is why they
-    do not appear in the :meth:`__init__` method.
+    Parameters
+    ----------
+    model : :class:`ROIHistogramModel`
+        The model
 
     Attributes
     ----------
@@ -125,38 +137,10 @@ class ROIHistogramWidget(ROIPlotWidget):
         The model
     controller : :class:`ROIHistogramController`
         The controller
-    checkbox_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
-        Place the checkboxes vertically
-    main_layout : :class:`QtWidgets.QGridLayout <PySide.QtGui.QGridLayout>`
-        Place in grid layout so histogram stretches while boxes are stationary
-    red_checkbox : :class:`ColorCheckBox`
-        Red checkbox that displays red ROI data when checked
-    brown_checkbox : :class:`ColorCheckBox`
-        Brown checkbox that displays brown ROI data when checked
-    lightblue_checkbox : :class:`ColorCheckBox`
-        Lightblue checkbox that displays lightblue ROI data when checked
-    lightcyan_checkbox : :class:`ColorCheckBox`
-        Lightcyan checkbox that displays lightcyan ROI data when checked
-    darkgreen_checkbox : :class:`ColorCheckBox`
-        Darkgreen checkbox that displays darkgreen ROI data when checked
-    yellow_checkbox : :class:`ColorCheckBox`
-        Yellow checkbox that displays yellow ROI data when checked
-    pink_checkbox : :class:`ColorCheckBox`
-        Pink checkbox that displays pink ROI data when checked
-    teal_checkbox : :class:`ColorCheckBox`
-        Teal checkbox that displays teal ROI data when checked
-    goldenrod_checkbox : :class:`ColorCheckBox`
-        Goldenrod checkbox that displays goldenrod ROI data when checked
-    sienna_checkbox : :class:`ColorCheckBox`
-        Sienna checkbox that displays sienna ROI data when checked
-    darkblue_checkbox : :class:`ColorCheckBox`
-        Darkblue checkbox that displays darkblue ROI data when checked
-    crimson_checkbox : :class:`ColorCheckBox`
-        Crimson checkbox that displays crimson ROI data when checked
-    maroon_checkbox : :class:`ColorCheckBox`
-        Maroon checkbox that displays maroon ROI data when checked
-    purple_checkbox : :class:`ColorCheckBox`
-        Purple checkbox that displays purple ROI data when checked
+    image_menu : :class:`QtWidgets.QComboBox <PySide.QtGui.QComboBox>`
+        Menu to select image for y axis
+    roi_histogram : :class:`ROIHistogram`
+        Histogram of data
     """
 
     def __init__(self, model):
@@ -191,6 +175,7 @@ class ROIHistogramWidget(ROIPlotWidget):
 
     def select_image(self, index):
         """Select an image when image is selected in the menu
+
         Parameters
         ----------
         index : :obj:`int`
@@ -213,10 +198,11 @@ class ROIHistogram(ROIPlot):
     ----------
     model : :class:`ROIHistogramModel`
         The model
-    controller : :class:`ROIHistogramController`
-        The controller
-    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
-        pdsspect model
+
+    Attributes
+    ----------
+    model : :class:`ROIHistogramModel`
+        The model
     """
 
     def __init__(self, model):

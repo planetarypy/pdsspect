@@ -48,6 +48,10 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         Open ROI Histogram window
     roi_histogram_window : :class:`~.roi_histogram.ROIHistogramWidget`
         The ROI Histogram Window
+    roi_line_plot_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
+        Open ROI Line Plot window
+    roi_line_plot_window : :class:`~.roi_line_plot.ROILinePlotWidget`
+        The ROI Line Plot Window
     add_window_btn : :class:`QPushButton <PySide.QtGui.QPushButton>`
         Add another window
     quit_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
@@ -157,6 +161,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.roi_histogram_window.show()
 
     def open_roi_line_plot(self):
+        """Open the ROI Line Plot Window"""
         if not self.roi_line_plot_window:
             roi_line_plot_model = ROILinePlotModel(self.image_set)
             self.roi_line_plot_window = ROILinePlotWidget(roi_line_plot_model)

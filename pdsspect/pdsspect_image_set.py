@@ -140,6 +140,8 @@ class PDSSpectImageSet(object):
         :class:`Filled Rectangle <.pdsspect.roi.Rectangle>`,
         :class:`Filled Polygon <.pdsspect.roi.Polygon>`, and
         :class:`Filled Rectangle <.pdsspect.roi.Pencil>`, (single points).
+    accepted_units : :obj:`list`
+        List of accepted units: ``nm``, ``um``, and ``AA``
     images : :obj:`list` of :class:`ImageStamp`
         Images to view and make selections. Must all have the same dimensions
     filepaths : :obj:`list`
@@ -746,9 +748,11 @@ class PDSSpectImageSet(object):
 
     @property
     def unit(self):
+        """:obj:`str` : The image set's current wavelength unit"""
         return self._unit
 
     def set_unit(self):
+        """Set each image to :attr:`unit`"""
         for image in self.images:
             image.unit = self.unit
 
