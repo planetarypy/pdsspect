@@ -1,6 +1,6 @@
 import math
 
-from qtpy import QtWidgets, QtCore
+from qtpy import QtWidgets
 
 from .pdsspect_image_set import ginga_colors
 from .roi_plot import ROIPlotModel, ROIPlotController, ROIPlotWidget, ROIPlot
@@ -164,8 +164,8 @@ class ROIHistogramWidget(ROIPlotWidget):
         self.image_menu = None
         self._create_image_menu()
         self.roi_histogram = ROIHistogram(model)
-        self.controller = ROIHistogramController(model, self)
         super(ROIHistogramWidget, self).__init__(model)
+        self.controller = ROIHistogramController(model, self)
         self.setWindowTitle('ROI Histogram')
 
     def _register_set_at_index(self, index):

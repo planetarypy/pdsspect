@@ -9,6 +9,7 @@ from pdsspect.transforms import Transforms
 from pdsspect.selection import Selection
 from pdsspect.roi_histogram import ROIHistogramWidget
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
+from pdsspect.roi_line_plot import ROILinePlotWidget
 
 
 class TestPDSSpect(object):
@@ -67,7 +68,7 @@ class TestPDSSpect(object):
         assert window.transforms_window.isVisible()
         assert isinstance(window.transforms_window, Transforms)
 
-    def test_roi_histogram(self, qtbot, window):
+    def test_open_roi_histogram(self, qtbot, window):
         window.show()
         qtbot.add_widget(window)
         qtbot.add_widget(window.basic_window)
@@ -78,6 +79,17 @@ class TestPDSSpect(object):
         assert window.roi_histogram_window.isVisible()
         assert isinstance(window.roi_histogram_window, ROIHistogramWidget)
 
+    def test_open_roi_line_plot(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        qtbot.add_widget(window.basic_window)
+        assert window.roi_line_plot_window is None
+        qtbot.mouseClick(window.roi_line_plot_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.roi_line_plot_window)
+        assert window.roi_line_plot_window is not None
+        assert window.roi_line_plot_window.isVisible()
+        assert isinstance(window.roi_line_plot_window, ROILinePlotWidget)
+
     def test_add_window(self, qtbot, window):
         window.show()
         qtbot.add_widget(window)
@@ -87,7 +99,8 @@ class TestPDSSpect(object):
         qtbot.add_widget(window.selection_window)
         qtbot.mouseClick(window.roi_histogram_btn, QtCore.Qt.LeftButton)
         qtbot.add_widget(window.roi_histogram_window)
-        qtbot.mouseClick(window.roi_histogram_btn, QtCore.Qt.LeftButton)
+        qtbot.mouseClick(window.roi_line_plot_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.roi_line_plot_window)
         assert len(window.image_sets) == 1
         assert len(window.basic_window.basics) == 1
         assert len(window.pan_view.pans) == 1
@@ -105,6 +118,10 @@ class TestPDSSpect(object):
         qtbot.add_widget(window.basic_window)
         qtbot.mouseClick(window.selection_btn, QtCore.Qt.LeftButton)
         qtbot.add_widget(window.selection_window)
+        qtbot.mouseClick(window.roi_histogram_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.roi_histogram_window)
+        qtbot.mouseClick(window.roi_line_plot_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.roi_line_plot_window)
         assert window.transforms_window.isVisible()
         assert window.basic_window.isVisible()
         assert window.selection_window.isVisible()

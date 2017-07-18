@@ -302,6 +302,7 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         super(ROIPlotWidget, self).__init__()
         self.model = model
         self.model.register(self)
+        self.controller = ROIPlotController(model, self)
         self.roi_plot = None
         self.checkbox_layout = QtWidgets.QVBoxLayout()
         for color in self.model.image_set.colors[:-1]:
