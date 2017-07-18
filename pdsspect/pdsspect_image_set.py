@@ -764,6 +764,8 @@ class PDSSpectImageSet(object):
         self.set_unit()
         for subset in self.subsets:
             subset._unit = new_unit
+        for view in self._views:
+            view.set_roi_data()
 
 
 class SubPDSSpectImageSet(PDSSpectImageSet):

@@ -94,6 +94,9 @@ class TestPDSSpectImageSet(object):
         self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
         self.test_set._subsets = []
         self.test_set._simultaneous_roi = False
+        self.test_set._unit = 'nm'
+        for image in self.test_set.images:
+            image.unit = 'nm'
 
     def test_init(self):
         test_set = self.test_set

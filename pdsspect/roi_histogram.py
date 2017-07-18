@@ -1,3 +1,5 @@
+import math
+
 from qtpy import QT_VERSION
 from qtpy import QtWidgets, QtCore
 from matplotlib.figure import Figure
@@ -510,7 +512,7 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
         model.register(self)
         self.controller = ROIHistogramController(model, self)
         self.image_set = model.image_set
-        fig = Figure(figsize=(2, 2), dpi=100, facecolor='black')
+        fig = Figure(figsize=(6, 4), dpi=100, facecolor='black')
         fig.subplots_adjust(
             left=0.15,
             right=0.95,
@@ -547,10 +549,19 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
             )
             self._ax.hist(data.flatten(), 100, color=rgb)
 
+    def _create_label(self, image):
+        label = image.image_name
+        if not math.isnan(image.wavelength):
+            label += '\n(%.3f %s)' % (image.wavelength, image.unit)
+        return label
+
     def _plot_comparison(self):
-        yimage = self.model.image_set.images[self.model.image_index]
+        ylabel = self._create_label(
+            self.model.image_set.images[self.model.image_index]
+        )
+
         self._ax.set_ylabel(
-            ylabel=yimage.image_name,
+            ylabel=ylabel,
             color='w',
             fontsize=9
         )
@@ -572,8 +583,10 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
         else:
             self._plot_histogram()
 
+        xlabel = self._create_label(self.model.image_set.current_image)
+
         self._ax.set_xlabel(
-            xlabel=self.model.image_set.current_image.image_name,
+            xlabel=xlabel,
             color='w',
             fontsize=9,
         )
