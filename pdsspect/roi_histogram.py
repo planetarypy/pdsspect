@@ -1,19 +1,12 @@
 import math
 
-from qtpy import QT_VERSION
 from qtpy import QtWidgets, QtCore
-from matplotlib.figure import Figure
 
-from .pdsspect_image_set import PDSSpectImageSetViewBase, ginga_colors
-
-qt_ver = int(QT_VERSION[0])
-if qt_ver == 4:
-    from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg
-elif qt_ver == 5:
-    from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg
+from .pdsspect_image_set import ginga_colors
+from .roi_plot import ROIPlotModel, ROIPlotController, ROIPlotWidget, ROIPlot
 
 
-class ROIHistogramModel(object):
+class ROIHistogramModel(ROIPlotModel):
     """Model for ROI histogram and accompanying widget
 
     Parameters
@@ -23,73 +16,13 @@ class ROIHistogramModel(object):
 
     Attributes
     ----------
-    image_set : :class:`~.pdsspect_image_set.PDSSpectImageSet`
-        pdsspect model
     selected_colors : :obj:`list`
         Colors to display in the histogram
     """
 
     def __init__(self, image_set):
-        self._views = []
-        self._image_set = image_set
-        self.selected_colors = []
-        self._view_index = 0
+        super(ROIHistogramModel, self).__init__(image_set)
         self._image_index = -1
-
-    def register(self, view):
-        """Register view with the model"""
-        if view not in self._views:
-            self._views.append(view)
-
-    def unregister(self, view):
-        """Unregister view with the model"""
-        if view in self._views:
-            self._views.remove(view)
-
-    def set_data(self):
-        for view in self._views:
-            view.set_data()
-
-    @property
-    def image_sets(self):
-        """:obj:`list` : All the image sets, including the current one"""
-        return [self._image_set] + self._image_set.subsets
-
-    @property
-    def image_set(self):
-        """:class:`.pdsspect_image_set.PDSSpectImageSet` : Image set that
-        corresponds with the current view
-        """
-
-        return self.image_sets[self._view_index]
-
-    @property
-    def has_multiple_views(self):
-        """:obj:`bool` : True if there are multiple views, False otherwise"""
-        return len(self.image_sets) > 1
-
-    @property
-    def view_index(self):
-        """:obj:`int` : The index of the view to display the ROI data
-
-        If there are not multiple views, view_index is automatically ``-1``.
-        When setting the ``view_index``, the :attr:`image_index` may be changed
-        to ``-1`` if the ``view_index`` and the
-        :attr:`~.pdsspect_image_set.PDSSpectImageSet.current_image_index` are
-        the same.
-        """
-
-        if not self.has_multiple_views:
-            return -1
-        else:
-            return self._view_index
-
-    @view_index.setter
-    def view_index(self, new_index):
-        self._view_index = new_index
-        if self._view_index == self.image_set.current_image_index:
-            self.image_index = -1
-        self.set_data()
 
     @property
     def image_index(self):
@@ -111,30 +44,6 @@ class ROIHistogramModel(object):
     def compare_data(self):
         """:obj:`bool` : True if :attr:`image_index` is not ``-1``"""
         return self.image_index != -1
-
-    def add_selected_color(self, color):
-        """Select a color and inform views to display new color
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The color to add
-        """
-
-        self.selected_colors.append(color)
-        self.set_data()
-
-    def remove_selected_color(self, color):
-        """Remove a selected color and inform views to not display the color
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The color to remove
-        """
-
-        self.selected_colors.remove(color)
-        self.set_data()
 
     def xdata(self, color):
         """Data inside a ROI with the given color for the current image
@@ -181,7 +90,7 @@ class ROIHistogramModel(object):
         return ylim
 
 
-class ROIHistogramController(object):
+class ROIHistogramController(ROIPlotController):
     """Controller for ROI histogram and accompanying widget
 
     Parameters
@@ -191,57 +100,6 @@ class ROIHistogramController(object):
     view : :class:`ROIHistogramWidget` or :class:`ROIHistogram`
         The view
     """
-
-    def __init__(self, model, view):
-        self.model = model
-        self.view = view
-
-    def color_state_changed(self, color):
-        """Select or remove the color when a checkbox color changes
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The name of the checkbox whose state changed
-        """
-
-        if color not in self.model.selected_colors:
-            self.select_color(color)
-        else:
-            self.remove_color(color)
-
-    def select_color(self, color):
-        """Selected a given color
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The color to select
-        """
-
-        self.model.add_selected_color(color)
-
-    def remove_color(self, color):
-        """Remove a given color
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The color to remove
-        """
-
-        self.model.remove_selected_color(color)
-
-    def set_view_index(self, index):
-        """Set the index of the view
-
-        Parameters
-        ----------
-        index : :obj:`int`
-            Index of the view
-        """
-
-        self.model.view_index = index
 
     def set_image_index(self, index):
         """Set the index of the image in the menu
@@ -255,77 +113,7 @@ class ROIHistogramController(object):
         self.model.image_index = index
 
 
-class ColorCheckBox(QtWidgets.QCheckBox):
-    """Custom checkbox that emits its color (:obj:`str`) when toggled
-
-    Parameters
-    ----------
-    color : :obj:`str`
-        The color to name the checkbox
-
-    Attributes
-    ----------
-    color : :obj:`str`
-        The color to name the checkbox
-    stateChanged : :obj:`QtCore.Signal`
-        Signal that emits a string when check box changes its state
-
-        Read more about `Signals here
-        <http://pyqt.sourceforge.net/Docs/PyQt5/signals_slots.html>`_
-    """
-
-    stateChanged = QtCore.Signal(str)
-
-    def __init__(self, color):
-        super(ColorCheckBox, self).__init__(color)
-        self.color = color
-
-    def nextCheckState(self):
-        """Adjust checkbox's toggle & emit color when checkbox is clicked"""
-        self.setChecked(not self.isChecked())
-        self.stateChanged.emit(self.color)
-
-
-class ViewCheckBox(QtWidgets.QCheckBox):
-    """Custom checkbox that emits its index (:obj:`int`) when toggled
-
-    Parameters
-    ----------
-    index : :obj:`int`
-        The index of the view
-
-    Attributes
-    ----------
-    index : :obj:`int`
-        The index of the view
-    stateChanged : :obj:`QtCore.Signal`
-        Signal that emits the box itself when check box changes its state
-
-        Read more about `Signals here
-        <http://pyqt.sourceforge.net/Docs/PyQt5/signals_slots.html>`_
-    """
-
-    stateChanged = QtCore.Signal(object)
-
-    def __init__(self, index):
-        view_number = index + 1
-        name = 'view ' + str(view_number)
-        super(ViewCheckBox, self).__init__(name)
-        self.name = name
-        self.view_number = view_number
-        self.index = index
-
-    def set_check_state(self):
-        self.setChecked(not self.isChecked())
-        self.stateChanged.emit(self)
-
-    def nextCheckState(self):
-        """Adjust checkbox's toggle & emit checkbox when checkbox is clicked"""
-        if not self.isChecked():
-            self.set_check_state()
-
-
-class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
+class ROIHistogramWidget(ROIPlotWidget):
     """Widget to hold the histogram and checkboxs
 
     Checkboxes are created in :meth:`create_color_checkbox` which is why they
@@ -372,18 +160,19 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     """
 
     def __init__(self, model):
-        super(ROIHistogramWidget, self).__init__()
         self.model = model
-        self.model.register(self)
-        self.controller = ROIHistogramController(model, self)
-        self.checkbox_layout = QtWidgets.QVBoxLayout()
-        for color in self.model.image_set.colors[:-1]:
-            self.create_color_checkbox(color)
-        self.roi_histogram = ROIHistogram(model)
-        self.view_boxes_layout = QtWidgets.QHBoxLayout()
-        self.main_layout = QtWidgets.QGridLayout()
         self.image_menu = None
         self._create_image_menu()
+        self.roi_histogram = ROIHistogram(model)
+        self.controller = ROIHistogramController(model, self)
+        super(ROIHistogramWidget, self).__init__(model)
+        self.setWindowTitle('ROI Histogram')
+
+    def _register_set_at_index(self, index):
+        self.model.image_sets[index].register(self.roi_histogram)
+        self.model.image_sets[index].register(self)
+
+    def _set_layout(self):
         self.main_layout.addLayout(self.view_boxes_layout, 0, 1, 1, 2)
         self.main_layout.addWidget(self.image_menu, 1, 0, 1, 1)
         self.main_layout.addWidget(self.roi_histogram, 1, 1, 2, 2)
@@ -391,12 +180,6 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.main_layout.setColumnStretch(1, 1)
         self.main_layout.setRowStretch(1, 1)
         self.setLayout(self.main_layout)
-        self.setWindowTitle('ROI Histogram')
-        if self.model.has_multiple_views:
-            self.add_view()
-        else:
-            self.model.image_sets[0].register(self.roi_histogram)
-            self.model.image_sets[0].register(self)
 
     def _create_image_menu(self):
         image_menu = QtWidgets.QComboBox()
@@ -405,74 +188,6 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         image_menu.setCurrentIndex(self.model.image_set.current_image_index)
         image_menu.currentIndexChanged.connect(self.select_image)
         self.image_menu = image_menu
-
-    def create_color_checkbox(self, color):
-        """Create a checkbox with the given color
-
-        Parameters
-        ----------
-        color : :obj:`str`
-            The color to name the checkbox
-        """
-
-        name = color + '_checkbox'
-        color_checkbox = ColorCheckBox(color)
-        color_checkbox.stateChanged.connect(self.check_color)
-        setattr(self, name, color_checkbox)
-        self.checkbox_layout.addWidget(color_checkbox)
-
-    def check_color(self, checkbox_color):
-        """Called when the state a checkbox is changed
-
-        Parameters
-        ----------
-        checkbox_color : :obj:`str`
-            The color label of the check box
-        """
-
-        self.controller.color_state_changed(checkbox_color)
-
-    def add_view(self, index=None):
-        """Add a view box to the widget
-
-        Parameters
-        ----------
-        index : :obj:`int` [Default None]
-            The index to add the view to
-        """
-
-        if self.view_boxes_layout.count() == 0 and index is None:
-            for index, image_set in enumerate(self.model.image_sets):
-                self.add_view(index)
-            return
-        if index is None:
-            index = len(self.model.image_sets) - 1
-        view_box = ViewCheckBox(index)
-        view_box.stateChanged.connect(self.check_view_checkbox)
-        self.view_boxes_layout.addWidget(view_box)
-        self.model.image_sets[index].register(self.roi_histogram)
-        self.model.image_sets[index].register(self)
-        box = self.view_boxes_layout.itemAt(self.model._view_index).widget()
-        box.setChecked(True)
-        self.check_view_checkbox(box)
-
-    def check_view_checkbox(self, view_checkbox):
-        """Check the view box at the given index
-
-        Parameters
-        ----------
-        view_checkbox : :class:`ViewCheckBox`
-            The view check box whose state changed
-        """
-
-        index = view_checkbox.index
-        for item_index in range(self.view_boxes_layout.count()):
-            if item_index != index:
-                box = self.view_boxes_layout.itemAt(item_index).widget()
-                box.setChecked(False)
-
-        if view_checkbox.isChecked():
-            self.controller.set_view_index(index)
 
     def select_image(self, index):
         """Select an image when image is selected in the menu
@@ -490,11 +205,8 @@ class ROIHistogramWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         else:
             self.select_image(self.image_menu.currentIndex())
 
-    def set_data(self):
-        pass
 
-
-class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
+class ROIHistogram(ROIPlot):
     """Histogram view of the data in each ROI color
 
     Parameters
@@ -511,30 +223,8 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
         self.model = model
         model.register(self)
         self.controller = ROIHistogramController(model, self)
-        self.image_set = model.image_set
-        fig = Figure(figsize=(6, 4), dpi=100, facecolor='black')
-        fig.subplots_adjust(
-            left=0.15,
-            right=0.95,
-            top=0.95,
-            bottom=0.15,
-            wspace=0.0,
-            hspace=0.0,
-        )
-        super(ROIHistogram, self).__init__(fig)
-        self._figure = fig
-        policy = self.sizePolicy()
-        policy.setHeightForWidth(True)
-        self.setSizePolicy(policy)
-        self.setMinimumSize(self.size())
-        self._ax = fig.add_subplot(111)
-        self._ax.set_facecolor('black')
-        self._ax.spines['bottom'].set_color('w')
-        self._ax.spines['left'].set_color('w')
-        self._ax.tick_params(axis='x', colors='w', labelsize=8)
-        self._ax.tick_params(axis='y', colors='w', labelsize=8)
+        super(ROIHistogram, self).__init__(model)
         self._ax.set_xlim(self.model.xlim)
-        self.set_data()
 
     def _plot_histogram(self):
         self._ax.set_ylabel(
@@ -552,7 +242,8 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
     def _create_label(self, image):
         label = image.image_name
         if not math.isnan(image.wavelength):
-            label += '\n(%.3f %s)' % (image.wavelength, image.unit)
+            label += '\n(%.3f' % (image.wavelength)
+            label += r' $%s$)' % (self.model.unit)
         return label
 
     def _plot_comparison(self):
@@ -594,10 +285,6 @@ class ROIHistogram(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
         if self.model.compare_data:
             self._ax.set_ylim(self.model.ylim)
         self.draw()
-
-    def set_roi_data(self):
-        """Set data when ROI is created/destroyed or checkbox is toggled"""
-        self.set_data()
 
     def set_image(self):
         """Set data when image is changed"""
