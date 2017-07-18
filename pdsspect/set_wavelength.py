@@ -135,6 +135,8 @@ class SetWavelengthController(object):
 
         self.model.current_image.wavelength = wavelength
         self.model.display_current_wavelength()
+        for view in self.model.image_set._views:
+            view.set_roi_data()
 
 
 class SetWavelengthWidget(QtWidgets.QMainWindow):
@@ -194,6 +196,7 @@ class SetWavelengthWidget(QtWidgets.QMainWindow):
         self.setCentralWidget(self._central_widget)
         self.setWindowTitle('Set Wavelengths')
         self.statusBar()
+        self.display_current_wavelength()
 
     def select_image(self, index):
         """Select current image
