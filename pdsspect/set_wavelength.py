@@ -104,7 +104,7 @@ class SetWavelengthWidget(QtWidgets.QMainWindow):
         self.main_layout.addWidget(self.units_menu)
         self.central_widget.setLayout(self.main_layout)
         self.setCentralWidget(self.central_widget)
-        self.setWindowTitle("Set Wavelengths")
+        self.setWindowTitle('Set Wavelengths')
         self.statusBar()
 
     def select_image(self, index):
@@ -119,7 +119,11 @@ class SetWavelengthWidget(QtWidgets.QMainWindow):
 
     def set_wavelength(self):
         try:
-            wavelength = float(self.wavelength_text.text())
+            wavelength = self.wavelength_text.text()
+            if wavelength == '':
+                wavelength = float('nan')
+            else:
+                wavelength = float(wavelength)
             self.controller.set_image_wavelength(wavelength)
             self.show_status_bar_wavelength_set()
         except ValueError:
@@ -130,4 +134,4 @@ class SetWavelengthWidget(QtWidgets.QMainWindow):
         self.show_status_bar_wavelength_set()
 
     def show_status_bar_wavelength_set(self):
-        self.statusBar().showMessage("Wavelength Set", 1000)
+        self.statusBar().showMessage('Wavelength Set', 1000)

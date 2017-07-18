@@ -59,6 +59,7 @@ class ImageStamp(BaseImage):
         self.image_name = os.path.basename(filepath)
         self.seen = False
         self.cuts = (None, None)
+        self._check_acceptable_unit(unit)
         unit = astro_units.Unit(unit)
         self._wavelength = wavelength * unit
 
@@ -80,14 +81,20 @@ class ImageStamp(BaseImage):
 
     @unit.setter
     def unit(self, new_unit):
-        if new_unit not in self.accepted_units:
+        self._check_acceptable_unit(new_unit)
+        new_unit = astro_units.Unit(new_unit)
+        self._wavelength = self._wavelength.to(new_unit)
+
+    def _check_acceptable_unit(self, unit):
+        if unit not in self.accepted_units:
             raise ValueError(
                 'Unit mus be one of the following %s' % (
                     ', '.join(self.accepted_units)
                 )
             )
-        new_unit = astro_units.Unit(new_unit)
-        self._wavelength = self._wavelength.to(new_unit)
+
+    def get_wavelength(self):
+        return self._wavelength.copy()
 
 
 class PDSSpectImageSet(object):
@@ -745,7 +752,7 @@ class PDSSpectImageSet(object):
         self._unit = new_unit
         self.set_unit()
         for subset in self.subsets:
-            subset._units = new_unit
+            subset._unit = new_unit
 
 
 class SubPDSSpectImageSet(PDSSpectImageSet):
