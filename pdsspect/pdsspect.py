@@ -11,6 +11,7 @@ from .pan_view import PanViewWidget
 from .selection import Selection
 from .transforms import Transforms
 from .pdsspect_view import PDSSpectViewWidget
+from .roi_line_plot import ROILinePlotWidget, ROILinePlotModel
 from .roi_histogram import ROIHistogramWidget, ROIHistogramModel
 from .pdsspect_image_set import PDSSpectImageSet, PDSSpectImageSetViewBase
 
@@ -86,6 +87,10 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.roi_histogram_btn.clicked.connect(self.open_roi_histogram)
         self.roi_histogram_window = None
 
+        self.roi_line_plot_btn = QtWidgets.QPushButton('ROI Line Plot')
+        self.roi_line_plot_btn.clicked.connect(self.open_roi_line_plot)
+        self.roi_line_plot_window = None
+
         self.add_window_btn = QtWidgets.QPushButton('Add Window')
         self.add_window_btn.clicked.connect(self.add_window)
 
@@ -101,6 +106,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.button_layout.addWidget(self.basic_btn)
         self.button_layout.addWidget(self.transforms_btn)
         self.button_layout.addWidget(self.roi_histogram_btn)
+        self.button_layout.addWidget(self.roi_line_plot_btn)
         self.button_layout.addWidget(self.add_window_btn)
         self.button_layout.addWidget(self.set_wavelengths_btn)
         self.button_layout.addWidget(self.quit_btn)
@@ -150,6 +156,12 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             self.roi_histogram_window = ROIHistogramWidget(roi_histogram_model)
         self.roi_histogram_window.show()
 
+    def open_roi_line_plot(self):
+        if not self.roi_line_plot_window:
+            roi_line_plot_model = ROILinePlotModel(self.image_set)
+            self.roi_line_plot_window = ROILinePlotWidget(roi_line_plot_model)
+        self.roi_line_plot_window.show()
+
     def add_window(self):
         """Add another window to make more ROIs"""
         subset = self.image_set.create_subset()
@@ -159,6 +171,8 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             self.basic_window.add_basic(subset, spect_view.view_canvas)
         if self.roi_histogram_window:
             self.roi_histogram_window.add_view()
+        if self.roi_line_plot_window:
+            self.roi_line_plot_window.add_view()
         spect_view.show()
         spect_view.pan_view.show()
         spect_view.pan_view.resizeEvent(None)
@@ -184,6 +198,8 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
             self.transforms_window.close()
         if self.roi_histogram_window:
             self.roi_histogram_window.close()
+        if self.roi_line_plot_window:
+            self.roi_line_plot_window.close()
         if self.set_wavelength_window:
             self.set_wavelength_window.close()
         self.close()
