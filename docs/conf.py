@@ -182,6 +182,7 @@ intersphinx_mapping = {
     'planetaryimage': (
         'https://planetaryimage.readthedocs.io/en/latest/', None
     ),
+    'astropy': ('http://docs.astropy.org/en/stable/', None),
 }
 
 import sphinx_rtd_theme

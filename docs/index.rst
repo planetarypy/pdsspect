@@ -22,6 +22,7 @@ Welcome to pdsspect's documentation!
    basic
    histogram
    roi_histogram
+   set_wavelength
    CONTRIBUTING
    AUTHORS
    HISTORY

@@ -45,6 +45,8 @@ class ImageStamp(BaseImage):
         Default if False
     cuts : :obj:`tuple`
         The cut levels of the image. Default is two `None` types
+    accepted_units : :obj:`list`
+        List of accepted units: ``nm``, ``um``, and ``AA``
     """
 
     accepted_units = ACCEPTED_UNITS
@@ -65,11 +67,13 @@ class ImageStamp(BaseImage):
 
     @property
     def data(self):
+        """:class:`numpy.ndarray` : Image data"""
         return self.get_data()
 
     @property
     def wavelength(self):
-        return round(self._wavelength.value, 3)
+        """:obj:`int` : The images wavelength"""
+        return float(round(self._wavelength.value, 3))
 
     @wavelength.setter
     def wavelength(self, new_wavelength):
@@ -77,6 +81,12 @@ class ImageStamp(BaseImage):
 
     @property
     def unit(self):
+        """:class:`astropy.units.Unit` : The :attr:`wavelength` unit
+
+        Setting the unit will convert the wavelength value as well. The new
+        unit must also be one of the :attr:`accepted_units`
+        """
+
         return self._wavelength.unit
 
     @unit.setter
@@ -94,6 +104,7 @@ class ImageStamp(BaseImage):
             )
 
     def get_wavelength(self):
+        """:class:`astropy.units.quantity.Quantity` Copy of the wavelength"""
         return self._wavelength.copy()
 
 
