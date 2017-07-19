@@ -18,6 +18,10 @@ class TestImageStamp():
     def image_stamp(self):
         return ImageStamp(FILE_1)
 
+    @pytest.fixture()
+    def pancam_stamp(self):
+        return ImageStamp(FILE_2)
+
     def test_init(self, image_stamp):
         assert image_stamp.image_name == FILE_1_NAME
         assert not image_stamp.seen
@@ -65,6 +69,10 @@ class TestImageStamp():
         image_stamp.unit = 'AA'
         assert wavelength.value == 10.0
         assert wavelength.unit == 'nm'
+
+    def test_wavelength_pancam(self, pancam_stamp):
+        """Test that the image stamp uses the images wavelength if exists"""
+        assert pancam_stamp.wavelength == 880.0
 
     def test_accepted_units(self, image_stamp):
         assert image_stamp.accepted_units == ['nm', 'um', 'AA']

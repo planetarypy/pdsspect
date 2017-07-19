@@ -85,7 +85,7 @@ class TestSetWavelengthController(object):
         controller.set_image_wavelength(100.0)
         assert self.model.current_image.wavelength == 100.0
         controller.set_current_image_index(1)
-        assert np.isnan(self.model.current_image.wavelength)
+        assert self.model.current_image.wavelength == 440.0
         controller.set_image_wavelength(50.0)
         assert self.model.current_image.wavelength == 50.0
         controller.set_current_image_index(0)
