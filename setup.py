@@ -28,6 +28,7 @@ setup(
     url='https://github.com/planetarypy/pdsspect',
     packages=[
         'pdsspect',
+        'instrument_models'
     ],
     package_dir={'pdsspect':
                  'pdsspect'},

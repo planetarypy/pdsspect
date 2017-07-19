@@ -10,6 +10,8 @@ from ginga.BaseImage import BaseImage
 from ginga import colors as ginga_colors
 from ginga.canvas.types.image import Image
 
+from instrument_models.get_wavelength import get_wavelength
+
 
 ginga_colors.add_color('crimson', (0.86275, 0.07843, 0.23529))
 ginga_colors.add_color('teal', (0.0, 0.50196, 0.50196))
@@ -33,6 +35,12 @@ class ImageStamp(BaseImage):
         Metadata for `BaseImage`
     logger : None
         logger for `BaseImage`
+    wavelength : :obj:`float` [``nan``]
+        Image's filter wavelength. If ``nan``, will try to use
+        :meth:`instrument_models.get_wavelength.get_wavelength` to get the
+        wavelength
+    unit : :obj:`str` [``nm``]
+        Wavelength unit. Must be one of :attr:`accepted_units`
 
     Attributes
     ----------
@@ -62,6 +70,8 @@ class ImageStamp(BaseImage):
         self.seen = False
         self.cuts = (None, None)
         self._check_acceptable_unit(unit)
+        if np.isnan(wavelength):
+            wavelength = get_wavelength(self.pds_image.label, unit)
         unit = astro_units.Unit(unit)
         self._wavelength = wavelength * unit
 
