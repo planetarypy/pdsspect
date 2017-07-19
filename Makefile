@@ -35,9 +35,11 @@ clean-test:
 	rm -fr htmlcov/
 
 lint:
-	flake8 pdsview tests
+	flake8 pdsspect
+	flake8 instrument_models
+	flake8 tests
 
-test:
+test: lint
 	get_mission_data
 	py.test tests
 
@@ -45,13 +47,13 @@ test-all:
 	tox
 
 coverage:
-	py.test --cov pdsview --cov-report html tests
+	py.test --cov pdsspect --cov-report html tests
 	open htmlcov/index.html
 
 docs:
-	rm -f docs/pdsview.rst
+	rm -f docs/pdsspect.rst
 	rm -f docs/modules.rst
-	sphinx-apidoc -o docs/ pdsview
+	sphinx-apidoc -o docs/ pdsspect
 	$(MAKE) -C docs clean
 	$(MAKE) -C docs html
 	open docs/_build/html/index.html

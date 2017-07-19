@@ -3,7 +3,7 @@ import shutil
 import tempfile
 from contextlib import contextmanager
 
-from . import *  # Import Test File Paths from __init__
+from . import TEST_FILES, FILE_1, FILE_1_NAME, SAMPLE_ROI
 
 import pytest
 import numpy as np

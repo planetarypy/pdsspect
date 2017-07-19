@@ -1,7 +1,7 @@
 from pdsspect import roi_line_plot
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
-from . import *  # Import Test File Paths from __init__
+from . import FILE_1, FILE_3, FILE_4
 
 import pytest
 import numpy as np

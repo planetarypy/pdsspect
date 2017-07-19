@@ -1,4 +1,4 @@
-from . import *  # Import Test File Paths from __init__
+from . import TEST_FILES
 
 import pytest
 from qtpy import QtCore
