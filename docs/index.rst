@@ -25,6 +25,7 @@ Welcome to pdsspect's documentation!
    roi_histogram
    roi_line_plot
    set_wavelength
+   instrument_models
    CONTRIBUTING
    AUTHORS
    HISTORY
