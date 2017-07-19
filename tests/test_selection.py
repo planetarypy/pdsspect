@@ -231,24 +231,6 @@ class TestSelection(object):
             self.image_set._roi_data[2, 4], [0, 0, 0, 0]
         )
 
-    def test_get_rois_masks_to_export(self, selection):
-        selection.controller.add_ROI(self.roi_coords, 'red')
-        selection.controller.add_ROI(self.roi_coords, 'darkgreen', self.subset)
-        test_rois_dict = selection._get_rois_masks_to_export()
-        rows, cols = np.column_stack(self.roi_coords)
-        assert np.array_equal(
-            np.where(test_rois_dict['red'])[0], rows
-        )
-        assert np.array_equal(
-            np.where(test_rois_dict['red'])[1], cols
-        )
-        assert np.array_equal(
-            np.where(test_rois_dict['darkgreen2'])[0], rows
-        )
-        assert np.array_equal(
-            np.where(test_rois_dict['darkgreen2'])[1], cols
-        )
-
     def test_export(self, selection):
         selection.controller.add_ROI(self.roi_coords, 'red')
         selection.controller.add_ROI(self.roi_coords, 'darkgreen', self.subset)

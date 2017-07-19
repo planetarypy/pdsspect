@@ -732,6 +732,23 @@ class PDSSpectImageSet(object):
         if isinstance(subset, SubPDSSpectImageSet) and subset in self._subsets:
             self._subsets.remove(subset)
 
+    def get_rois_masks_to_export(self):
+        exported_rois = {}
+
+        def add_mask_to_exported_rois(image_set, color, name):
+            mask = np.zeros(image_set.shape, dtype=np.bool)
+            rows, cols = image_set.get_coordinates_of_color(color)
+            mask[rows, cols] = True
+            exported_rois[name] = mask
+
+        for color in self.colors:
+            add_mask_to_exported_rois(self, color, color)
+            for i, subset in enumerate(self.subsets):
+                name = color + str(i + 2)
+                add_mask_to_exported_rois(subset, color, name)
+
+        return exported_rois
+
     @property
     def simultaneous_roi(self):
         """:obj:`bool` : If true, new ROIs appear in every view

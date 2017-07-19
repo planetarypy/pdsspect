@@ -698,6 +698,33 @@ class TestPDSSpectImageSet(object):
         assert len(self.test_set.subsets) == 0
         assert subset not in self.test_set.subsets
 
+    def test_get_rois_masks_to_export(self):
+        roi_coords = np.array(
+            [
+                [2, 3],
+                [2, 5],
+                [4, 3],
+                [4, 5],
+            ]
+        )
+        subset = self.test_set.create_subset()
+        self.test_set.add_coords_to_roi_data_with_color(roi_coords, 'red')
+        subset.add_coords_to_roi_data_with_color(roi_coords, 'darkgreen')
+        test_rois_dict = self.test_set.get_rois_masks_to_export()
+        rows, cols = np.column_stack(roi_coords)
+        assert np.array_equal(
+            np.where(test_rois_dict['red'])[0], rows
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['red'])[1], cols
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[0], rows
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[1], cols
+        )
+
     def test_simultaneous_roi(self):
         subset = self.test_set.create_subset()
         assert not self.test_set._simultaneous_roi

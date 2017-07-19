@@ -250,23 +250,6 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         """Clear all ROIs"""
         self.controller.clear_all()
 
-    def _get_rois_masks_to_export(self):
-        exported_rois = {}
-
-        def add_mask_to_exported_rois(image_set, color, name):
-            mask = np.zeros(image_set.shape, dtype=np.bool)
-            rows, cols = image_set.get_coordinates_of_color(color)
-            mask[rows, cols] = True
-            exported_rois[name] = mask
-
-        for color in self.image_set.colors:
-            add_mask_to_exported_rois(self.image_set, color, color)
-            for i, subset in enumerate(self.image_set._subsets):
-                name = color + str(i + 2)
-                add_mask_to_exported_rois(subset, color, name)
-
-        return exported_rois
-
     def export(self, save_file):
         """Export ROIS to the given filename
 
@@ -275,7 +258,7 @@ class Selection(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         save_file : :obj:`str`
             File with ``.npz`` extension to save ROIs
         """
-        exported_rois = self._get_rois_masks_to_export()
+        exported_rois = self.image_set.get_rois_masks_to_export()
         exported_rois['files'] = np.array(self.image_set.filenames)
         exported_rois['shape'] = self.image_set.shape
         exported_rois['views'] = len(self.image_set._subsets) + 1

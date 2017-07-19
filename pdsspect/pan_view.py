@@ -1,7 +1,7 @@
 """Display data in pan and make ROI selections"""
 from functools import wraps
 
-from qtpy import QtWidgets, QtGui
+from qtpy import QtWidgets
 
 from .roi import Polygon, Rectangle, Pencil
 from .pds_image_view_canvas import PDSImageViewCanvas
@@ -255,6 +255,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.redraw()
 
     def save_frame(self):
+        """Save current frame as image"""
         save_file, _ = QtWidgets.QFileDialog.getSaveFileName(parent=self)
         frame = self.view_canvas.get_widget().grab()
         frame.save(save_file)

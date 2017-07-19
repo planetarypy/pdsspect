@@ -257,11 +257,22 @@ def pdsspect(inlist=None):
     Displays all of the images in the different directory
     >>> pdsspect ('1p*img')
     Displays all of the images that follow the glob pattern
-    >>> pdsspect ('a1.img, b*.img, example/path/x*img')
+    >>> pdsspect('a1.img, b*.img, example/path/x*img')
     You can display multiple images, globs, and paths in one window by
     separating each item by a command
-    >>> pdsspect (['a1.img, b3.img, c1.img, d*img'])
+    >>> pdsspect(['a1.img, b3.img, c1.img, d*img'])
     You can also pass in a list of files/globs
+
+    pdsspect returns a dictionary of the ROIs:
+    >>> rois = pdsspect(['a1.img, b3.img, c1.img, d*img'])
+    >>> rois['red'][:2, :2]
+    array(
+        [
+            [False, False],
+            [False, False]
+        ],
+        dtype=bool
+    )
     """
     app = QtWidgets.QApplication(sys.argv)
     files = []
@@ -304,7 +315,11 @@ def pdsspect(inlist=None):
     window.pan_view.pans[0].view_canvas.zoom_fit()
     app.setActiveWindow(window)
     app.setActiveWindow(window.pan_view)
-    sys.exit(app.exec_())
+    try:
+        sys.exit(app.exec_())
+    except SystemExit:
+        pass
+    return window.image_set.get_rois_masks_to_export()
 
 
 def arg_parser(args):
