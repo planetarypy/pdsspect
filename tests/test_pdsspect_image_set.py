@@ -243,8 +243,8 @@ class TestPDSSpectImageSet(object):
         self.test_set.zoom = 42.0
         assert self.test_set._zoom == 42.0
         assert self.test_set._zoom == self.test_set.zoom
-        with pytest.raises(ValueError):
-            self.test_set.zoom = -42.0
+        self.test_set.zoom = -42.0
+        assert self.test_set._zoom == 1.0
         self.test_set.zoom = 1.0
         assert self.test_set._zoom == 1.0
         assert self.test_set._zoom == self.test_set.zoom

@@ -312,7 +312,7 @@ class PDSSpectImageSet(object):
     @zoom.setter
     def zoom(self, new_zoom):
         if new_zoom < 1.0:
-            raise ValueError("Zoom must be greater than or equal to 1")
+            new_zoom = 1.0
         self._zoom = float(new_zoom)
         for view in self._views:
             view.adjust_pan_size()
