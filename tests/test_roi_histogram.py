@@ -92,7 +92,7 @@ class TestROIHistogramWidget(object):
             assert hasattr(widget, color + '_checkbox')
         assert not hasattr(widget, 'eraser_checkbox')
         assert widget in self.model.image_sets[0]._views
-        assert widget.roi_histogram in self.model.image_sets[0]._views
+        assert widget.roi_plot in self.model.image_sets[0]._views
 
     def test_check_color(self, qtbot, widget):
         qtbot.add_widget(widget)
@@ -117,7 +117,7 @@ class TestROIHistogramWidget(object):
         widget.add_view()
         assert widget.view_boxes_layout.count() == 2
         assert widget in subset._views
-        assert widget.roi_histogram in subset._views
+        assert widget.roi_plot in subset._views
         box1 = widget.view_boxes_layout.itemAt(0).widget()
         assert box1.isChecked()
         box2 = widget.view_boxes_layout.itemAt(1).widget()
@@ -128,7 +128,7 @@ class TestROIHistogramWidget(object):
         assert self.model.view_index == 1
         assert widget.view_boxes_layout.count() == 3
         assert widget in subset2._views
-        assert widget.roi_histogram in subset2._views
+        assert widget.roi_plot in subset2._views
         assert not box1.isChecked()
         assert box2.isChecked()
         box3 = widget.view_boxes_layout.itemAt(2).widget()

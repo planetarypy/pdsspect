@@ -1,7 +1,7 @@
 """Display data in pan and make ROI selections"""
 from functools import wraps
 
-from qtpy import QtWidgets
+from qtpy import QtWidgets, QtGui
 
 from .roi import Polygon, Rectangle, Pencil
 from .pds_image_view_canvas import PDSImageViewCanvas
@@ -117,6 +117,12 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self._current_roi = None
 
         self.main_layout = QtWidgets.QVBoxLayout()
+        save_layout = QtWidgets.QHBoxLayout()
+        save_frame_btn = QtWidgets.QPushButton('Save Frame')
+        save_frame_btn.clicked.connect(self.save_frame)
+        save_layout.addWidget(save_frame_btn)
+        save_layout.addStretch()
+        self.main_layout.addLayout(save_layout)
 
         self.view_canvas = PDSImageViewCanvas()
         self.view_canvas.set_callback('cursor-down', self.start_ROI)
@@ -247,6 +253,11 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
     def resizeEvent(self, event):
         self.view_canvas.zoom_fit()
         self.redraw()
+
+    def save_frame(self):
+        save_file, _ = QtWidgets.QFileDialog.getSaveFileName(parent=self)
+        frame = self.view_canvas.get_widget().grab()
+        frame.save(save_file)
 
 
 class PanViewWidget(QtWidgets.QDialog):

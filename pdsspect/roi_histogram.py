@@ -139,27 +139,27 @@ class ROIHistogramWidget(ROIPlotWidget):
         The controller
     image_menu : :class:`QtWidgets.QComboBox <PySide.QtGui.QComboBox>`
         Menu to select image for y axis
-    roi_histogram : :class:`ROIHistogram`
-        Histogram of data
     """
 
     def __init__(self, model):
         self.model = model
         self.image_menu = None
         self._create_image_menu()
-        self.roi_histogram = ROIHistogram(model)
         super(ROIHistogramWidget, self).__init__(model)
         self.controller = ROIHistogramController(model, self)
         self.setWindowTitle('ROI Histogram')
 
-    def _register_set_at_index(self, index):
-        self.model.image_sets[index].register(self.roi_histogram)
-        self.model.image_sets[index].register(self)
+    def _create_roi_plot(self):
+        self.roi_plot = ROIHistogram(self.model)
 
     def _set_layout(self):
+        left_vbox = QtWidgets.QVBoxLayout()
+        left_vbox.addWidget(self.save_btn)
+        left_vbox.addWidget(self.image_menu)
+        left_vbox.addStretch()
         self.main_layout.addLayout(self.view_boxes_layout, 0, 1, 1, 2)
-        self.main_layout.addWidget(self.image_menu, 1, 0, 1, 1)
-        self.main_layout.addWidget(self.roi_histogram, 1, 1, 2, 2)
+        self.main_layout.addLayout(left_vbox, 1, 0)
+        self.main_layout.addWidget(self.roi_plot, 1, 1, 2, 2)
         self.main_layout.addLayout(self.checkbox_layout, 1, 3)
         self.main_layout.setColumnStretch(1, 1)
         self.main_layout.setRowStretch(1, 1)

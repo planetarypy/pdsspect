@@ -1,4 +1,5 @@
 import numpy as np
+from qtpy import QtWidgets
 
 from .pdsspect_image_set import ginga_colors
 from .roi_plot import ROIPlotModel, ROIPlotController, ROIPlotWidget, ROIPlot
@@ -60,24 +61,24 @@ class ROILinePlotWidget(ROIPlotWidget):
         The model
     controller : :class:`ROILinePlotController`
         The controller
-    roi_line_plot : :class:`ROILinePlot`
-        Line plot of ROI data
     """
 
     def __init__(self, model):
         self.model = model
-        self.roi_line_plot = ROILinePlot(model)
         self.controller = ROILinePlotController(model, self)
         super(ROILinePlotWidget, self).__init__(model)
         self.setWindowTitle('ROI Line Plot')
 
-    def _register_set_at_index(self, index):
-        self.model.image_sets[index].register(self.roi_line_plot)
-        self.model.image_sets[index].register(self)
+    def _create_roi_plot(self):
+        self.roi_plot = ROILinePlot(self.model)
 
     def _set_layout(self):
+        save_layout = QtWidgets.QHBoxLayout()
+        save_layout.addWidget(self.save_btn)
+        save_layout.addStretch()
+        self.main_layout.addLayout(save_layout, 0, 0)
         self.main_layout.addLayout(self.view_boxes_layout, 0, 1, 1, 2)
-        self.main_layout.addWidget(self.roi_line_plot, 1, 0, 2, 2)
+        self.main_layout.addWidget(self.roi_plot, 1, 0, 2, 2)
         self.main_layout.addLayout(self.checkbox_layout, 1, 2)
         self.main_layout.setColumnStretch(1, 1)
         self.main_layout.setRowStretch(1, 1)

@@ -283,6 +283,8 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         Place in grid layout so histogram stretches while boxes are stationary
     roi_plot : :class:`ROIPlot`
         The plot of ROI data
+    save_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
+        Save the plot as an image
     red_checkbox : :class:`ColorCheckBox`
         Red checkbox that displays red ROI data when checked
     brown_checkbox : :class:`ColorCheckBox`
@@ -319,9 +321,12 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.model.register(self)
         self.controller = ROIPlotController(model, self)
         self.roi_plot = None
+        self._create_roi_plot()
         self.checkbox_layout = QtWidgets.QVBoxLayout()
         for color in self.model.image_set.colors[:-1]:
             self.create_color_checkbox(color)
+        self.save_btn = QtWidgets.QPushButton('Save Plot')
+        self.save_btn.clicked.connect(self.save_plot)
         self.view_boxes_layout = QtWidgets.QHBoxLayout()
         self.main_layout = QtWidgets.QGridLayout()
 
@@ -331,8 +336,12 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         else:
             self._register_set_at_index(0)
 
+    def _create_roi_plot(self):
+        self.roi_plot = None
+
     def _register_set_at_index(self, index):
-        pass
+        self.model.image_sets[index].register(self.roi_plot)
+        self.model.image_sets[index].register(self)
 
     def _set_layout(self):
         pass
@@ -406,6 +415,16 @@ class ROIPlotWidget(QtWidgets.QWidget, PDSSpectImageSetViewBase):
 
     def set_data(self):
         pass
+
+    def save_plot(self):
+        """Save the plot as an image"""
+        save_file, _ = QtWidgets.QFileDialog.getSaveFileName(parent=self)
+        if save_file != '':
+            self.roi_plot._figure.savefig(
+                save_file,
+                facecolor='black',
+                edgecolor='black',
+            )
 
 
 class ROIPlot(FigureCanvasQTAgg, PDSSpectImageSetViewBase):
