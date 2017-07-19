@@ -112,8 +112,16 @@ class ROILinePlot(ROIPlot):
         for color in self.model.selected_colors:
             rgb = ginga_colors.lookup_color(color)
             data = self.model.data_with_color(color)
-            means = [array.mean() for array in data]
-            stdevs = [np.std(array) for array in data]
+            means = []
+            stdevs = []
+            for array in data:
+                if len(array) == 0:
+                    break
+                means.append(array.mean())
+                stdevs.append(np.std(array))
+            should_not_plot = len(means) != len(wavelengths)
+            if should_not_plot:
+                continue
             self._ax.errorbar(
                 x=wavelengths,
                 y=means,

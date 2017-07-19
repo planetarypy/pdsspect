@@ -262,7 +262,6 @@ def pdsspect(inlist=None):
     separating each item by a command
     >>> pdsspect(['a1.img, b3.img, c1.img, d*img'])
     You can also pass in a list of files/globs
-
     pdsspect returns a dictionary of the ROIs:
     >>> rois = pdsspect(['a1.img, b3.img, c1.img, d*img'])
     >>> rois['red'][:2, :2]
@@ -274,6 +273,7 @@ def pdsspect(inlist=None):
         dtype=bool
     )
     """
+
     app = QtWidgets.QApplication(sys.argv)
     files = []
     if isinstance(inlist, list):
