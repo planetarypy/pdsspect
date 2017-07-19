@@ -296,7 +296,7 @@ def pdsspect(inlist=None):
     width = geometry.width()
     height = geometry.height()
     width_to_height = width / height
-    window_width = width * .4
+    window_width = width * .25
     window_height = window_width / width_to_height
     center = QtCore.QPoint(
         geo_center.x() - window_width * .7, geo_center.y() - window_height * .2
@@ -305,12 +305,12 @@ def pdsspect(inlist=None):
     window.move(center)
     window.show()
     window.pan_view.show()
-    pan_width = width * .35
+    pan_width = width * .2
     pan_height = pan_width / width_to_height
     window.pan_view.resize(pan_width, pan_height)
     window.basic_window.resize(pan_width, pan_height)
     window.pan_view.move(center.x(), center.y() - window_height * .9)
-    window.basic_window.move(center.x() + window_width, center.y())
+    window.basic_window.move(center.x() + window_width + 5, center.y())
     window.pdsspect_view.spect_views[0].view_canvas.zoom_fit()
     window.pan_view.pans[0].view_canvas.zoom_fit()
     app.setActiveWindow(window)
