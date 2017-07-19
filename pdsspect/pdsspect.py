@@ -56,7 +56,10 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         Add another window
     quit_btn : :class:`QtWidgets.QPushButton <PySide.QtGui.QPushButton>`
         Quit
-    button_layout : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
+    button_layout1 : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
+        Layout for the buttons. If you want to re-adjust where the buttons
+        go, override this attribute
+    button_layout2 : :class:`QtWidgets.QHBoxLayout <PySide.QtGui.QHBoxLayout>`
         Layout for the buttons. If you want to re-adjust where the buttons
         go, override this attribute
     main_layout : :class:`QtWidgets.QVBoxLayout <PySide.QtGui.QVBoxLayout>`
@@ -105,19 +108,21 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.quit_btn = QtWidgets.QPushButton('Quit')
         self.quit_btn.clicked.connect(self.quit)
 
-        self.button_layout = QtWidgets.QHBoxLayout()
-        self.button_layout.addWidget(self.selection_btn)
-        self.button_layout.addWidget(self.basic_btn)
-        self.button_layout.addWidget(self.transforms_btn)
-        self.button_layout.addWidget(self.roi_histogram_btn)
-        self.button_layout.addWidget(self.roi_line_plot_btn)
-        self.button_layout.addWidget(self.add_window_btn)
-        self.button_layout.addWidget(self.set_wavelengths_btn)
-        self.button_layout.addWidget(self.quit_btn)
+        self.button_layout1 = QtWidgets.QHBoxLayout()
+        self.button_layout2 = QtWidgets.QHBoxLayout()
+        self.button_layout1.addWidget(self.selection_btn)
+        self.button_layout1.addWidget(self.basic_btn)
+        self.button_layout1.addWidget(self.transforms_btn)
+        self.button_layout1.addWidget(self.roi_histogram_btn)
+        self.button_layout2.addWidget(self.roi_line_plot_btn)
+        self.button_layout2.addWidget(self.add_window_btn)
+        self.button_layout2.addWidget(self.set_wavelengths_btn)
+        self.button_layout2.addWidget(self.quit_btn)
 
         self.main_layout = QtWidgets.QVBoxLayout()
         self.main_layout.addWidget(self.pdsspect_view)
-        self.main_layout.addLayout(self.button_layout)
+        self.main_layout.addLayout(self.button_layout1)
+        self.main_layout.addLayout(self.button_layout2)
 
         central_widget = QtWidgets.QWidget()
         central_widget.setLayout(self.main_layout)
