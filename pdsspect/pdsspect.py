@@ -311,8 +311,6 @@ def pdsspect(inlist=None):
     window.basic_window.resize(pan_width, pan_height)
     window.pan_view.move(center.x(), center.y() - window_height * .9)
     window.basic_window.move(center.x() + window_width + 5, center.y())
-    window.pdsspect_view.spect_views[0].view_canvas.zoom_fit()
-    window.pan_view.pans[0].view_canvas.zoom_fit()
     app.setActiveWindow(window)
     app.setActiveWindow(window.pan_view)
     try:

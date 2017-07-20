@@ -128,6 +128,7 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.view_canvas.set_callback('cursor-down', self.start_ROI)
         self.view_canvas.set_callback('draw-down', self.stop_ROI)
         self.view_canvas.set_callback('motion', self.extend_ROI)
+        self.view_canvas.set_window_size(*self.image_set.pan_data.shape)
 
         self.main_layout.addWidget(self.view_canvas.get_widget())
         self.view_canvas.get_widget().setMouseTracking(True)

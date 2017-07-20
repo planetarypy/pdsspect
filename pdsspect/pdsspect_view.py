@@ -93,7 +93,7 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
         self.zoom_layout.addWidget(self.zoom_text)
 
         self.view_canvas = PDSImageViewCanvas()
-
+        self.view_canvas.set_window_size(*self.image_set.current_image.shape)
         self.view_canvas.set_image(self.image_set.current_image)
         self.view_canvas.set_callback('cursor-move', self.change_center)
         self.view_canvas.set_callback('cursor-down', self.change_center)
