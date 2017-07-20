@@ -2,6 +2,11 @@
 Instrument Models
 =================
 
+Supported Instruments
+---------------------
+
+.. include:: supported_instruments.rst
+
 get_wavelength
 --------------
 .. automodule:: instrument_models.get_wavelength
@@ -28,6 +33,14 @@ pancam
 ------
 .. automodule:: instrument_models.pancam
 .. autoclass:: Pancam
+    :members:
+    :show-inheritance:
+    :inherited-members:
+
+cassini_iss
+-----------
+.. automodule:: instrument_models.cassini_iss
+.. autoclass:: CassiniISS
     :members:
     :show-inheritance:
     :inherited-members:
