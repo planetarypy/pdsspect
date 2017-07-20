@@ -1,9 +1,10 @@
-from . import *  # Import Test File Paths from __init__
+from . import FILE_1, FILE_1_NAME, FILE_2, TEST_FILES, TEST_FILE_NAMES
 
 import pytest
 import numpy as np
 from ginga.util.dp import masktorgb
 from ginga.RGBImage import RGBImage
+from astropy import units as astro_units
 from ginga.canvas.types.image import Image
 
 from pdsspect.pdsspect_image_set import (
@@ -11,12 +12,70 @@ from pdsspect.pdsspect_image_set import (
 )
 
 
-def test_ImageStamp():
-    test_stamp = ImageStamp(FILE_1)
-    assert isinstance(test_stamp, ImageStamp)
-    assert np.array_equal(test_stamp.get_data(), test_stamp.pds_image.image)
-    assert not test_stamp.seen
-    assert test_stamp.cuts == (None, None)
+class TestImageStamp():
+
+    @pytest.fixture()
+    def image_stamp(self):
+        return ImageStamp(FILE_1)
+
+    @pytest.fixture()
+    def pancam_stamp(self):
+        return ImageStamp(FILE_2)
+
+    def test_init(self, image_stamp):
+        assert image_stamp.image_name == FILE_1_NAME
+        assert not image_stamp.seen
+        assert image_stamp.cuts == (None, None)
+
+    def test_data(self, image_stamp):
+        assert np.array_equal(
+            image_stamp.data,
+            image_stamp.pds_image.image
+        )
+
+    def test_wavelength(self, image_stamp):
+        assert isinstance(image_stamp.wavelength, float)
+        assert np.isnan(image_stamp.wavelength)
+        image_stamp.wavelength = 100.0
+        assert image_stamp.wavelength == 100.0
+
+    def test_unit(self, image_stamp):
+        assert isinstance(image_stamp.unit, astro_units.Unit)
+        assert image_stamp.unit == 'nm'
+        image_stamp.wavelength = 10.0
+        image_stamp.unit = 'AA'
+        assert image_stamp.unit == 'AA'
+        assert image_stamp.wavelength == 100.0
+        image_stamp.unit = 'nm'
+        assert image_stamp.unit == 'nm'
+        assert image_stamp.wavelength == 10.0
+        image_stamp.unit = 'um'
+        assert image_stamp.unit == 'um'
+        assert image_stamp.wavelength == 0.01
+        image_stamp.unit = 'AA'
+        assert image_stamp.unit == 'AA'
+        assert image_stamp.wavelength == 100.0
+
+    def test_check_acceptable_unit(self, image_stamp):
+        with pytest.raises(ValueError):
+            image_stamp.unit = 'foo'
+
+    def test_get_wavelength(self, image_stamp):
+        image_stamp.wavelength = 10.0
+        wavelength = image_stamp.get_wavelength()
+        assert isinstance(wavelength, astro_units.quantity.Quantity)
+        assert wavelength.value == 10.0
+        assert wavelength.unit == 'nm'
+        image_stamp.unit = 'AA'
+        assert wavelength.value == 10.0
+        assert wavelength.unit == 'nm'
+
+    def test_wavelength_pancam(self, pancam_stamp):
+        """Test that the image stamp uses the images wavelength if exists"""
+        assert pancam_stamp.wavelength == 880.0
+
+    def test_accepted_units(self, image_stamp):
+        assert image_stamp.accepted_units == ['nm', 'um', 'AA']
 
 
 class TestPDSSpectImageSet(object):
@@ -43,6 +102,9 @@ class TestPDSSpectImageSet(object):
         self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
         self.test_set._subsets = []
         self.test_set._simultaneous_roi = False
+        self.test_set._unit = 'nm'
+        for image in self.test_set.images:
+            image.unit = 'nm'
 
     def test_init(self):
         test_set = self.test_set
@@ -181,8 +243,8 @@ class TestPDSSpectImageSet(object):
         self.test_set.zoom = 42.0
         assert self.test_set._zoom == 42.0
         assert self.test_set._zoom == self.test_set.zoom
-        with pytest.raises(ValueError):
-            self.test_set.zoom = -42.0
+        self.test_set.zoom = -42.0
+        assert self.test_set._zoom == 1.0
         self.test_set.zoom = 1.0
         assert self.test_set._zoom == 1.0
         assert self.test_set._zoom == self.test_set.zoom
@@ -636,6 +698,33 @@ class TestPDSSpectImageSet(object):
         assert len(self.test_set.subsets) == 0
         assert subset not in self.test_set.subsets
 
+    def test_get_rois_masks_to_export(self):
+        roi_coords = np.array(
+            [
+                [2, 3],
+                [2, 5],
+                [4, 3],
+                [4, 5],
+            ]
+        )
+        subset = self.test_set.create_subset()
+        self.test_set.add_coords_to_roi_data_with_color(roi_coords, 'red')
+        subset.add_coords_to_roi_data_with_color(roi_coords, 'darkgreen')
+        test_rois_dict = self.test_set.get_rois_masks_to_export()
+        rows, cols = np.column_stack(roi_coords)
+        assert np.array_equal(
+            np.where(test_rois_dict['red'])[0], rows
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['red'])[1], cols
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[0], rows
+        )
+        assert np.array_equal(
+            np.where(test_rois_dict['darkgreen2'])[1], cols
+        )
+
     def test_simultaneous_roi(self):
         subset = self.test_set.create_subset()
         assert not self.test_set._simultaneous_roi
@@ -670,6 +759,29 @@ class TestPDSSpectImageSet(object):
             subset._roi_data[rows1, cols1],
             np.array([[255.0, 0.0, 0.0, 255.0]])
         )
+
+    def test_unit(self):
+        assert self.test_set.unit == self.test_set._unit
+        assert self.test_set.unit == 'nm'
+        subset = self.test_set.create_subset()
+        assert subset.unit == 'nm'
+        self.test_set.unit = 'um'
+        assert self.test_set.unit == 'um'
+        assert subset.unit == 'um'
+        for image in self.test_set.images:
+            assert image.unit == 'um'
+
+    def test_set_unit(self):
+        assert self.test_set.unit == 'nm'
+        for image in self.test_set.images:
+            assert image.unit == 'nm'
+        self.test_set._unit = 'um'
+        assert self.test_set.unit == 'um'
+        for image in self.test_set.images:
+            assert image.unit == 'nm'
+        self.test_set.set_unit()
+        for image in self.test_set.images:
+            assert image.unit == 'um'
 
 
 class TestSubPDSSpectImageSet(object):

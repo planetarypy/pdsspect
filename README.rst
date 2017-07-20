@@ -78,14 +78,17 @@ where the center of the pan should be. Using the arrow keys will also adjust
 the position of the box by ``1`` in the direction of the arrow key.
 
 Clicking the ``Add Window`` button will open another view. This view will have
-the same image, cut levels, and zoom by default. If the image's are the same,
-chaning the cut levels on one image will automatically change the cut levels
-on another image. However, one can change the zoom on one view without
-changing the zoom another view.
+the same image, cut levels, and zoom by default.
 
 .. image:: screenshots/multiple_window1.png
+
+If the image's are the same, chaning the cut levels on one image will
+automatically change the cut levels on another image. However, one can change
+the zoom on one view without changing the zoom another view.
+
 .. image:: screenshots/multiple_window2.png
 .. image:: screenshots/multiple_window3.png
+.. image:: screenshots/multiple_window4.png
 
 When the images are different, adjusting the cut levels on one image will only
 change the cut levels on that image:
@@ -167,6 +170,19 @@ Overlay ROIs by checking other boxes. The order (depth) of the histogram data
 will be in the order that the user checks the boxes (i.e., checking red and
 then purple will result in purple overlaying the red).
 
+To perform multispectral analysis use ``ROI Line Plot``. If analyzing images
+from instruments other than Pancam and Mastcam, the user must manually input
+the image wavelength with ``Set Wavelength`` widget:
+
+.. image:: screenshots/set_wavelength1.png
+
+``ROI Line Plot`` works similar to that of the histogram plot except it will
+compare each image with an associated wavelength.
+
+.. image:: screenshots/line_plot1.png
+.. image:: screenshots/line_plot2.png
+.. image:: screenshots/line_plot3.png
+
 The user can flip the image over different axis with the Transforms window.
 The transformation will apply to each image in all the views:
 
@@ -206,24 +222,3 @@ Images In Example
 * `2p235913431radau37p2111l7c1.img
   <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
   mer2pc_1xxx/data/sol1234/2p235913431radau37p2111l7c1.img>`_
-* `2p235913458radau37p2111r1c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913458radau37p2111r1c1.img>`_
-* `2p235913479radau37p2111r2c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913479radau37p2111r2c1.img>`_
-* `2p235913499radau37p2111r3c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913499radau37p2111r3c1.img>`_
-* `2p235913519radau37p2111r4c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913519radau37p2111r4c1.img>`_
-* `2p235913539radau37p2111r5c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913539radau37p2111r5c1.img>`_
-* `2p235913559radau37p2111r6c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913559radau37p2111r6c1.img>`_
-* `2p235913580radau37p2111r7c1.img
-  <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
-  mer2pc_1xxx/data/sol1234/2p235913580radau37p2111r7c1.img>`_

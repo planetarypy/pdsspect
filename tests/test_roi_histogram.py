@@ -1,7 +1,7 @@
 from pdsspect import roi_histogram
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
-from . import *  # Import Test File Paths from __init__
+from . import FILE_1, FILE_3
 
 import pytest
 import numpy as np
@@ -16,38 +16,6 @@ class TestROIHistogramModel(object):
         self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
         return roi_histogram.ROIHistogramModel(self.image_set)
 
-    def test_image_sets(self, test_model):
-        assert test_model.image_sets == [self.image_set]
-        subset = self.image_set.create_subset()
-        assert test_model.image_sets == [self.image_set, subset]
-
-    def test_image_set(self, test_model):
-        assert test_model.image_set == self.image_set
-        subset = self.image_set.create_subset()
-        test_model._view_index = 1
-        assert test_model.image_set == subset
-
-    def test_has_multiple_views(self, test_model):
-        assert not test_model.has_multiple_views
-        self.image_set.create_subset()
-        assert test_model.has_multiple_views
-
-    def test_view_index(self, test_model):
-        assert not test_model.has_multiple_views
-        assert test_model._view_index == 0
-        assert test_model.view_index == -1
-        self.image_set.create_subset()
-        assert test_model.has_multiple_views
-        assert test_model.view_index == 0
-        test_model.view_index = 1
-        assert test_model.view_index == 1
-        assert test_model._view_index == 1
-        test_model.image_index = 1
-        test_model.view_index = 0
-        assert test_model.view_index == 0
-        assert test_model._view_index == 0
-        assert test_model.image_index == -1
-
     def test_image_index(self, test_model):
         assert test_model.image_index == -1
         test_model.image_index = 0
@@ -59,16 +27,6 @@ class TestROIHistogramModel(object):
         assert not test_model.compare_data
         test_model.image_index = 1
         assert test_model.compare_data
-
-    def test_add_selected_color(self, test_model):
-        assert test_model.selected_colors == []
-        test_model.add_selected_color('red')
-        assert test_model.selected_colors == ['red']
-
-    def test_remove_selected_color(self, test_model):
-        test_model.selected_colors = ['red']
-        test_model.remove_selected_color('red')
-        assert test_model.selected_colors == []
 
     def test_xdata(self, test_model):
         coords = np.array([[42, 24]])
@@ -110,40 +68,6 @@ class TestROIHistogramController(object):
         self.model = roi_histogram.ROIHistogramModel(self.image_set)
         return roi_histogram.ROIHistogramController(self.model, None)
 
-    def test_color_state_changed(self, test_controller):
-        assert self.model.selected_colors == []
-        test_controller.color_state_changed('red')
-        assert self.model.selected_colors == ['red']
-        test_controller.color_state_changed('red')
-        assert self.model.selected_colors == []
-
-    def test_select_color(self, test_controller):
-        assert self.model.selected_colors == []
-        test_controller.select_color('red')
-        assert self.model.selected_colors == ['red']
-
-    def test_remove_color(self, test_controller):
-        assert self.model.selected_colors == []
-        self.model.selected_colors = ['red']
-        test_controller.remove_color('red')
-        assert self.model.selected_colors == []
-
-    def test_set_view_index(self, test_controller):
-        assert not self.model.has_multiple_views
-        assert self.model._view_index == 0
-        assert self.model.view_index == -1
-        self.image_set.create_subset()
-        assert self.model.has_multiple_views
-        assert self.model.view_index == 0
-        test_controller.set_view_index(1)
-        assert self.model.view_index == 1
-        assert self.model._view_index == 1
-        self.model.image_index = 1
-        test_controller.set_view_index(0)
-        assert self.model.view_index == 0
-        assert self.model._view_index == 0
-        assert self.model.image_index == -1
-
     def test_set_image_index(self, test_controller):
         assert self.model.image_index == -1
         test_controller.set_image_index(0)
@@ -168,12 +92,7 @@ class TestROIHistogramWidget(object):
             assert hasattr(widget, color + '_checkbox')
         assert not hasattr(widget, 'eraser_checkbox')
         assert widget in self.model.image_sets[0]._views
-        assert widget.roi_histogram in self.model.image_sets[0]._views
-
-    def test_create_color_checkbox(self, widget):
-        assert not hasattr(widget, 'foo_checkbox')
-        widget.create_color_checkbox('foo')
-        assert hasattr(widget, 'foo_checkbox')
+        assert widget.roi_plot in self.model.image_sets[0]._views
 
     def test_check_color(self, qtbot, widget):
         qtbot.add_widget(widget)
@@ -198,7 +117,7 @@ class TestROIHistogramWidget(object):
         widget.add_view()
         assert widget.view_boxes_layout.count() == 2
         assert widget in subset._views
-        assert widget.roi_histogram in subset._views
+        assert widget.roi_plot in subset._views
         box1 = widget.view_boxes_layout.itemAt(0).widget()
         assert box1.isChecked()
         box2 = widget.view_boxes_layout.itemAt(1).widget()
@@ -209,7 +128,7 @@ class TestROIHistogramWidget(object):
         assert self.model.view_index == 1
         assert widget.view_boxes_layout.count() == 3
         assert widget in subset2._views
-        assert widget.roi_histogram in subset2._views
+        assert widget.roi_plot in subset2._views
         assert not box1.isChecked()
         assert box2.isChecked()
         box3 = widget.view_boxes_layout.itemAt(2).widget()

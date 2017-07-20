@@ -1,4 +1,4 @@
-from . import *  # Import Test File Paths from __init__
+from . import FILE_1, TEST_FILES
 
 import pytest
 import numpy as np
