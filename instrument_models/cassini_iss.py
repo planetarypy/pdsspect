@@ -6,8 +6,8 @@ from .instrument import InstrumentBase
 class CassiniISS(InstrumentBase):
     """Model to get the filter wavelength from Cassini ISS image
 
-    See `Cassini Imaging Science Subsystem (ISS) Data User's Guide
-    <http://www.ciclops.org/sci/docs/ISS_Data_User_Guide_141215.pdf#page=149>`_
+    See `Cassini Imaging Science Subsystem (ISS) Data User's Guide (Page 149)
+    <http://www.ciclops.org/sci/docs/ISS_Data_User_Guide_141215.pdf>`_
     for table of filter name and corresponding wavelengths. We use the
     effective wavelength rather than the center wavelength.wavelength
 
