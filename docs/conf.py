@@ -29,6 +29,9 @@ sys.path.insert(0, project_root)
 
 if not os.path.exists('screenshots'):
     shutil.copytree(os.path.join(project_root, 'screenshots'), 'screenshots')
+if os.path.exists('supported_instruments.rst'):
+    os.remove('supported_instruments.rst')
+shutil.copy(os.path.join(project_root, 'supported_instruments.rst'), cwd)
 
 # -- General configuration ------------------------------------------------
 

@@ -170,9 +170,10 @@ Overlay ROIs by checking other boxes. The order (depth) of the histogram data
 will be in the order that the user checks the boxes (i.e., checking red and
 then purple will result in purple overlaying the red).
 
-To perform multispectral analysis use ``ROI Line Plot``. If analyzing images
-from instruments other than Pancam and Mastcam, the user must manually input
-the image wavelength with ``Set Wavelength`` widget:
+To perform multispectral analysis use ``ROI Line Plot``.
+If analyzing images that are not :ref:`fully supported (see here for list of
+instruments supported by pdsspect) <supported-instruments>` the user must
+manually input the image wavelength with ``Set Wavelength`` widget:
 
 .. image:: screenshots/set_wavelength1.png
 
@@ -222,3 +223,10 @@ Images In Example
 * `2p235913431radau37p2111l7c1.img
   <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
   mer2pc_1xxx/data/sol1234/2p235913431radau37p2111l7c1.img>`_
+
+.. _supported-instruments:
+
+Supported Instruments
++++++++++++++++++++++
+
+.. include:: supported_instruments.rst

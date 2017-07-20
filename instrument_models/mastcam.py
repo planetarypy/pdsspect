@@ -4,7 +4,7 @@ from .instrument import InstrumentBase
 
 
 class Mastcam(InstrumentBase):
-    """Model to get the filter wavelength of a Matcam image
+    """Model to get the filter wavelength of a Mastcam image
 
     See `Mastcam Multispectral Imaging on the Mars Science Laboratory Rover:
     Wavelength Coverage and Imaging Strategies at the Gale Crater Field Site
