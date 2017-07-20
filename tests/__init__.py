@@ -1,5 +1,7 @@
 import os
 import sys
+
+import pvl
 from qtpy import QtWidgets
 
 test_dir = os.path.join('tests', 'mission_data')
@@ -33,6 +35,34 @@ TEST_FILE_NAMES = [
 
 SAMPLE_ROI = os.path.join(
     'tests', 'sample_roi.npz'
+)
+
+mastcam_label = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
+        'INSTRUMENT_STATE_PARMS': {
+            'CENTER_FILTER_WAVELENGTH': pvl._collections.Units(
+                value=500,
+                units='nm'
+            ),
+        },
+    }
+)
+
+NA_label = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'IMAGING SCIENCE SUBSYSTEM NARROW ANGLE',
+        'FILTER_NAME': ["BL1", "BL2"],
+
+    }
+)
+
+WA_label = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'IMAGING SCIENCE SUBSYSTEM WIDE ANGLE',
+        'FILTER_NAME': ["CB2", "CL2"],
+
+    }
 )
 
 
