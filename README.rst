@@ -24,6 +24,17 @@ On OS X you must first install the Qt UI toolkit using Homebrew
 
     brew install qt
 
+Install Using Pip
++++++++++++++++++
+Install pdsspect using pip::
+  
+  pip install pdsspect
+
+Then install your choice of pyside, pyqt4, or pyqt5
+
+Install for Development
++++++++++++++++++++++++
+
 Create a new virtual environment, install the `pdsspect` module with git,
 and setup the PySide environment. You must install either PySide, PyQt5, or
 PyQt4 as well (recommend PyQt5)::
