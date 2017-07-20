@@ -4,21 +4,9 @@ import pytest
 
 from instrument_models import get_wavelength
 
-from . import FILE_2
+from . import FILE_2, mastcam_label, NA_label, WA_label
 
 mock_label = pvl.PVLModule({'foo': 'bar'})
-# Use mastcam_label until available test image
-mastcam_label = pvl.PVLModule(
-    {
-        'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
-        'INSTRUMENT_STATE_PARMS': {
-            'CENTER_FILTER_WAVELENGTH': pvl._collections.Units(
-                value=500,
-                units='nm'
-            ),
-        },
-    }
-)
 pancam_label = pvl.load(FILE_2)
 
 
@@ -55,6 +43,12 @@ def test_is_mastcam(label, expected):
         (mastcam_label, 'nm', 500),
         (mastcam_label, 'um', 0.5),
         (mastcam_label, 'AA', 5000),
+        (NA_label, 'nm', 441.077),
+        (NA_label, 'um', 0.441),
+        (NA_label, 'AA', 4410.770),
+        (WA_label, 'nm', 752.354),
+        (WA_label, 'um', 0.752),
+        (WA_label, 'AA', 7523.540),
         (mock_label, 'nm', float('nan')),
         (mock_label, 'um', float('nan')),
         (mock_label, 'AA', float('nan')),
