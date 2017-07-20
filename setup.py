@@ -21,7 +21,7 @@ requirements = [
 setup(
     name='pdsspect',
     version='0.1.0',
-    description="PDS Image Viewer",
+    description="PDS Image Viewer for Multispectral Analysis",
     long_description=readme + '\n\n' + history,
     author="PlanetaryPy Developers",
     author_email='contact@planetarypy.com',
