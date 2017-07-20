@@ -45,6 +45,7 @@ output/*/index.html
 # Sphinx
 docs/_build
 docs/screenshots
+docs/supported_instruments.rst
 
 # ignore the mission_data directory
 tests/mission_data
@@ -54,3 +55,6 @@ goodies
 
 # ignore virtual environments that start with venv
 venv*
+
+.cache/
+.ipynb_checkpoints/

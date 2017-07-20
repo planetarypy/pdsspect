@@ -1,20 +1,8 @@
-import pvl
 import pytest
 
 from instrument_models.mastcam import Mastcam
 
-
-mastcam_label = pvl.PVLModule(
-    {
-        'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
-        'INSTRUMENT_STATE_PARMS': {
-            'CENTER_FILTER_WAVELENGTH': pvl._collections.Units(
-                value=500,
-                units='nm'
-            ),
-        },
-    }
-)
+from . import mastcam_label
 
 
 class TestMastcam(object):

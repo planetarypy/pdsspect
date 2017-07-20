@@ -170,9 +170,10 @@ Overlay ROIs by checking other boxes. The order (depth) of the histogram data
 will be in the order that the user checks the boxes (i.e., checking red and
 then purple will result in purple overlaying the red).
 
-To perform multispectral analysis use ``ROI Line Plot``. If analyzing images
-from instruments other than Pancam and Mastcam, the user must manually input
-the image wavelength with ``Set Wavelength`` widget:
+To perform multispectral analysis use ``ROI Line Plot``.
+If analyzing images that are not :ref:`fully supported (see here for list of
+instruments supported by pdsspect) <supported-instruments>` the user must
+manually input the image wavelength with ``Set Wavelength`` widget:
 
 .. image:: screenshots/set_wavelength1.png
 
@@ -222,3 +223,62 @@ Images In Example
 * `2p235913431radau37p2111l7c1.img
   <http://pds-geosciences.wustl.edu/mer/mer2-m-pancam-3-radcal-rdr-v1/
   mer2pc_1xxx/data/sol1234/2p235913431radau37p2111l7c1.img>`_
+
+.. _supported-instruments:
+
+Supported Instruments
++++++++++++++++++++++
+
+.. include:: supported_instruments.rst
+
+Adding More Instruments
+~~~~~~~~~~~~~~~~~~~~~~~
+
+We welcome anyone to create more models for instruments that are not yet
+supported. Please follow the Pull Request guide to make sure your model is
+compatible with the rest of the models. See `Pull Request #20
+<https://github.com/planetarypy/pdsspect/pull/20>`_ as an example.
+
+Pull Request Checklist
+######################
+
+Please include the following checklist in your PR so we know you have completed
+each step::
+
+  - [ ] Created model as subclass of [InstrumentBase](https://github.com/planetarypy/pdsspect/blob/master/instrument_models/instrument.py#L7)
+  - [ ] Added model to [get_wavelength](https://github.com/planetarypy/pdsspect/blob/master/instrument_models/get_wavelength.py)
+  - [ ] Documented Model
+  - [ ] Tested Model
+  - [ ] Added model to [test_get_wavelength](https://github.com/planetarypy/pdsspect/blob/master/tests/test_get_wavelength.py) test
+  - [ ] Added instrument to supported_instruments.rst list
+
+
+Style
+#####
+
+* Set PR label to ``Instrument Model``
+* If an issue was created, please include ``Fixes #<issue_number>`` at the top
+  of the PR to automatically close the issue
+* Please include a link to any documents used to find the filter wavelength.
+  Follow the example for `Mastcam
+  <https://github.com/planetarypy/pdsspect/blob/master/instrument_models/
+  mastcam.py>`_
+  and/or `Pancam
+  <https://github.com/planetarypy/pdsspect/blob/master/instrument_models/
+  pancam.py>`_
+* When documenting your model, use `numpy docs
+  <https://github.com/numpy/numpy/blob/master/doc/HOWTO_DOCUMENT.rst.txt>`_.See
+  these `examples <http://sphinxcontrib-napoleon.readthedocs.io/en/latest/
+  example_numpy.html>`_. Also add to `instrument_models.rst
+  <https://github.com/planetarypy/pdsspect/blob/master/docs/
+  instrument_models.rst>`_ following the format of the other models
+* For tests, if one of the core mission_data images is not from your instrument,
+  create a minimal label in the `tests\\__init__.py
+  <https://github.com/planetarypy/pdsspect/blob/master/tests/__init__.py>`_.
+  You must test the model itself and test that it works in
+  `test_get_wavelength <https://github.com/planetarypy/pdsspect/blob/master/
+  tests/test_get_wavelength.py>`_
+* Add the mission and instrument to the ``supported_instruments.rst`` file
+  following the set format.
+
+
