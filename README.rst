@@ -47,7 +47,7 @@ PyQt4 as well (recommend PyQt5)::
 
 Now you should be able to run the `pdsspect` program.
 
-This works on Linux as well (Ubuntu 14.04).  Instructions coming soon.
+This works on Linux as well (Ubuntu 14.04).
 
 Quick Tutorial
 --------------
