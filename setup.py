@@ -7,9 +7,12 @@ try:
 except ImportError:
     from distutils.core import setup
 
-
+readme = ''
 with open('README.rst') as readme_file:
-    readme = readme_file.read()
+    for line in readme_file:
+        if 'Quick Tutorial' in line:
+            break
+        readme += line
 
 with open('HISTORY.rst') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
@@ -20,7 +23,7 @@ requirements = [
 
 setup(
     name='pdsspect',
-    version='0.1.0',
+    version='0.1.1',
     description="PDS Image Viewer for Multispectral Analysis",
     long_description=readme + '\n\n' + history,
     author="PlanetaryPy Developers",
