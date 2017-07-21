@@ -189,6 +189,7 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         spect_view.resizeEvent(None)
 
     def open_set_wavelengths(self):
+        """Open Set Wavelengths window"""
         if not self.set_wavelength_window:
             set_wavelength_model = SetWavelengthModel(self.image_set)
             self.set_wavelength_window = SetWavelengthWidget(
@@ -215,13 +216,73 @@ class PDSSpect(QtWidgets.QMainWindow, PDSSpectImageSetViewBase):
         self.close()
 
 
-def pdsspect(inlist=None):
-    """Run pdsview from python shell or command line with arguments
+def open_pdsspect(app, inlist=None):
+    """Open pdsspect
+
+    This method should be used for opening pdsspect from another application
+    where app's event loop is already running
 
     Parameters
     ----------
-    inlist : list
-        A list of file names/paths to display in the pdsview
+    app : :class:`QtWidgets.QApplication <PySide.QtCore.QApplication>`
+        Application manager
+    inlist : :obj:`list`
+        A list of file names/paths to display in the pdsspect
+
+    Returns
+    -------
+    window : :class:`PDSSpect`
+        Main pdsspect window
+    """
+
+    files = []
+    if isinstance(inlist, list):
+        if inlist:
+            for item in inlist:
+                files += arg_parser(item)
+        else:
+            files = glob('*')
+    elif isinstance(inlist, str):
+        names = inlist.split(',')
+        for name in names:
+            files = files + arg_parser(name.strip())
+    elif inlist is None:
+        files = glob('*')
+
+    image_set = PDSSpectImageSet(files)
+    window = PDSSpect(image_set)
+    geometry = app.desktop().screenGeometry()
+    geo_center = geometry.center()
+    width = geometry.width()
+    height = geometry.height()
+    width_to_height = width / height
+    window_width = width * .25
+    window_height = window_width / width_to_height
+    center = QtCore.QPoint(
+        geo_center.x() - window_width * .7, geo_center.y() - window_height * .2
+    )
+    window.resize(window_width, window_height)
+    window.move(center)
+    window.show()
+    window.pan_view.show()
+    pan_width = width * .2
+    pan_height = pan_width / width_to_height
+    window.pan_view.resize(pan_width, pan_height)
+    window.basic_window.resize(pan_width, pan_height)
+    window.pan_view.move(center.x(), center.y() - window_height * .9)
+    window.basic_window.move(center.x() + window_width + 5, center.y())
+    app.setActiveWindow(window)
+    app.setActiveWindow(window.pan_view)
+    return window
+
+
+def pdsspect(inlist=None):
+    """Run pdsspect from python shell or command line with arguments
+
+    Parameters
+    ----------
+    inlist : :obj:`list`
+        A list of file names/paths to display in the pdsspect
 
     Examples
     --------
@@ -274,45 +335,10 @@ def pdsspect(inlist=None):
     )
     """
 
-    app = QtWidgets.QApplication(sys.argv)
-    files = []
-    if isinstance(inlist, list):
-        if inlist:
-            for item in inlist:
-                files += arg_parser(item)
-        else:
-            files = glob('*')
-    elif isinstance(inlist, str):
-        names = inlist.split(',')
-        for name in names:
-            files = files + arg_parser(name.strip())
-    elif inlist is None:
-        files = glob('*')
-
-    image_set = PDSSpectImageSet(files)
-    window = PDSSpect(image_set)
-    geometry = app.desktop().screenGeometry()
-    geo_center = geometry.center()
-    width = geometry.width()
-    height = geometry.height()
-    width_to_height = width / height
-    window_width = width * .25
-    window_height = window_width / width_to_height
-    center = QtCore.QPoint(
-        geo_center.x() - window_width * .7, geo_center.y() - window_height * .2
-    )
-    window.resize(window_width, window_height)
-    window.move(center)
-    window.show()
-    window.pan_view.show()
-    pan_width = width * .2
-    pan_height = pan_width / width_to_height
-    window.pan_view.resize(pan_width, pan_height)
-    window.basic_window.resize(pan_width, pan_height)
-    window.pan_view.move(center.x(), center.y() - window_height * .9)
-    window.basic_window.move(center.x() + window_width + 5, center.y())
-    app.setActiveWindow(window)
-    app.setActiveWindow(window.pan_view)
+    app = QtWidgets.QApplication.instance()
+    if not app:
+        app = QtWidgets.QApplication(sys.argv)
+    window = open_pdsspect(app, inlist)
     try:
         sys.exit(app.exec_())
     except SystemExit:
@@ -331,7 +357,7 @@ def arg_parser(args):
 
 
 def cli():
-    """Give pdsview ability to run from command line"""
+    """Give pdsspect ability to run from command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
         'file', nargs='*',
