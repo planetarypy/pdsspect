@@ -1,3 +1,5 @@
+-e .
+
 # Install our development requirements
 flake8
 pytest
