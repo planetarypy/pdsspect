@@ -238,12 +238,12 @@ Images In Example
 .. _supported-instruments:
 
 Supported Instruments
-+++++++++++++++++++++
+---------------------
 
 .. include:: supported_instruments.rst
 
 Adding More Instruments
-~~~~~~~~~~~~~~~~~~~~~~~
++++++++++++++++++++++++
 
 We welcome anyone to create more models for instruments that are not yet
 supported. Please follow the Pull Request guide to make sure your model is
@@ -251,7 +251,7 @@ compatible with the rest of the models. See `Pull Request #20
 <https://github.com/planetarypy/pdsspect/pull/20>`_ as an example.
 
 Pull Request Checklist
-######################
+~~~~~~~~~~~~~~~~~~~~~~
 
 Please include the following checklist in your PR so we know you have completed
 each step::
@@ -265,7 +265,7 @@ each step::
 
 
 Style
-#####
+~~~~~
 
 * Set PR label to ``Instrument Model``
 * If an issue was created, please include ``Fixes #<issue_number>`` at the top
