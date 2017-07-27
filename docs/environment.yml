@@ -1,0 +1,15 @@
+name: pdsspect-docs
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+- python=3
+- ginga==2.6.0
+- planetaryimage>=0.5.0
+- matplotlib>=1.5.1
+- qtpy>=1.2.1
+- sphinx>=1.4
+- sphinx_rtd_theme
+- pip:
+  - planetary-test-data==0.3.3
+  - git+https://github.com/planetarypy/pdsspect
