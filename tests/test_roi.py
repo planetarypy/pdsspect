@@ -23,11 +23,55 @@ class TestPolygon(object):
         (2.5, 5.5), (4.5, 3.5), (6.5, 5.5), (6.5, 2.5), (2.5, 2.5)
     ]
 
+    def test_top(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly.top == self.image_set.current_image.shape[0] + 1.5
+
+    def test_right(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly.right == self.image_set.current_image.shape[1] - 0.5
+
+    @pytest.mark.parametrize(
+        'point, expected',
+        [
+            (-1, -0.5),
+            (-0.5, -0.5),
+            (-0.4, -0.5),
+            (0, -0.5),
+            (0.4, None),
+            (0.5, None),
+            (0.9, None),
+            (1, 0.5),
+            (1.1, 0.5),
+        ]
+    )
+    def test_get_default_point_value(self, point, expected):
+        poly = Polygon(self.image_set, self.view_canvas)
+        high_edege = 0.5
+        default_point_value = poly._get_default_point_value(point, high_edege)
+        if expected is None:
+            assert default_point_value is None
+        else:
+            assert default_point_value == expected
+
+    def test_get_default_data_values(self):
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly._get_default_data_values(-1, -1) == (-0.5, -0.5)
+        assert poly._get_default_data_values(0, 0) == (-0.5, -0.5)
+        x, y = poly.right - 1, poly.top - 1
+        assert poly._get_default_data_values(x, y) == (None, None)
+        x, y = poly.right, poly.top
+        assert poly._get_default_data_values(x, y) == (None, None)
+        x, y = poly.right + 0.5, poly.top + 0.5
+        assert poly._get_default_data_values(x, y) == (poly.right, poly.top)
+        x, y = poly.right + 1, poly.top + 1
+        assert poly._get_default_data_values(x, y) == (poly.right, poly.top)
+
     @pytest.mark.parametrize(
         'x, y, expected_x, expected_y',
         [
             (0, 0, -.5, -.5),
-            (1023, 1023, 1022.5, 1022.5),
+            (1023, 1023, 1023.5, 1023.5),
             (2.3, 2.3, 1.5, 1.5),
             (1.7, 2.3, 1.5, 1.5),
             (1.7, 1.7, 1.5, 1.5),
@@ -136,24 +180,50 @@ class TestRectangle(object):
         assert rect._current_path is not None
         assert rect._current_path in self.view_canvas.objects
 
+    @pytest.mark.parametrize(
+        'point, expected',
+        [
+            (1, (1, 3)),
+            (2, (2, 3)),
+            (3, (2, 4)),
+            (4, (2, 4))
+        ]
+    )
+    def test_extend_point(self, point, expected):
+        rect = Rectangle(self.image_set, self.view_canvas)
+        anchor_point = 2
+        edge = 4
+        extended_point = rect._extend_point(point, anchor_point, edge)
+        assert expected == extended_point
+
     def test_extend_ROI(self):
         rect = Rectangle(self.image_set, self.view_canvas)
         rect.start_ROI(2.5, 3.5)
         rect.extend_ROI(2.5, 3.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(3.5, 3.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(3.5, 4.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 5.5
         rect.extend_ROI(1.5, 3.5)
-        assert rect._current_path.x2 == 1.5
+        assert rect._current_path.x1 == 1.5
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(1.5, 2.5)
-        assert rect._current_path.x2 == 1.5
-        assert rect._current_path.y2 == 2.5
+        assert rect._current_path.x1 == 1.5
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 2.5
+        assert rect._current_path.y2 == 4.5
 
     def test_stop_ROI(self):
         rect = Rectangle(self.image_set, self.view_canvas)

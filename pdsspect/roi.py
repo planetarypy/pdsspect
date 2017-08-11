@@ -44,6 +44,81 @@ class ROIBase(basic.Polygon):
             return run_func
         return wrapper
 
+    @property
+    def top(self):
+        """:obj:`float` : The top edge of the image
+
+        The top edge is 1.5 units past the edge of the image due to how ginga
+        renders the image. I feel like this is a bug but I haven't had time to
+        try to expose it in a simple example so working around it will have
+        to do for now.
+        """
+
+        return self.image_set.current_image.shape[0] + 1.5
+
+    @property
+    def right(self):
+        """:obj:`float` : The right edge of the image
+
+        The right edge is 0.5 units before the right edge of the image.
+        """
+
+        return self.image_set.current_image.shape[1] - 0.5
+
+    def _get_default_point_value(self, point, high_edge):
+        """Get a default value for a single edge case
+
+        Either the top or bottom edge case or the left or right edge case
+
+        Parameters
+        ----------
+        point : :obj:`float`
+            The given x or y coordinate
+        high_edge : :obj:`float`
+            Either the right or top edge
+
+        Returns
+        -------
+        default_point : :obj:`float` or None
+            Returns the default value if an edge case, None otherwise
+        """
+
+        default_point = None
+
+        # Since the center coordinate of the left and bottom pixels is zero,
+        # the outer edge coordinate of the left and bottom pixels is -0.5
+        low_edge = -0.5
+
+        if point <= 0:
+            default_point = low_edge
+        elif point >= high_edge + 0.5:
+            default_point = high_edge
+
+        return default_point
+
+    def _get_default_data_values(self, data_x, data_y):
+        """Get default values for edge cases
+
+        Parameters
+        ----------
+        data_x : :obj:`float`
+            The given x coordinate
+        data_y : :obj:`float`
+            The given y coordinate
+
+        Returns
+        -------
+        default_x : :obj:`float` or None
+            The x coordinate for the edge case. If not an edge case then None
+        default_y : :obj:`float` or None
+            The y coordinate for the edge case. If not an edge case then None
+        """
+
+        default_x = self._get_default_point_value(data_x, self.right)
+        default_y = self._get_default_point_value(data_y, self.top)
+
+        return default_x, default_y
+
     def lock_coords_to_pixel(self, data_x, data_y):
         """Lock the coordinates to the pixel
 
@@ -68,35 +143,25 @@ class ROIBase(basic.Polygon):
             The corresponding y pixel coordinate
         """
 
-        point_x = point_y = None
-
-        # Set default values for data points outside the pan
-        if data_x <= 0:
-            point_x = -.5
-        if data_y <= 0:
-            point_y = -.5
-        if data_x >= (self.image_set.x_radius * 2 - 1):
-            point_x = (self.image_set.x_radius * 2 - 1.5)
-        if data_y >= (self.image_set.y_radius * 2 - 1):
-            point_y = self.image_set.y_radius * 2 - 1.5
+        point_x, point_y = self._get_default_data_values(data_x, data_y)
 
         if None not in (point_x, point_y):
             return point_x, point_y
 
-        X, Y = np.ceil(data_x), np.ceil(data_y)
-        x, y = np.floor(data_x), np.floor(data_y)
+        X, Y = np.ceil((data_x, data_y))
+        x, y = np.floor((data_x, data_y))
 
         if point_x is None:
-            if X - data_x <= .5:
-                point_x = x + .5
+            if X - data_x <= 0.5:
+                point_x = x + 0.5
             else:
-                point_x = x - .5
+                point_x = x - 0.5
 
         if point_y is None:
-            if Y - data_y <= .5:
-                point_y = y + .5
+            if Y - data_y <= 0.5:
+                point_y = y + 0.5
             else:
-                point_y = y - .5
+                point_y = y - 0.5
 
         return point_x, point_y
 
@@ -174,6 +239,7 @@ class ROIBase(basic.Polygon):
         result : :class:`numpy.ndarray`
             Boolean array where coordinates that are in ROI are True
         """
+
         # NOTE: we use a version of the ray casting algorithm
         # See: http://alienryderflex.com/polygon/
         xa, ya = x_arr, y_arr
@@ -244,6 +310,18 @@ class ROIBase(basic.Polygon):
         x1, y1, x2, y2 = roi.get_llur()
         x1, y1 = np.floor([x1, y1]).astype(int)
         x2, y2 = np.ceil([x2, y2]).astype(int)
+
+        # Fix top edge case. Due to display reasons, the top edge case must be
+        # dealt with differently than right edge case.
+        ends_above_top = y2 == self.top - .5
+        starts_and_ends_above_top = y1 == self.top - 2.5 and ends_above_top
+        if ends_above_top:
+            if starts_and_ends_above_top:
+                y1 = int(self.top - 3.5)
+                # Must move roi so the points are inside the region
+                self.move_delta(0, -1)
+            y2 = int(self.top - 1.5)
+
         X, Y = np.mgrid[x1:x2, y1:y2]
         rows, cols = Y, X
         coords = roi.contains_arr(X, Y)
@@ -261,7 +339,7 @@ class ROIBase(basic.Polygon):
 
         Example
         -------
-        >>> with _temporary_move_by_delta((10, 15) as moved_roi:
+        >>> with _temporary_move_by_delta((10, 15)) as moved_roi:
         ...     moved_roi.get_points()
         """
 
@@ -366,6 +444,10 @@ class Polygon(ROIBase):
 class Rectangle(ROIBase):
     """Rectangle Region of interest"""
 
+    # anchor point is pixel coordinate of the pixel first selected
+    # This pixel will always be selected as a result
+    _anchor_point = (0, 0)
+
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
     def start_ROI(self, data_x, data_y):
@@ -379,12 +461,45 @@ class Rectangle(ROIBase):
             The y coordinate
         """
 
+        data_x = data_x - 1 if data_x == self.right else data_x
+        data_y = data_y - 1 if data_y == self.top else data_y
+
         self._current_path = basic.Rectangle(
             data_x, data_y, data_x + 1, data_y + 1, color=self.color)
         self.view_canvas.add(self._current_path)
+        self._anchor_point = (self._current_path.x1, self._current_path.y1)
 
     def continue_ROI(self, data_x, data_y):
         pass
+
+    def _extend_point(self, point, anchor_point, edge):
+        """Determine the x1, x2 or y1, y2 coordinates when extending
+
+        Parameters
+        ----------
+        point : :obj:`float`
+            The x or y coordinate in extending the rectangle
+        anchor_point : :obj:`float`
+            The x or y coordinate anchor point for the rectangle
+        edge : :obj:`float`
+            The top or right edge
+
+        Returns
+        -------
+        p1 : :obj:`float`
+            x1 or y1 coordinate
+        p2 : :obj:`float`
+            x2 or y2 coordinate
+        """
+
+        if point >= anchor_point:
+            p1 = anchor_point
+            p2 = point + 1 if point != edge else point
+        else:
+            p1 = point
+            p2 = anchor_point + 1
+
+        return p1, p2
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
@@ -399,13 +514,16 @@ class Rectangle(ROIBase):
             The y coordinate
         """
 
-        if data_x >= self._current_path.x1:
-            data_x += 1
-        if data_y >= self._current_path.y1:
-            data_y += 1
-
-        self._current_path.x2 = data_x
-        self._current_path.y2 = data_y
+        self._current_path.x1, self._current_path.x2 = self._extend_point(
+            point=data_x,
+            anchor_point=self._anchor_point[0],
+            edge=self.right
+        )
+        self._current_path.y1, self._current_path.y2 = self._extend_point(
+            point=data_y,
+            anchor_point=self._anchor_point[1],
+            edge=self.top
+        )
 
     @ROIBase.draw_after
     @ROIBase.lock_coords_to_pixel_wrapper
@@ -419,6 +537,7 @@ class Rectangle(ROIBase):
         data_y : :obj:`float`
             The y coordinate
         """
+
         coords = self.create_ROI(self._current_path.get_points())
         self.view_canvas.deleteObject(self._current_path)
         return coords
@@ -427,7 +546,7 @@ class Rectangle(ROIBase):
 class Pencil(ROIBase):
     """Select individual pixels"""
 
-    point_radius = center_shift = .5
+    point_radius = center_shift = 0.5
 
     def __init__(self, *args, **kwargs):
         super(Pencil, self).__init__(*args, **kwargs)
@@ -523,6 +642,6 @@ class Pencil(ROIBase):
         with self._temporary_move_by_delta(delta) as moved:
             pixels = list(set([(p.x, p.y) for p in moved._current_path]))
         self.view_canvas.delete_objects(self._current_path)
-        coords = [(int(y), int(x)) for x, y in pixels]
+        coords = [(int(y), int(np.ceil(x))) for x, y in pixels]
         coordinates = np.array(coords)
         return coordinates

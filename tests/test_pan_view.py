@@ -5,7 +5,7 @@ from . import FILE_1
 import pytest
 import numpy as np
 
-from pdsspect.roi import Rectangle, Polygon, Pencil
+from pdsspect.roi import Rectangle, Polygon
 from pdsspect.pan_view import PanViewController, PanView, PanViewWidget
 from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
 
@@ -248,12 +248,8 @@ class TestPanView(object):
         self.image_set._selection_index = 2
         assert self.image_set.selection_type == 'pencil'
         self.view.start_ROI(self.view.view_canvas, None, 512, 512)
-        assert self.view._making_roi
-        assert self.view._current_roi is not None
-        assert self.image_set.selection_type == 'pencil'
-        assert isinstance(self.view._current_roi, Pencil)
-        self.view._making_roi = False
-        self.view._current_roi = None
+        assert not self.view._making_roi
+        assert self.view._current_roi is None
         self.image_set._selection_index = 0
         assert self.image_set.selection_type == 'filled rectangle'
         self.view.start_ROI(self.view.view_canvas, None, 512, 512)
