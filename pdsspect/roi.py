@@ -1,6 +1,7 @@
 """Region of interest creation"""
 import abc
 import six
+import math
 import warnings
 from functools import wraps
 from contextlib import contextmanager
@@ -119,8 +120,33 @@ class ROIBase(basic.Polygon):
 
         return default_x, default_y
 
+    def _lock_coordinate_to_pixel(self, coordinate):
+        """Lock x or y coordinate to bottom or left edge of the pixel
+
+        See :meth:`lock_coords_to_pixel` for explanation on logic
+
+        Parameters
+        ----------
+        coordinate : :obj:`float`
+            x or y coordinate to lock
+
+        Returns
+        -------
+        locked_point : :obj:`float`
+            The left or bottom edge of the pixel
+        """
+
+        coordinate_floor = math.floor(coordinate)
+        coordinate_ceil = math.ceil(coordinate)
+        if coordinate_ceil - coordinate <= 0.5:
+            locked_point = coordinate_floor + 0.5
+        else:
+            locked_point = coordinate_floor - 0.5
+
+        return locked_point
+
     def lock_coords_to_pixel(self, data_x, data_y):
-        """Lock the coordinates to the pixel
+        """Lock the coordinates to the bottom-left corner of the pixel
 
         The center of the pixel has integer coordinates and the edges of the
         pixel are 0.5 units away. We choose to lock to the bottom left corner
@@ -129,7 +155,9 @@ class ROIBase(basic.Polygon):
         pixel. To lock we round the coordinate down and add 0.5. If the
         decimal value is greater than 0.5 then the coordinate is to the
         right/above the center. To lock we round the coordinate down and
-        subtract 0.5.
+        subtract 0.5. For example, if the coordinate is (2.3, 4.7) the pixel
+        coordinate is (2, 3) and the corresponding locked coordinate is
+        (2.5, 3.5).
 
         Parameters
         ----------
@@ -151,20 +179,11 @@ class ROIBase(basic.Polygon):
         if None not in (point_x, point_y):
             return point_x, point_y
 
-        x_ceil, y_ceil = np.ceil((data_x, data_y))
-        x_floor, y_floor = np.floor((data_x, data_y))
-
         if point_x is None:
-            if x_ceil - data_x <= 0.5:
-                point_x = x_floor + 0.5
-            else:
-                point_x = x_floor - 0.5
+            point_x = self._lock_coordinate_to_pixel(data_x)
 
         if point_y is None:
-            if y_ceil - data_y <= 0.5:
-                point_y = y_floor + 0.5
-            else:
-                point_y = y_floor - 0.5
+            point_y = self._lock_coordinate_to_pixel(data_y)
 
         return point_x, point_y
 

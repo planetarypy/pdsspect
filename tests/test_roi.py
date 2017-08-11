@@ -68,6 +68,18 @@ class TestPolygon(object):
         assert poly._get_default_data_values(x, y) == (poly.right, poly.top)
 
     @pytest.mark.parametrize(
+        'coordinate, expected',
+        [
+            (2.3, 1.5),
+            (1.7, 1.5),
+            (2.5, 2.5),
+        ]
+    )
+    def test_lock_coordinate_to_pixel(self, coordinate, expected):
+        poly = Polygon(self.image_set, self.view_canvas)
+        assert poly._lock_coordinate_to_pixel(coordinate) == expected
+
+    @pytest.mark.parametrize(
         'x, y, expected_x, expected_y',
         [
             (0, 0, -.5, -.5),
