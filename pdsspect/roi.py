@@ -151,20 +151,20 @@ class ROIBase(basic.Polygon):
         if None not in (point_x, point_y):
             return point_x, point_y
 
-        x_round_up, y_round_up = np.ceil((data_x, data_y))
-        x_round_down, y_round_down = np.floor((data_x, data_y))
+        x_ceil, y_ceil = np.ceil((data_x, data_y))
+        x_floor, y_floor = np.floor((data_x, data_y))
 
         if point_x is None:
-            if x_round_up - data_x <= 0.5:
-                point_x = x_round_down + 0.5
+            if x_ceil - data_x <= 0.5:
+                point_x = x_floor + 0.5
             else:
-                point_x = x_round_down - 0.5
+                point_x = x_floor - 0.5
 
         if point_y is None:
-            if y_round_up - data_y <= 0.5:
-                point_y = y_round_down + 0.5
+            if y_ceil - data_y <= 0.5:
+                point_y = y_floor + 0.5
             else:
-                point_y = y_round_down - 0.5
+                point_y = y_floor - 0.5
 
         return point_x, point_y
 
