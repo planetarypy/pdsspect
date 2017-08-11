@@ -122,11 +122,14 @@ class ROIBase(basic.Polygon):
     def lock_coords_to_pixel(self, data_x, data_y):
         """Lock the coordinates to the pixel
 
-        The coordinate of the pixel is located at the bottom left corner of the
-        pixel square while the center of the pixel .5 units up and to the right
-        of the corner. So if the given coordinates are (2.3, 3.7), the pixel
-        coordinates will be (2, 3) and the center of the pixel is (2.5, 3.5).
-        This method locks the given coordinates to the pixel's coordinates
+        The center of the pixel has integer coordinates and the edges of the
+        pixel are 0.5 units away. We choose to lock to the bottom left corner
+        or each pixel. If the decimal value of the coordinate is less than or
+        equal to 0.5 then the coordinate is to the left/below the center of the
+        pixel. To lock we round the coordinate down and add 0.5. If the
+        decimal value is greater than 0.5 then the coordinate is to the
+        right/above the center. To lock we round the coordinate down and
+        subtract 0.5.
 
         Parameters
         ----------
@@ -148,20 +151,20 @@ class ROIBase(basic.Polygon):
         if None not in (point_x, point_y):
             return point_x, point_y
 
-        X, Y = np.ceil((data_x, data_y))
-        x, y = np.floor((data_x, data_y))
+        x_round_up, y_round_up = np.ceil((data_x, data_y))
+        x_round_down, y_round_down = np.floor((data_x, data_y))
 
         if point_x is None:
-            if X - data_x <= 0.5:
-                point_x = x + 0.5
+            if x_round_up - data_x <= 0.5:
+                point_x = x_round_down + 0.5
             else:
-                point_x = x - 0.5
+                point_x = x_round_down - 0.5
 
         if point_y is None:
-            if Y - data_y <= 0.5:
-                point_y = y + 0.5
+            if y_round_up - data_y <= 0.5:
+                point_y = y_round_down + 0.5
             else:
-                point_y = y - 0.5
+                point_y = y_round_down - 0.5
 
         return point_x, point_y
 
