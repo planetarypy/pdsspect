@@ -289,6 +289,9 @@ class ROIBase(basic.Polygon):
                               np.logical_and(yj < ya, yi >= ya)),
                 np.logical_or(xi <= xa, xj <= xa)
             )
+            if not tf.any():
+                xj, yj = xi, yi
+                continue
             rs, cs = np.where(tf)
             cross1 = np.zeros(ya.shape, dtype=bool)
             cross2 = np.zeros(ya.shape, dtype=bool)
@@ -330,8 +333,8 @@ class ROIBase(basic.Polygon):
         if mask is None:
             mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
         x1, y1, x2, y2 = roi.get_llur()
-        x1, y1 = np.floor([x1, y1]).astype(int)
-        x2, y2 = np.ceil([x2, y2]).astype(int)
+        x1, y1, = math.floor(x1), math.floor(y1)
+        x2, y2 = math.ceil(x2), math.ceil(y2)
 
         # Fix top edge case. Due to display reasons, the top edge case must be
         # dealt with differently than right edge case.
@@ -664,6 +667,6 @@ class Pencil(ROIBase):
         with self._temporary_move_by_delta(delta) as moved:
             pixels = list(set([(p.x, p.y) for p in moved._current_path]))
         self.view_canvas.delete_objects(self._current_path)
-        coords = [(int(y), int(np.ceil(x))) for x, y in pixels]
+        coords = [(int(y), math.ceil(x)) for x, y in pixels]
         coordinates = np.array(coords)
         return coordinates
