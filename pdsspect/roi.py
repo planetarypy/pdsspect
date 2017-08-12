@@ -289,9 +289,6 @@ class ROIBase(basic.Polygon):
                               np.logical_and(yj < ya, yi >= ya)),
                 np.logical_or(xi <= xa, xj <= xa)
             )
-            if not tf.any():
-                xj, yj = xi, yi
-                continue
             rs, cs = np.where(tf)
             cross1 = np.zeros(ya.shape, dtype=bool)
             cross2 = np.zeros(ya.shape, dtype=bool)
