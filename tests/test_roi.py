@@ -253,8 +253,13 @@ class TestPencil(object):
     image_set = PDSSpectImageSet(TEST_FILES)
     view_canvas = PDSImageViewCanvas()
 
-    def test_start_ROI(self):
-        pencil = Pencil(self.image_set, self.view_canvas)
+    @pytest.fixture
+    def pencil(self):
+        self.image_set.zoom = 1.0
+        self.view_canvas = PDSImageViewCanvas()
+        return Pencil(self.image_set, self.view_canvas)
+
+    def test_start_ROI(self, pencil):
         assert not pencil._current_path
         pencil.start_ROI(3.5, 1.5)
         assert isinstance(pencil._current_path[0], basic.Point)
@@ -262,8 +267,7 @@ class TestPencil(object):
         assert pencil._current_path[0].x == 4
         assert pencil._current_path[0].y == 2
 
-    def test_add_point(self):
-        pencil = Pencil(self.image_set, self.view_canvas)
+    def test_add_point(self, pencil):
         pencil.start_ROI(3.5, 1.5)
         pencil._add_point(4.5, 6.5)
         assert len(pencil._current_path) == 2
@@ -271,8 +275,7 @@ class TestPencil(object):
         assert pencil._current_path[1].y == 7
         assert pencil._current_path[1] in self.view_canvas.objects
 
-    def test_move_delta(self):
-        pencil = Pencil(self.image_set, self.view_canvas)
+    def test_move_delta(self, pencil):
         pencil.start_ROI(3.5, 1.5)
         pencil._add_point(4.5, 6.5)
         assert pencil._current_path[0].x == 4
@@ -285,8 +288,12 @@ class TestPencil(object):
         assert pencil._current_path[1].x == 4
         assert pencil._current_path[1].y == 10
 
-    def test_stop_ROI(self):
-        pencil = Pencil(self.image_set, self.view_canvas)
+    def test_fix_coordinate(self, pencil):
+        assert pencil._fix_coordinate(1.7) == 2
+        assert pencil._fix_coordinate(2.0) == 2
+        assert pencil._fix_coordinate(2.3) == 2
+
+    def test_stop_ROI(self, pencil):
         pencil.start_ROI(3.5, 1.5)
         pencil._add_point(4.5, 6.5)
         assert pencil._current_path[0] in self.view_canvas.objects
@@ -295,3 +302,10 @@ class TestPencil(object):
         assert pencil._current_path[0] not in self.view_canvas.objects
         assert pencil._current_path[1] not in self.view_canvas.objects
         assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))
+        self.image_set.zoom = 2.0
+        x, y = self.image_set.center
+        self.image_set.center = (x + 5.2, y + 5.7)
+        pencil.start_ROI(3.5, 1.5)
+        pencil._add_point(4.5, 6.5)
+        test_coords = pencil.stop_ROI(0, 0)
+        assert np.array_equal(test_coords, np.array([[29, 18], [24, 17]]))

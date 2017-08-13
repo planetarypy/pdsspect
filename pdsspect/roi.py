@@ -156,8 +156,8 @@ class ROIBase(basic.Polygon):
         decimal value is greater than 0.5 then the coordinate is to the
         right/above the center. To lock we round the coordinate down and
         subtract 0.5. For example, if the coordinate is (2.3, 4.7) the pixel
-        coordinate is (2, 3) and the corresponding locked coordinate is
-        (2.5, 3.5).
+        coordinate is (2, 4) and the corresponding locked coordinate is
+        (2.5, 4.5).
 
         Parameters
         ----------
@@ -643,6 +643,32 @@ class Pencil(ROIBase):
         for point in self._current_path:
             point.move_delta(delta_x, delta_y)
 
+    def _fix_coordinate(self, coordinate):
+        """Fix the coordinate after it is moved from its original position
+
+        The coordinate may be changed to a float when the point is moved from
+        its original position when the pan is zoomed. As a result, we must
+        relock the coordinate to its correct integer location.
+
+        Parameters
+        ----------
+        coordinate : :obj:`float`
+            Either the x or y coordinate of the moved point
+
+        Returns
+        -------
+        fixed_coordinate : :obj:`int`
+            The fixed coordinate locked onto its integer location
+        """
+
+        if coordinate.is_integer():
+            fixed_coordinate = int(coordinate)
+        else:
+            fixed_coordinate = int(
+                self._lock_coordinate_to_pixel(coordinate) + self.center_shift
+            )
+        return fixed_coordinate
+
     @ROIBase.draw_after
     def stop_ROI(self, data_x, data_y):
         """Set all pixels as roi coordinates on right click
@@ -664,6 +690,10 @@ class Pencil(ROIBase):
         with self._temporary_move_by_delta(delta) as moved:
             pixels = list(set([(p.x, p.y) for p in moved._current_path]))
         self.view_canvas.delete_objects(self._current_path)
-        coords = [(int(y), int(math.ceil(x))) for x, y in pixels]
+        coords = []
+        for x, y in pixels:
+            row = self._fix_coordinate(y)
+            column = self._fix_coordinate(x)
+            coords.append((row, column))
         coordinates = np.array(coords)
         return coordinates
