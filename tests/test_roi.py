@@ -301,11 +301,19 @@ class TestPencil(object):
         test_coords = pencil.stop_ROI(0, 0)
         assert pencil._current_path[0] not in self.view_canvas.objects
         assert pencil._current_path[1] not in self.view_canvas.objects
-        assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))
+        # The order may be different due to using set
+        try:
+            assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))
+        except AssertionError:
+            assert np.array_equal(test_coords, np.array([[7, 5], [2, 4]]))
         self.image_set.zoom = 2.0
         x, y = self.image_set.center
         self.image_set.center = (x + 5.2, y + 5.7)
         pencil.start_ROI(3.5, 1.5)
         pencil._add_point(4.5, 6.5)
         test_coords = pencil.stop_ROI(0, 0)
-        assert np.array_equal(test_coords, np.array([[29, 18], [24, 17]]))
+        # The order may be different due to using set
+        try:
+            assert np.array_equal(test_coords, np.array([[24, 17], [29, 18]]))
+        except AssertionError:
+            assert np.array_equal(test_coords, np.array([[29, 18], [24, 17]]))
