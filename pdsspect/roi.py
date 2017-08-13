@@ -330,8 +330,8 @@ class ROIBase(basic.Polygon):
         if mask is None:
             mask = np.zeros(self.image_set.current_image.shape, dtype=np.bool)
         x1, y1, x2, y2 = roi.get_llur()
-        x1, y1, = math.floor(x1), math.floor(y1)
-        x2, y2 = math.ceil(x2), math.ceil(y2)
+        x1, y1, = int(math.floor(x1)), int(math.floor(y1))
+        x2, y2 = int(math.ceil(x2)), int(math.ceil(y2))
 
         # Fix top edge case. Due to display reasons, the top edge case must be
         # dealt with differently than right edge case.
@@ -645,7 +645,7 @@ class Pencil(ROIBase):
 
     @ROIBase.draw_after
     def stop_ROI(self, data_x, data_y):
-        """Set all pixels as roi cooridinates on right click
+        """Set all pixels as roi coordinates on right click
 
         Parameters
         ----------
@@ -664,6 +664,6 @@ class Pencil(ROIBase):
         with self._temporary_move_by_delta(delta) as moved:
             pixels = list(set([(p.x, p.y) for p in moved._current_path]))
         self.view_canvas.delete_objects(self._current_path)
-        coords = [(int(y), math.ceil(x)) for x, y in pixels]
+        coords = [(int(y), int(math.ceil(x))) for x, y in pixels]
         coordinates = np.array(coords)
         return coordinates
