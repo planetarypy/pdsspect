@@ -40,7 +40,9 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-  - py.test tests
+  - py.test --cov=instrument_models --cov=pdsspect tests/
   - flake8 pdsspect
   - sphinx-build -b linkcheck docs/ docs/_build/
   - sphinx-build -b html docs/ docs/_build/
+after_success:
+  - coveralls

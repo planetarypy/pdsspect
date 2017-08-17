@@ -8,6 +8,11 @@ pdsspect - A Python PDS Image Region of Interest Selection Tool
 .. image:: https://img.shields.io/pypi/v/pdsspect.svg
         :target: https://pypi.python.org/pypi/pdsspect
 
+.. image:: https://coveralls.io/repos/github/planetarypy/pdsspect/badge.svg?branch=master
+        :target: https://coveralls.io/github/planetarypy/pdsspect?branch=master
+
+
+
 **NOTE:** This is Alpha quality software that is being actively developed, use
 at your own risk.  This software is not produced by NASA.
 
