@@ -4,6 +4,8 @@
 flake8
 pytest
 pytest-qt
+pytest-cov
+coveralls
 planetary_test_data
 sphinx
 sphinx_rtd_theme
