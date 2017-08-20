@@ -1,10 +1,10 @@
+from . import FILE_2, mastcam_label1, NA_label, WA_label
+
 import pvl
 import math
 import pytest
 
 from instrument_models import get_wavelength
-
-from . import FILE_2, mastcam_label1, NA_label, WA_label
 
 mock_label = pvl.PVLModule({'foo': 'bar'})
 pancam_label = pvl.load(FILE_2)

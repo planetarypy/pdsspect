@@ -3,6 +3,8 @@ import sys
 
 import pvl
 from qtpy import QtWidgets
+import numpy
+np = numpy
 
 test_dir = os.path.join('tests', 'mission_data')
 
@@ -85,6 +87,25 @@ EMPTY_LABEL = pvl.PVLModule(
         'INSTRUMENT_STATE_PARMS': {'CENTER_FILTER_WAVELENGTH': None},
     }
 )
+
+
+def reset_image_set(image_set):
+    image_set._current_image_index = 0
+    image_set.current_color_index = 0
+    image_set._selection_index = 0
+    image_set._zoom = 1.0
+    image_set._center = None
+    image_set._move_rois = True
+    image_set._alpha = 1.0
+    image_set._flip_x = False
+    image_set._flip_y = False
+    image_set._swap_xy = False
+    image_set._roi_data = image_set._maskrgb.get_data().astype(float)
+    image_set._subsets = []
+    image_set._simultaneous_roi = False
+    image_set._unit = 'nm'
+    for image in image_set.images:
+        image.unit = 'nm'
 
 
 app = QtWidgets.QApplication.instance()

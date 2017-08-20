@@ -7,9 +7,8 @@ import numpy as np
 from qtpy import QtWidgets, QtCore
 from matplotlib.lines import Line2D
 
-
-from pdsspect import pdsspect_image_set, histogram
 from pdsspect import pds_image_view_canvas
+from pdsspect import pdsspect_image_set, histogram
 
 # test_images = pdsspect_image_set.ImageSet([FILE_1, FILE_2])
 # window = pdsview.PDSViewer(test_images)

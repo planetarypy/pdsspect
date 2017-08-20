@@ -1,19 +1,21 @@
+from . import numpy as np
+from . import FILE_1, FILE_3, FILE_4, reset_image_set
+
 from pdsspect import roi_line_plot
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
-from . import FILE_1, FILE_3, FILE_4
-
 import pytest
-import numpy as np
 
 
 class TestROILinePlotModel(object):
 
-    image_set = PDSSpectImageSet([FILE_1, FILE_3])
+    image_set = PDSSpectImageSet([FILE_1, FILE_4, FILE_3])
 
     @pytest.fixture()
     def test_model(self):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_4, FILE_3])
+        reset_image_set(self.image_set)
+        self.image_set.images[0].wavelength = float('nan')
+        self.image_set.images[1].wavelength = float('nan')
         return roi_line_plot.ROILinePlotModel(self.image_set)
 
     def test_wavelengths(self, test_model):

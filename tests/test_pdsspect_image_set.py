@@ -1,8 +1,8 @@
+from . import numpy as np
+from . import reset_image_set
 from . import FILE_1, FILE_1_NAME, FILE_2, TEST_FILES, TEST_FILE_NAMES
 
 import pytest
-import numpy as np
-from ginga.util.dp import masktorgb
 from ginga.RGBImage import RGBImage
 from astropy import units as astro_units
 from ginga.canvas.types.image import Image
@@ -84,27 +84,7 @@ class TestPDSSpectImageSet(object):
     centerV = 32
 
     def teardown_method(self, method):
-        self.test_set._current_image_index = 0
-        self.test_set.current_color_index = 0
-        self.test_set._selection_index = 0
-        self.test_set._zoom = 1.0
-        self.test_set._center = None
-        self.test_set._move_rois = True
-        self.test_set._alpha = 1.0
-        self.test_set._flip_x = False
-        self.test_set._flip_y = False
-        self.test_set._swap_xy = False
-        mask = np.zeros(self.test_set.current_image.shape, dtype=np.bool)
-        self.test_set._maskrgb = masktorgb(
-            mask, self.test_set.color, self.test_set.alpha)
-        self.test_set._roi_data = self.test_set._maskrgb.get_data().astype(
-            float)
-        self.test_set._maskrgb_obj = Image(0, 0, self.test_set._maskrgb)
-        self.test_set._subsets = []
-        self.test_set._simultaneous_roi = False
-        self.test_set._unit = 'nm'
-        for image in self.test_set.images:
-            image.unit = 'nm'
+        reset_image_set(self.test_set)
 
     def test_init(self):
         test_set = self.test_set
@@ -782,6 +762,8 @@ class TestPDSSpectImageSet(object):
         self.test_set.set_unit()
         for image in self.test_set.images:
             assert image.unit == 'um'
+        with pytest.raises(ValueError):
+            self.test_set.unit = 'miles'
 
 
 class TestSubPDSSpectImageSet(object):

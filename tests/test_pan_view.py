@@ -1,9 +1,7 @@
-from functools import wraps
-
-from . import FILE_1
+from . import numpy as np
+from . import FILE_1, reset_image_set
 
 import pytest
-import numpy as np
 
 from pdsspect.roi import Rectangle, Polygon, Pencil
 from pdsspect.pan_view import PanViewController, PanView, PanViewWidget
@@ -154,7 +152,7 @@ class TestPanView(object):
 
     @pytest.fixture
     def view(self, qtbot):
-        self.image_set = PDSSpectImageSet([FILE_1])
+        reset_image_set(self.image_set)
         view = PanView(self.image_set)
         view.show()
         qtbot.add_widget(view)
@@ -328,7 +326,7 @@ class TestPanViewWidget(object):
 
     @pytest.fixture
     def pan_widget(self):
-        self.image_set = PDSSpectImageSet([FILE_1])
+        reset_image_set(self.image_set)
         self.pan = PanView(self.image_set)
         return PanViewWidget(self.pan, None)
 
