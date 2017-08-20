@@ -100,25 +100,21 @@ class HistogramModel(object):
     @bins.setter
     def bins(self, bins):
         if bins == self._bins:
-            return
-        self._bins = bins
-        self._change_bins()
+            pass
+        else:
+            self._bins = bins
+            self._change_bins()
 
     @property
     def cuts(self):
-        """:obj:`tuple` The lower and higher cut levels. If the lower and
-        higher cut levels are not set, use the image_view cut levels
+        """:obj:`tuple` The lower and higher cut levels.
 
         Setting the cuts will adjust the cut levels in the image viewer and
         notify the views that the cuts have changed. The low cut must be
         less than the high cut, otherwise they will be switched to satisfy
         that condition.
         """
-        if self.cut_low is not None and self.cut_high is not None:
-            cut_low, cut_high = self.cut_low, self.cut_high
-        else:
-            cut_low, cut_high = self.view_cuts
-        return cut_low, cut_high
+        return self.cut_low, self.cut_high
 
     @cuts.setter
     def cuts(self, cuts):
@@ -385,9 +381,6 @@ class HistogramWidget(QtWidgets.QWidget):
                 bins_text = self._bins_box.text()
                 bins = int(bins_text)
             except ValueError:
-                message = (
-                    "The number of bins must be a integer." +
-                    "Attempting to round down to nearest integer")
                 try:
                     bins = int(float(bins_text))
                 except ValueError:

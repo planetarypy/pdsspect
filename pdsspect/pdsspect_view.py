@@ -169,10 +169,10 @@ class PDSSpectView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             The zoom event
         """
 
-        is_foward = zoom_event.direction == 0.0
-        if self.image_set.zoom == 1.0 and not is_foward:
+        direction_is_foward = zoom_event.direction == 0.0
+        if self.image_set.zoom == 1.0 and not direction_is_foward:
             return
-        delta_zoom = 1 if is_foward else -1
+        delta_zoom = 1 if direction_is_foward else -1
         self.controller.change_pan_size(self.image_set.zoom + delta_zoom)
 
     def arrow_key_move_center(self, view_canvas, keyname):
