@@ -37,7 +37,7 @@ SAMPLE_ROI = os.path.join(
     'tests', 'sample_roi.npz'
 )
 
-mastcam_label = pvl.PVLModule(
+mastcam_label1 = pvl.PVLModule(
     {
         'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
         'INSTRUMENT_STATE_PARMS': {
@@ -48,6 +48,19 @@ mastcam_label = pvl.PVLModule(
         },
     }
 )
+
+mastcam_label2 = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
+        'INSTRUMENT_STATE_PARMS': {
+            'FILTER_CENTER_WAVELENGTH': pvl._collections.Units(
+                value=500,
+                units='nm'
+            ),
+        },
+    }
+)
+
 
 NA_label = pvl.PVLModule(
     {
@@ -62,6 +75,14 @@ WA_label = pvl.PVLModule(
         'INSTRUMENT_NAME': 'IMAGING SCIENCE SUBSYSTEM WIDE ANGLE',
         'FILTER_NAME': ["CB2", "CL2"],
 
+    }
+)
+
+EMPTY_LABEL = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'EMPTY',
+        'FILTER_NAME': 'NO_FILTER',
+        'INSTRUMENT_STATE_PARMS': {'CENTER_FILTER_WAVELENGTH': None},
     }
 )
 

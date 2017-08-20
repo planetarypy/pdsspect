@@ -1,15 +1,20 @@
-from . import TEST_FILES
+from . import TEST_FILES, test_dir
+
+import os
+import sys
+from glob import glob
 
 import pytest
-from qtpy import QtCore
+from qtpy import QtCore, QtWidgets
 
 from pdsspect.basic import BasicWidget
-from pdsspect.pdsspect import PDSSpect
+from pdsspect.pdsspect import PDSSpect, open_pdsspect, arg_parser
 from pdsspect.transforms import Transforms
 from pdsspect.selection import Selection
 from pdsspect.roi_histogram import ROIHistogramWidget
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
 from pdsspect.roi_line_plot import ROILinePlotWidget
+from pdsspect.set_wavelength import SetWavelengthWidget
 
 
 class TestPDSSpect(object):
@@ -109,6 +114,17 @@ class TestPDSSpect(object):
         assert len(window.basic_window.basics) == 2
         assert len(window.pan_view.pans) == 2
 
+    def test_open_set_wavelengths(self, qtbot, window):
+        window.show()
+        qtbot.add_widget(window)
+        qtbot.add_widget(window.basic_window)
+        assert window.set_wavelength_window is None
+        qtbot.mouseClick(window.set_wavelengths_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.set_wavelength_window)
+        assert window.set_wavelength_window is not None
+        assert window.set_wavelength_window.isVisible()
+        assert isinstance(window.set_wavelength_window, SetWavelengthWidget)
+
     def test_quit(self, qtbot, window):
         window.show()
         qtbot.add_widget(window)
@@ -122,12 +138,40 @@ class TestPDSSpect(object):
         qtbot.add_widget(window.roi_histogram_window)
         qtbot.mouseClick(window.roi_line_plot_btn, QtCore.Qt.LeftButton)
         qtbot.add_widget(window.roi_line_plot_window)
+        qtbot.mouseClick(window.set_wavelengths_btn, QtCore.Qt.LeftButton)
+        qtbot.add_widget(window.set_wavelength_window)
         assert window.transforms_window.isVisible()
         assert window.basic_window.isVisible()
         assert window.selection_window.isVisible()
+        assert window.roi_histogram_window.isVisible()
+        assert window.roi_line_plot_window.isVisible()
+        assert window.set_wavelength_window.isVisible()
         assert window.isVisible()
         qtbot.mouseClick(window.quit_btn, QtCore.Qt.LeftButton)
         assert not window.transforms_window.isVisible()
         assert not window.basic_window.isVisible()
         assert not window.selection_window.isVisible()
+        assert not window.roi_histogram_window.isVisible()
+        assert not window.roi_line_plot_window.isVisible()
+        assert not window.set_wavelength_window.isVisible()
         assert not window.isVisible()
+
+
+def test_open_pdsspect(qtbot):
+    app = QtWidgets.QApplication.instance()
+    if not app:
+        app = QtWidgets.QApplication(sys.argv)
+    window = open_pdsspect(app, TEST_FILES)
+    qtbot.add_widget(window)
+    assert isinstance(window, PDSSpect)
+
+
+@pytest.mark.parametrize(
+    'args, expected',
+    [
+        (test_dir, glob(os.path.join(test_dir, '*'))),
+        (os.path.join(test_dir, '*'), glob(os.path.join(test_dir, '*'))),
+        ('', glob('*'))
+    ])
+def test_arg_parser(args, expected):
+    assert arg_parser(args) == expected

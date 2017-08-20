@@ -4,7 +4,7 @@ import pytest
 
 from instrument_models import get_wavelength
 
-from . import FILE_2, mastcam_label, NA_label, WA_label
+from . import FILE_2, mastcam_label1, NA_label, WA_label
 
 mock_label = pvl.PVLModule({'foo': 'bar'})
 pancam_label = pvl.load(FILE_2)
@@ -14,7 +14,7 @@ pancam_label = pvl.load(FILE_2)
     'label, expected',
     [
         (pancam_label, True),
-        (mastcam_label, False),
+        (mastcam_label1, False),
         (mock_label, False)
     ]
 )
@@ -26,7 +26,7 @@ def test_is_pancam(label, expected):
     'label, expected',
     [
         (pancam_label, False),
-        (mastcam_label, True),
+        (mastcam_label1, True),
         (mock_label, False)
     ]
 )
@@ -40,9 +40,9 @@ def test_is_mastcam(label, expected):
         (pancam_label, 'nm', 880),
         (pancam_label, 'um', 0.880),
         (pancam_label, 'AA', 8800),
-        (mastcam_label, 'nm', 500),
-        (mastcam_label, 'um', 0.5),
-        (mastcam_label, 'AA', 5000),
+        (mastcam_label1, 'nm', 500),
+        (mastcam_label1, 'um', 0.5),
+        (mastcam_label1, 'AA', 5000),
         (NA_label, 'nm', 441.077),
         (NA_label, 'um', 0.441),
         (NA_label, 'AA', 4410.770),
