@@ -1,9 +1,9 @@
+from . import FILE_2, FILE_3
+
 import pvl
 import pytest
 
 from instrument_models.pancam import Pancam
-
-from . import FILE_2, FILE_3
 
 
 class TestPancam(object):

@@ -42,6 +42,7 @@ install:
 script:
   - py.test --cov=instrument_models --cov=pdsspect tests/
   - flake8 pdsspect
+  - flake8 instrument_models
   - sphinx-build -b linkcheck docs/ docs/_build/
   - sphinx-build -b html docs/ docs/_build/
 after_success:

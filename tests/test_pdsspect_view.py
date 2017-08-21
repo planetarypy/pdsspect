@@ -10,6 +10,8 @@ from pdsspect.pdsspect_view import (
     PDSSpectViewController
 )
 
+from ginga.Bindings import ScrollEvent
+
 
 class TestPDSSpectViewController(object):
     image_set = PDSSpectImageSet(TEST_FILES)
@@ -124,6 +126,37 @@ class TestPDSSpectView(object):
         assert self.view.pan.xradius == 16.5
         assert self.view.pan.yradius == 32.5
         assert test_set.center == (16, 32)
+
+    def test_zoom_with_scroll(self, test_set):
+        foward = ScrollEvent(direction=0.0)
+        backwards = ScrollEvent(direction=15.0)
+        assert test_set.zoom == 1.0
+        self.view.zoom_with_scroll(self.view.view_canvas, foward)
+        assert test_set.zoom == 2.0
+        self.view.zoom_with_scroll(self.view.view_canvas, backwards)
+        assert test_set.zoom == 1.0
+        self.view.zoom_with_scroll(self.view.view_canvas, backwards)
+        assert test_set.zoom == 1.0
+
+    def test_arrow_key_move_center(self, test_set):
+        test_set.zoom = 2
+        default_x, default_y = test_set.center
+        self.view.arrow_key_move_center(self.view.view_canvas, 'left')
+        assert test_set.center == (default_x - 1, default_y)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'right')
+        assert test_set.center == (default_x, default_y)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'right')
+        assert test_set.center == (default_x + 1, default_y)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'left')
+        assert test_set.center == (default_x, default_y)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'up')
+        assert test_set.center == (default_x, default_y + 1)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'down')
+        assert test_set.center == (default_x, default_y)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'down')
+        assert test_set.center == (default_x, default_y - 1)
+        self.view.arrow_key_move_center(self.view.view_canvas, 'up')
+        assert test_set.center == (default_x, default_y)
 
     def test_change_center(self, qtbot, test_set):
         test_set.zoom = 2

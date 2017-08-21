@@ -1,4 +1,5 @@
-from . import TEST_FILES
+from . import TEST_FILES, reset_image_set
+
 import pytest
 
 from pdsspect.basic import (
@@ -8,8 +9,8 @@ from pdsspect.basic import (
     BasicHistogramController,
     BasicWidget,
 )
-from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
 from pdsspect.pds_image_view_canvas import PDSImageViewCanvas
+from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
 
 
 class TestBasicHistogramModel(object):
@@ -93,11 +94,14 @@ class TestBasicWidget(object):
     image_view.set_image(image_set.images[0])
 
     @pytest.fixture
-    def basic_widget(self):
-        self.image_set = PDSSpectImageSet(TEST_FILES)
+    def basic_widget(self, qtbot):
+        reset_image_set(self.image_set)
         self.image_view = PDSImageViewCanvas()
         self.image_view.set_image(self.image_set.images[0])
-        return BasicWidget(self.image_set, self.image_view)
+        basic_widget = BasicWidget(self.image_set, self.image_view)
+        basic_widget.show()
+        qtbot.add_widget(basic_widget)
+        return basic_widget
 
     def test_init(self, basic_widget):
         assert basic_widget.image_set == self.image_set
@@ -152,11 +156,12 @@ class TestBasic(object):
     basic_widget = BasicWidget(image_set, view_canvas)
 
     @pytest.fixture
-    def basic(self):
-        self.image_set = PDSSpectImageSet(TEST_FILES)
+    def basic(self, qtbot):
+        reset_image_set(self.image_set)
         self.view_canvas = PDSImageViewCanvas()
         self.view_canvas.set_image(self.image_set.current_image)
         self.basic_widget = BasicWidget(self.image_set, self.view_canvas)
+        qtbot.add_widget(self.basic_widget)
         return self.basic_widget.basics[0]
 
     def test_change_image1(self, basic):

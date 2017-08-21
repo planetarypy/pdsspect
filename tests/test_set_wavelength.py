@@ -1,5 +1,7 @@
+from . import numpy as np
+from . import FILE_1, FILE_3, reset_image_set
+
 import pytest
-import numpy as np
 
 from pdsspect.set_wavelength import (
     SetWavelengthModel,
@@ -7,8 +9,6 @@ from pdsspect.set_wavelength import (
     SetWavelengthController,
 )
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
-
-from . import FILE_1, FILE_3
 
 
 class TestSetWavelengthModel(object):
@@ -62,7 +62,7 @@ class TestSetWavelengthController(object):
 
     @pytest.fixture
     def controller(self):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
+        reset_image_set(self.image_set)
         self.model = SetWavelengthModel(self.image_set)
         return SetWavelengthController(self.model, None)
 
@@ -99,7 +99,7 @@ class TestSetWavelengthWidget(object):
 
     @pytest.fixture
     def widget(self, qtbot):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
+        reset_image_set(self.image_set)
         self.model = SetWavelengthModel(self.image_set)
         widget = SetWavelengthWidget(self.model)
         qtbot.add_widget(widget)

@@ -3,6 +3,8 @@ import sys
 
 import pvl
 from qtpy import QtWidgets
+import numpy
+np = numpy
 
 test_dir = os.path.join('tests', 'mission_data')
 
@@ -37,7 +39,7 @@ SAMPLE_ROI = os.path.join(
     'tests', 'sample_roi.npz'
 )
 
-mastcam_label = pvl.PVLModule(
+mastcam_label1 = pvl.PVLModule(
     {
         'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
         'INSTRUMENT_STATE_PARMS': {
@@ -48,6 +50,19 @@ mastcam_label = pvl.PVLModule(
         },
     }
 )
+
+mastcam_label2 = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'MAST CAMERA LEFT',
+        'INSTRUMENT_STATE_PARMS': {
+            'FILTER_CENTER_WAVELENGTH': pvl._collections.Units(
+                value=500,
+                units='nm'
+            ),
+        },
+    }
+)
+
 
 NA_label = pvl.PVLModule(
     {
@@ -64,6 +79,33 @@ WA_label = pvl.PVLModule(
 
     }
 )
+
+EMPTY_LABEL = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'EMPTY',
+        'FILTER_NAME': 'NO_FILTER',
+        'INSTRUMENT_STATE_PARMS': {'CENTER_FILTER_WAVELENGTH': None},
+    }
+)
+
+
+def reset_image_set(image_set):
+    image_set._current_image_index = 0
+    image_set.current_color_index = 0
+    image_set._selection_index = 0
+    image_set._zoom = 1.0
+    image_set._center = None
+    image_set._move_rois = True
+    image_set._alpha = 1.0
+    image_set._flip_x = False
+    image_set._flip_y = False
+    image_set._swap_xy = False
+    image_set._roi_data = image_set._maskrgb.get_data().astype(float)
+    image_set._subsets = []
+    image_set._simultaneous_roi = False
+    image_set._unit = 'nm'
+    for image in image_set.images:
+        image.unit = 'nm'
 
 
 app = QtWidgets.QApplication.instance()
