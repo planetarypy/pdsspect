@@ -2,13 +2,16 @@ import pytest
 
 from instrument_models.cassini_iss import CassiniISS
 
-from . import NA_label, WA_label
+import numpy as np
+
+from . import NA_label, WA_label, EMPTY_LABEL
 
 
 class TestCassiniISS(object):
 
     ISS_NA = CassiniISS(NA_label)
     ISS_WA = CassiniISS(WA_label)
+    EMPTY = CassiniISS(EMPTY_LABEL)
 
     def test_filter_name(self):
         assert self.ISS_NA.filter_name == 'BL1, BL2'
@@ -33,3 +36,4 @@ class TestCassiniISS(object):
     def test_get_wavelength(self, unit, wavelength_na, wavelength_wa):
         assert self.ISS_NA.get_wavelength(unit) == wavelength_na
         assert self.ISS_WA.get_wavelength(unit) == wavelength_wa
+        assert np.isnan(self.EMPTY.get_wavelength(unit))

@@ -1,9 +1,7 @@
-from functools import wraps
-
-from . import FILE_1
+from . import numpy as np
+from . import FILE_1, reset_image_set
 
 import pytest
-import numpy as np
 
 from pdsspect.roi import Rectangle, Polygon
 from pdsspect.pan_view import PanViewController, PanView, PanViewWidget
@@ -151,44 +149,41 @@ class TestPanViewController(object):
 
 class TestPanView(object):
     image_set = PDSSpectImageSet([FILE_1])
-    view = PanView(image_set)
 
-    def add_view_to_qtbot(func):
-        @wraps(func)
-        def wrapper(self, qtbot):
-            self.view.show()
-            qtbot.add_widget(self.view)
-            return func(self, qtbot)
-        return wrapper
+    @pytest.fixture
+    def view(self, qtbot):
+        reset_image_set(self.image_set)
+        view = PanView(self.image_set)
+        view.show()
+        qtbot.add_widget(view)
+        return view
 
-    def test_is_erasing(self):
-        assert not self.view.is_erasing
+    def test_is_erasing(self, view):
+        assert not view.is_erasing
         self.image_set.current_color_index = 14
-        assert self.view.is_erasing
+        assert view.is_erasing
         self.image_set.current_color_index = 0
-        assert not self.view.is_erasing
+        assert not view.is_erasing
 
-    @add_view_to_qtbot
-    def test_set_data(self, qtbot):
+    def test_set_data(self, view):
         assert np.array_equal(
-            self.view.view_canvas.get_image().get_data(),
+            view.view_canvas.get_image().get_data(),
             self.image_set.pan_data)
         self.image_set._zoom = 2
         assert not np.array_equal(
-            self.view.view_canvas.get_image().get_data(),
+            view.view_canvas.get_image().get_data(),
             self.image_set.pan_data)
-        self.view.set_data()
+        view.set_data()
         assert np.array_equal(
-            self.view.view_canvas.get_image().get_data(),
+            view.view_canvas.get_image().get_data(),
             self.image_set.pan_data)
         self.image_set._zoom = 1
-        self.view.set_data()
+        view.set_data()
         assert np.array_equal(
-            self.view.view_canvas.get_image().get_data(),
+            view.view_canvas.get_image().get_data(),
             self.image_set.pan_data)
 
-    @add_view_to_qtbot
-    def test_set_roi_data(self, qtbot):
+    def test_set_roi_data(self, view):
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
             self.image_set.pan_roi_data)
@@ -196,12 +191,12 @@ class TestPanView(object):
         assert not np.array_equal(
             self.image_set._maskrgb.get_data(),
             self.image_set.pan_roi_data)
-        self.view.set_data()
+        view.set_data()
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
             self.image_set.pan_roi_data)
         self.image_set._zoom = 1
-        self.view.set_data()
+        view.set_data()
         assert np.array_equal(
             self.image_set._maskrgb.get_data(),
             self.image_set.pan_roi_data)
@@ -220,45 +215,99 @@ class TestPanView(object):
             (1024, 1024, 1023, 1023),
         ]
     )
-    def test_make_x_y_in_pan(self, pre_x, pre_y, expected_x, expected_y):
-        post_x, post_y = self.view._make_x_y_in_pan(pre_x, pre_y)
+    def test_make_x_y_in_pan(self, pre_x, pre_y, expected_x, expected_y, view):
+        post_x, post_y = view._make_x_y_in_pan(pre_x, pre_y)
         assert post_x == expected_x
         assert post_y == expected_y
 
-    @add_view_to_qtbot
-    def test_start_ROI(self, qtbot):
-        assert not self.view._making_roi
-        assert self.view._current_roi is None
-        self.view.start_ROI(self.view.view_canvas, None, 512, 512)
-        assert self.view._making_roi
-        assert self.view._current_roi is not None
+    def test_start_ROI(self, view):
+        assert not view._making_roi
+        assert view._current_roi is None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
         assert self.image_set.selection_type == 'filled rectangle'
-        assert isinstance(self.view._current_roi, Rectangle)
-        self.view._making_roi = False
-        self.view._current_roi = None
+        assert isinstance(view._current_roi, Rectangle)
+        view._making_roi = False
+        view._current_roi = None
         self.image_set._selection_index = 1
         assert self.image_set.selection_type == 'filled polygon'
-        self.view.start_ROI(self.view.view_canvas, None, 512, 512)
-        assert self.view._making_roi
-        assert self.view._current_roi is not None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
         assert self.image_set.selection_type == 'filled polygon'
-        assert isinstance(self.view._current_roi, Polygon)
-        self.view._making_roi = False
-        self.view._current_roi = None
+        assert isinstance(view._current_roi, Polygon)
+        view._making_roi = False
+        view._current_roi = None
         self.image_set._selection_index = 2
         assert self.image_set.selection_type == 'pencil'
-        self.view.start_ROI(self.view.view_canvas, None, 512, 512)
-        assert not self.view._making_roi
-        assert self.view._current_roi is None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        # Pencil ROIs stop directly after starting
+        assert not view._making_roi
+        assert view._current_roi is None
+        assert self.image_set.selection_type == 'pencil'
         self.image_set._selection_index = 0
         assert self.image_set.selection_type == 'filled rectangle'
-        self.view.start_ROI(self.view.view_canvas, None, 512, 512)
-        assert self.view._making_roi
-        assert self.view._current_roi is not None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
         assert self.image_set.selection_type == 'filled rectangle'
-        assert isinstance(self.view._current_roi, Rectangle)
-        self.view._making_roi = False
-        self.view._current_roi = None
+        assert isinstance(view._current_roi, Rectangle)
+        view._making_roi = False
+        view._current_roi = None
+
+    def test_continue_ROI(self, view):
+        assert not view._making_roi
+        assert view._current_roi is None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
+        view.continue_ROI(None, None, 514, 514)
+        assert not view._making_roi
+        assert view._current_roi is None
+        self.image_set._selection_index = 1
+        assert self.image_set.selection_type == 'filled polygon'
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
+        # Make sure to continue ROI even when start_ROI is called
+        view.start_ROI(None, None, 514, 514)
+        assert view._making_roi
+        assert view._current_roi is not None
+        view._making_roi = False
+        view._current_roi = None
+
+    def test_extend_ROI(self, view):
+        assert not view._making_roi
+        assert view._current_roi is None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
+        view.extend_ROI(None, None, 514, 514)
+        assert view._making_roi
+        assert view._current_roi is not None
+
+    def test_stop_ROI(self, view):
+        assert not view._making_roi
+        assert view._current_roi is None
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
+        view.stop_ROI(view.view_canvas, None, 512, 512)
+        assert not view._making_roi
+        assert view._current_roi is None
+        assert self.image_set.get_coordinates_of_color('red') == ([513], [513])
+        self.image_set.current_color_index = 14
+        assert self.image_set.color == 'eraser'
+        view.start_ROI(view.view_canvas, None, 512, 512)
+        assert view._making_roi
+        assert view._current_roi is not None
+        view.stop_ROI(view.view_canvas, None, 512, 512)
+        assert not view._making_roi
+        assert view._current_roi is None
+        assert np.array_equal(
+            self.image_set.get_coordinates_of_color('red'),
+            (np.array([]), np.array([])))
 
 
 class TestPanViewWidget(object):
@@ -267,7 +316,7 @@ class TestPanViewWidget(object):
 
     @pytest.fixture
     def pan_widget(self):
-        self.image_set = PDSSpectImageSet([FILE_1])
+        reset_image_set(self.image_set)
         self.pan = PanView(self.image_set)
         return PanViewWidget(self.pan, None)
 

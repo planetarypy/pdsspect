@@ -47,8 +47,7 @@ test-all:
 	tox
 
 coverage:
-	py.test --cov pdsspect --cov-report html tests
-	open htmlcov/index.html
+	py.test --cov-report html --cov-report term --cov=instrument_models --cov=pdsspect tests/
 
 docs:
 	rm -f docs/pdsspect.rst

@@ -1,18 +1,18 @@
-from pdsspect import roi_plot
-from pdsspect.pdsspect_image_set import PDSSpectImageSet
-
-from . import FILE_1, FILE_3
+from . import FILE_1, FILE_3, reset_image_set
 
 import pytest
 
+from pdsspect import roi_plot
+from pdsspect.pdsspect_image_set import PDSSpectImageSet
 
-class TestROIHistogramModel(object):
+
+class TestROIPlotModel(object):
 
     image_set = PDSSpectImageSet([FILE_1, FILE_3])
 
     @pytest.fixture()
     def test_model(self):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
+        reset_image_set(self.image_set)
         return roi_plot.ROIPlotModel(self.image_set)
 
     def test_image_sets(self, test_model):
@@ -66,14 +66,14 @@ class TestROIHistogramModel(object):
         assert test_model.unit == '\AA'
 
 
-class TestROIHistogramController(object):
+class TestROIPlotController(object):
 
     image_set = PDSSpectImageSet([FILE_1, FILE_3])
     model = roi_plot.ROIPlotModel(image_set)
 
     @pytest.fixture()
     def test_controller(self):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
+        reset_image_set(self.image_set)
         self.model = roi_plot.ROIPlotModel(self.image_set)
         return roi_plot.ROIPlotController(self.model, None)
 
@@ -112,15 +112,18 @@ class TestROIHistogramController(object):
         assert self.model.image_index == -1
 
 
-class TestROIHistogramWidget(object):
+class TestROIPlotWidget(object):
     image_set = PDSSpectImageSet([FILE_1])
     model = roi_plot.ROIPlotModel(image_set)
 
     @pytest.fixture
-    def widget(self):
-        self.image_set = PDSSpectImageSet([FILE_1, FILE_3])
+    def widget(self, qtbot):
+        reset_image_set(self.image_set)
         self.model = roi_plot.ROIPlotModel(self.image_set)
-        return roi_plot.ROIPlotWidget(self.model)
+        widget = roi_plot.ROIPlotWidget(self.model)
+        widget.show()
+        qtbot.add_widget(widget)
+        return widget
 
     def test_init(self, widget):
         assert widget in self.model._views
@@ -134,8 +137,6 @@ class TestROIHistogramWidget(object):
         assert hasattr(widget, 'foo_checkbox')
 
     def test_check_color(self, qtbot, widget):
-        qtbot.add_widget(widget)
-        widget.show()
         assert self.model.selected_colors == []
         widget.check_color('red')
         assert self.model.selected_colors == ['red']

@@ -1,12 +1,12 @@
+from . import numpy as np
+from . import TEST_FILES, FILE_1, FILE_1_NAME, SAMPLE_ROI, reset_image_set
+
 import os
 import shutil
 import tempfile
 from contextlib import contextmanager
 
-from . import TEST_FILES, FILE_1, FILE_1_NAME, SAMPLE_ROI
-
 import pytest
-import numpy as np
 from qtpy import QtCore
 
 from pdsspect.pdsspect_image_set import PDSSpectImageSet
@@ -28,7 +28,7 @@ class TestSelectionController(object):
 
     @pytest.fixture
     def controller(self):
-        self.image_set = PDSSpectImageSet(TEST_FILES)
+        reset_image_set(self.image_set)
         self.subset = self.image_set.create_subset()
         return SelectionController(self.image_set, None)
 
@@ -127,10 +127,13 @@ class TestSelection(object):
     )
 
     @pytest.fixture
-    def selection(self):
-        self.image_set = PDSSpectImageSet([FILE_1])
+    def selection(self, qtbot):
+        reset_image_set(self.image_set)
         self.subset = self.image_set.create_subset()
-        return Selection(self.image_set)
+        selection = Selection(self.image_set)
+        selection.show()
+        qtbot.add_widget(selection)
+        return selection
 
     def test_change_color(self, qtbot, selection):
         assert self.image_set.current_color_index == 0
@@ -142,8 +145,6 @@ class TestSelection(object):
         assert self.image_set.current_color_index == 0
         assert self.subset.current_color_index == 0
 
-        selection.show()
-        qtbot.add_widget(selection)
         selection.color_menu.setCurrentIndex(1)
         assert self.image_set.current_color_index == 1
         assert self.subset.current_color_index == 1
@@ -161,8 +162,6 @@ class TestSelection(object):
         assert self.image_set.selection_index == 0
         assert self.subset.selection_index == 0
 
-        selection.show()
-        qtbot.add_widget(selection)
         selection.selection_menu.setCurrentIndex(1)
         assert self.image_set.selection_index == 1
         assert self.subset.selection_index == 1
@@ -180,8 +179,6 @@ class TestSelection(object):
         assert self.image_set.alpha == 1.0
         assert self.subset.alpha == 1.0
 
-        selection.show()
-        qtbot.add_widget(selection)
         selection.opacity_slider.setValue(50)
         assert self.image_set.alpha == .5
         assert self.subset.alpha == .5
@@ -197,8 +194,6 @@ class TestSelection(object):
         )
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
-        selection.show()
-        qtbot.add_widget(selection)
         qtbot.mouseClick(
             selection.clear_current_color_btn, QtCore.Qt.LeftButton
         )
@@ -219,8 +214,6 @@ class TestSelection(object):
 
         self.image_set._roi_data[4, 2] = [255.0, 0.0, 0.0, 255.]
         self.image_set._roi_data[2, 4] = [165.0, 42.0, 42.0, 255.]
-        selection.show()
-        qtbot.add_widget(selection)
         qtbot.mouseClick(
             selection.clear_all_btn, QtCore.Qt.LeftButton
         )
@@ -282,8 +275,6 @@ class TestSelection(object):
             )
 
     def test_select_simultaneous_roi(self, qtbot, selection):
-        selection.show()
-        qtbot.add_widget(selection)
         assert not self.image_set.simultaneous_roi
         selection.simultaneous_roi_box.setChecked(True)
         assert self.image_set.simultaneous_roi
