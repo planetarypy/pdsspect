@@ -207,6 +207,8 @@ class PanView(QtWidgets.QWidget, PDSSpectImageSetViewBase):
             )
             self._current_roi.start_ROI(data_x, data_y)
             self._making_roi = True
+            if ROI == Pencil:
+                self.stop_ROI(view_canvas, button, data_x, data_y)
 
     def check_roi_in_process(func):
         """Wrapper to make sure the roi making is in process"""

@@ -1,5 +1,5 @@
 from . import numpy as np
-from . import FILE_1, TEST_FILES
+from . import FILE_1, TEST_FILES, reset_image_set
 
 import pytest
 from ginga.canvas.types import basic
@@ -15,6 +15,32 @@ def test_abstract_base_class():
     with pytest.raises(TypeError):
         ROIBase(image_set, view_canvas)
 
+    class MockROIBase(ROIBase):
+
+        def start_ROI(self, x, y):
+            super(MockROIBase, self).start_ROI(x, y)
+            return True
+
+        def continue_ROI(self, x, y):
+            super(MockROIBase, self).continue_ROI(x, y)
+            return True
+
+        def extend_ROI(self, x, y):
+            super(MockROIBase, self).extend_ROI(x, y)
+            return True
+
+        def stop_ROI(self, x, y):
+            super(MockROIBase, self).stop_ROI(x, y)
+            return True
+
+    # Test Proper subclass of Base Class
+    mock_roi_base_class = MockROIBase(image_set, view_canvas)
+    assert isinstance(mock_roi_base_class, ROIBase)
+    assert mock_roi_base_class.start_ROI(0, 0)
+    assert mock_roi_base_class.continue_ROI(1, 1)
+    assert mock_roi_base_class.extend_ROI(2, 2)
+    assert mock_roi_base_class.stop_ROI(2, 0)
+
 
 class TestPolygon(object):
     image_set = PDSSpectImageSet([FILE_1])
@@ -28,11 +54,62 @@ class TestPolygon(object):
         self.view_canvas = PDSImageViewCanvas()
         return Polygon(self.image_set, self.view_canvas)
 
+    def test_top(self, poly):
+        assert poly.top == self.image_set.current_image.shape[0] + 1.5
+
+    def test_right(self, poly):
+        assert poly.right == self.image_set.current_image.shape[1] - 0.5
+
+    @pytest.mark.parametrize(
+        'point, expected',
+        [
+            (-1, -0.5),
+            (-0.5, -0.5),
+            (-0.4, -0.5),
+            (0, -0.5),
+            (0.4, None),
+            (0.5, None),
+            (0.9, None),
+            (1, 0.5),
+            (1.1, 0.5),
+        ]
+    )
+    def test_get_default_point_value(self, point, expected, poly):
+        high_edege = 0.5
+        default_point_value = poly._get_default_point_value(point, high_edege)
+        if expected is None:
+            assert default_point_value is None
+        else:
+            assert default_point_value == expected
+
+    def test_get_default_data_values(self, poly):
+        assert poly._get_default_data_values(-1, -1) == (-0.5, -0.5)
+        assert poly._get_default_data_values(0, 0) == (-0.5, -0.5)
+        x, y = poly.right - 1, poly.top - 1
+        assert poly._get_default_data_values(x, y) == (None, None)
+        x, y = poly.right, poly.top
+        assert poly._get_default_data_values(x, y) == (None, None)
+        x, y = poly.right + 0.5, poly.top + 0.5
+        assert poly._get_default_data_values(x, y) == (poly.right, poly.top)
+        x, y = poly.right + 1, poly.top + 1
+        assert poly._get_default_data_values(x, y) == (poly.right, poly.top)
+
+    @pytest.mark.parametrize(
+        'coordinate, expected',
+        [
+            (2.3, 1.5),
+            (1.7, 1.5),
+            (2.5, 2.5),
+        ]
+    )
+    def test_lock_coordinate_to_pixel(self, coordinate, expected, poly):
+        assert poly._lock_coordinate_to_pixel(coordinate) == expected
+
     @pytest.mark.parametrize(
         'x, y, expected_x, expected_y',
         [
             (0, 0, -.5, -.5),
-            (1023, 1023, 1022.5, 1022.5),
+            (1023, 1023, 1023.5, 1023.5),
             (2.3, 2.3, 1.5, 1.5),
             (1.7, 2.3, 1.5, 1.5),
             (1.7, 1.7, 1.5, 1.5),
@@ -125,6 +202,7 @@ class TestRectangle(object):
 
     @pytest.fixture
     def rect(self):
+        reset_image_set(self.image_set)
         self.view_canvas = PDSImageViewCanvas()
         return Rectangle(self.image_set, self.view_canvas)
 
@@ -139,23 +217,48 @@ class TestRectangle(object):
         assert rect._current_path is not None
         assert rect._current_path in self.view_canvas.objects
 
+    @pytest.mark.parametrize(
+        'point, expected',
+        [
+            (1, (1, 3)),
+            (2, (2, 3)),
+            (3, (2, 4)),
+            (4, (2, 4))
+        ]
+    )
+    def test_extend_point(self, point, expected, rect):
+        anchor_point = 2
+        edge = 4
+        extended_point = rect._extend_point(point, anchor_point, edge)
+        assert expected == extended_point
+
     def test_extend_ROI(self, rect):
         rect.start_ROI(2.5, 3.5)
         rect.extend_ROI(2.5, 3.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(3.5, 3.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(3.5, 4.5)
+        assert rect._current_path.x1 == 2.5
         assert rect._current_path.x2 == 4.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 5.5
         rect.extend_ROI(1.5, 3.5)
-        assert rect._current_path.x2 == 1.5
+        assert rect._current_path.x1 == 1.5
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 3.5
         assert rect._current_path.y2 == 4.5
         rect.extend_ROI(1.5, 2.5)
-        assert rect._current_path.x2 == 1.5
-        assert rect._current_path.y2 == 2.5
+        assert rect._current_path.x1 == 1.5
+        assert rect._current_path.x2 == 3.5
+        assert rect._current_path.y1 == 2.5
+        assert rect._current_path.y2 == 4.5
 
     def test_stop_ROI(self, rect):
         rect.start_ROI(2.5, 3.5)
@@ -174,6 +277,7 @@ class TestPencil(object):
 
     @pytest.fixture
     def pencil(self):
+        self.image_set.zoom = 1.0
         self.view_canvas = PDSImageViewCanvas()
         return Pencil(self.image_set, self.view_canvas)
 
@@ -206,6 +310,11 @@ class TestPencil(object):
         assert pencil._current_path[1].x == 4
         assert pencil._current_path[1].y == 10
 
+    def test_fix_coordinate(self, pencil):
+        assert pencil._fix_coordinate(1.7) == 2
+        assert pencil._fix_coordinate(2.0) == 2
+        assert pencil._fix_coordinate(2.3) == 2
+
     def test_stop_ROI(self, pencil):
         pencil.start_ROI(3.5, 1.5)
         pencil._add_point(4.5, 6.5)
@@ -214,4 +323,25 @@ class TestPencil(object):
         test_coords = pencil.stop_ROI(0, 0)
         assert pencil._current_path[0] not in self.view_canvas.objects
         assert pencil._current_path[1] not in self.view_canvas.objects
-        assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))
+        # The order may be different due to using set
+        try:
+            assert np.array_equal(test_coords, np.array([[2, 4], [7, 5]]))
+        except AssertionError:
+            assert np.array_equal(test_coords, np.array([[7, 5], [2, 4]]))
+        self.image_set.zoom = 2.0
+        x, y = self.image_set.center
+        self.image_set.center = (x + 5.2, y + 5.7)
+        pencil.start_ROI(3.5, 1.5)
+        pencil._add_point(4.5, 6.5)
+        test_coords = pencil.stop_ROI(0, 0)
+        # The order may be different due to using set
+        try:
+            assert np.array_equal(
+                test_coords,
+                np.array([[269, 266], [264, 265]])
+            )
+        except AssertionError:
+            assert np.array_equal(
+                test_coords,
+                np.array([[264, 265], [269, 266]])
+            )

@@ -263,6 +263,31 @@ class TestSelection(object):
             selection._check_shape_is_the_same(fail_shape)
 
     def test_load_selections(self, selection):
+        """Test loading when there are equal loaded views to current"""
+        selection.load_selections([SAMPLE_ROI])
+        rows, cols = np.column_stack(self.roi_coords)
+        for pixel in self.image_set._roi_data[rows, cols]:
+            assert np.array_equal(
+                pixel, [255.0, 0.0, 0.0, 255.]
+            )
+        for pixel in self.subset._roi_data[rows, cols]:
+            assert np.array_equal(
+                pixel, [0.0, 100.0, 0.0, 255.]
+            )
+
+    def test_load_selections2(self, selection):
+        """Test when there is no multiple views"""
+        self.image_set._subsets = []
+        selection.load_selections([SAMPLE_ROI])
+        rows, cols = np.column_stack(self.roi_coords)
+        for pixel in self.image_set._roi_data[rows, cols]:
+            assert np.array_equal(
+                pixel, [255.0, 0.0, 0.0, 255.]
+            )
+
+    def test_load_selections3(self, selection):
+        """Test when there are more current views"""
+        self.image_set.create_subset()
         selection.load_selections([SAMPLE_ROI])
         rows, cols = np.column_stack(self.roi_coords)
         for pixel in self.image_set._roi_data[rows, cols]:
