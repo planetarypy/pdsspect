@@ -15,6 +15,32 @@ def test_abstract_base_class():
     with pytest.raises(TypeError):
         ROIBase(image_set, view_canvas)
 
+    class MockROIBase(ROIBase):
+
+        def start_ROI(self, x, y):
+            super(MockROIBase, self).start_ROI(x, y)
+            return True
+
+        def continue_ROI(self, x, y):
+            super(MockROIBase, self).continue_ROI(x, y)
+            return True
+
+        def extend_ROI(self, x, y):
+            super(MockROIBase, self).extend_ROI(x, y)
+            return True
+
+        def stop_ROI(self, x, y):
+            super(MockROIBase, self).stop_ROI(x, y)
+            return True
+
+    # Test Proper subclass of Base Class
+    mock_roi_base_class = MockROIBase(image_set, view_canvas)
+    assert isinstance(mock_roi_base_class, ROIBase)
+    assert mock_roi_base_class.start_ROI(0, 0)
+    assert mock_roi_base_class.continue_ROI(1, 1)
+    assert mock_roi_base_class.extend_ROI(2, 2)
+    assert mock_roi_base_class.stop_ROI(2, 0)
+
 
 class TestPolygon(object):
     image_set = PDSSpectImageSet([FILE_1])

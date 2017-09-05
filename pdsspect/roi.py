@@ -266,15 +266,8 @@ class ROIBase(basic.Polygon):
         # See: http://alienryderflex.com/polygon/
         xa, ya = x_arr, y_arr
 
-        # promote input arrays dimension cardinality, if necessary
-        promoted = False
-        if len(x_arr.shape) == 1:
-            x_arr = x_arr.reshape(1, -1)
-            promoted = True
-        if len(y_arr.shape) == 1:
-            y_arr = y_arr.reshape(-1, 1)
-            promoted = True
-
+        # Result 1 and 2 are used to inclusively select pixels on left and
+        # right side of the ROI. Result is the combination of the two
         result = np.zeros(y_arr.shape, dtype=np.bool)
         result1 = np.zeros(y_arr.shape, dtype=np.bool)
         result2 = np.zeros(y_arr.shape, dtype=np.bool)
@@ -304,10 +297,6 @@ class ROIBase(basic.Polygon):
             result2[tf] ^= cross2[tf]
             xj, yj = xi, yi
         result = np.logical_or(result1, result2)
-
-        if promoted:
-            # de-promote result
-            result = result[np.eye(len(y_arr), len(x_arr), dtype=np.bool)]
 
         return result
 

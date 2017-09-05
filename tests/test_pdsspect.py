@@ -133,11 +133,15 @@ class TestPDSSpect(object):
         assert not window.isVisible()
 
 
-def test_open_pdsspect(qtbot):
+@pytest.mark.parametrize(
+    'inlist',
+    [TEST_FILES, ','.join(TEST_FILES)]
+)
+def test_open_pdsspect(inlist, qtbot):
     app = QtWidgets.QApplication.instance()
     if not app:
         app = QtWidgets.QApplication(sys.argv)
-    window = open_pdsspect(app, TEST_FILES)
+    window = open_pdsspect(app, inlist)
     qtbot.add_widget(window)
     qtbot.add_widget(window.basic_window)
     qtbot.add_widget(window.pan_view)
