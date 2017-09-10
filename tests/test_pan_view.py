@@ -3,7 +3,7 @@ from . import FILE_1, reset_image_set
 
 import pytest
 
-from pdsspect.roi import Rectangle, Polygon, Pencil
+from pdsspect.roi import Rectangle, Polygon
 from pdsspect.pan_view import PanViewController, PanView, PanViewWidget
 from pdsspect.pdsspect_image_set import PDSSpectImageSet, SubPDSSpectImageSet
 
@@ -242,12 +242,10 @@ class TestPanView(object):
         self.image_set._selection_index = 2
         assert self.image_set.selection_type == 'pencil'
         view.start_ROI(view.view_canvas, None, 512, 512)
-        assert view._making_roi
-        assert view._current_roi is not None
+        # Pencil ROIs stop directly after starting
+        assert not view._making_roi
+        assert view._current_roi is None
         assert self.image_set.selection_type == 'pencil'
-        assert isinstance(view._current_roi, Pencil)
-        view._making_roi = False
-        view._current_roi = None
         self.image_set._selection_index = 0
         assert self.image_set.selection_type == 'filled rectangle'
         view.start_ROI(view.view_canvas, None, 512, 512)
@@ -278,14 +276,6 @@ class TestPanView(object):
         assert view._current_roi is not None
         view._making_roi = False
         view._current_roi = None
-        self.image_set._selection_index = 2
-        assert self.image_set.selection_type == 'pencil'
-        view.start_ROI(view.view_canvas, None, 512, 512)
-        assert view._making_roi
-        assert view._current_roi is not None
-        view.continue_ROI(None, None, 514, 514)
-        assert view._making_roi
-        assert view._current_roi is not None
 
     def test_extend_ROI(self, view):
         assert not view._making_roi
