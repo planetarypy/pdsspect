@@ -61,7 +61,3 @@ venv*
 
 # ignore coverage
 htmlcov/
-tests/.DS_Store
-tests/.DS_Store
-pdsspect/.DS_Store
-instrument_models/.DS_Store
