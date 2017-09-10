@@ -1,4 +1,4 @@
-from . import FILE_2, mastcam_label1, NA_label, WA_label
+from . import FILE_2, mastcam_label1, NA_label, WA_label, SSI_label
 
 import pvl
 import math
@@ -49,6 +49,9 @@ def test_is_mastcam(label, expected):
         (WA_label, 'nm', 752.354),
         (WA_label, 'um', 0.752),
         (WA_label, 'AA', 7523.540),
+        (SSI_label, 'nm', 624.700),
+        (SSI_label, 'um', 0.625),
+        (SSI_label, 'AA', 6247.000),
         (mock_label, 'nm', float('nan')),
         (mock_label, 'um', float('nan')),
         (mock_label, 'AA', float('nan')),

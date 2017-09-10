@@ -4,22 +4,27 @@ from .instrument import InstrumentBase
 
 
 class GalileoSSI(InstrumentBase):
-    """Model to get the filter wavelength from Galileo Solid State Imaging (SSI) experiment imageRY
+    """Model to get the filter wavelength from Galileo Solid State Imaging
+    (SSI) experiment imagery
 
     See `SSI Raw Experiment Data Record (REDR) for Phase 2'
     <https://pds-imaging.jpl.nasa.gov/data/go-j_jsa-ssi-2-redr-v1.0/go_0023/document/redrsis.pdf>`_
     and
-    see 'Calibration And Performance Of The Galileo Solid-state Imaging System In Jupiter Orbit`
+    see 'Calibration And Performance Of The Galileo Solid-state Imaging
+    System In Jupiter Orbit`
     <http://authors.library.caltech.edu/70894/1/1178_1.pdf>`_
-    for table of filter name, number, and corresponding wavelengths. We use the effective (solar radiance) wavelength.
+    for table of filter name, number, and corresponding wavelengths.
+    We use the effective (solar radiance) wavelength.
 
     Attributes
     ----------
     SSI_filters : :obj:`dict`
-        Dictionary of the Galileo Solid State Imaging (SSI) experiment filter names and wavelengths
+        Dictionary of the Galileo Solid State Imaging (SSI) experiment
+         filter names and wavelengths
 
-        Key is the filter name and filter number and the value is the wavelength in nm
-    
+        Key is the filter name and filter number and the value is the
+            wavelength in nm
+
     unit : :obj:`str`
         The default unit is ``nm``
     """
@@ -51,10 +56,9 @@ class GalileoSSI(InstrumentBase):
     @property
     def is_SSI(self):
         """:obj:`bool` : ``True`` if image is SSI"""
-        SSI_key = 'GALILEO SOLID STATE IMAGING EXPERIMENT'
+        SSI_key = 'SOLID STATE IMAGING SYSTEM'
         is_SSI = self.label['INSTRUMENT_NAME'] == SSI_key
         return is_SSI
-
 
     def get_wavelength(self, unit='nm'):
         """Get the image's filter wavelength

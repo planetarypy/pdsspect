@@ -4,6 +4,7 @@ import functools
 from .pancam import Pancam
 from .mastcam import Mastcam
 from .cassini_iss import CassiniISS
+from .galileo_ssi import GalileoSSI
 
 instrument_name_key = 'INSTRUMENT_NAME'
 
@@ -89,6 +90,27 @@ def is_cassini_ISS(label):
     return is_cassini_ISS
 
 
+@is_instrument
+def is_galileo_SSI(label):
+    """Determine if label is for a Galileo Solid State Imaging experiment image
+
+    Parameters
+    ----------
+    label : :class:`pvl.PVLModule`
+        Image's label
+
+    Returns
+    -------
+    is_galileo_SSI : :obj:`bool`
+        ``True`` if label is from a Galileo SSI image, ``False`` otherwise
+    """
+
+    is_galileo_SSI = 'SOLID STATE IMAGING SYSTEM' in label.get(
+        instrument_name_key
+    )
+    return is_galileo_SSI
+
+
 def get_wavelength(label, unit):
     """Get the filter wavelength from the label of an image
 
@@ -120,6 +142,9 @@ def get_wavelength(label, unit):
 
     instrument_models.cassini_iss.CassiniISS.get_wavelength : Get Cassini ISS
         wavelength
+
+    instrument_models.galileo_ssi.GalileoSSI.get_wavelength : Get Galileo SSI
+        wavelength
     """
 
     if is_pancam(label):
@@ -128,6 +153,8 @@ def get_wavelength(label, unit):
         instrument = Mastcam(label)
     elif is_cassini_ISS(label):
         instrument = CassiniISS(label)
+    elif is_galileo_SSI(label):
+        instrument = GalileoSSI(label)
     else:
         instrument = None
 
