@@ -23,16 +23,19 @@ FILE_5 = os.path.join(
     test_dir, '1p134482118erp0902p2600r8m1.img')
 FILE_6 = os.path.join(
     test_dir, '0047MH0000110010100214C00_DRCL.IMG')
+FILE_7 = os.path.join(
+    test_dir, '6413r.img')
 FILE_1_NAME = os.path.basename(FILE_1)
 FILE_2_NAME = os.path.basename(FILE_2)
 FILE_3_NAME = os.path.basename(FILE_3)
 FILE_4_NAME = os.path.basename(FILE_4)
 FILE_5_NAME = os.path.basename(FILE_5)
 FILE_6_NAME = os.path.basename(FILE_6)
+FILE_7_NAME = os.path.basename(FILE_7)
 
-TEST_FILES = [FILE_1, FILE_2, FILE_3, FILE_4, FILE_5]
+TEST_FILES = [FILE_1, FILE_2, FILE_3, FILE_4, FILE_5, FILE_6, FILE_7]
 TEST_FILE_NAMES = [
-    FILE_1_NAME, FILE_2_NAME, FILE_3_NAME, FILE_4_NAME, FILE_5_NAME
+    FILE_1_NAME, FILE_2_NAME, FILE_3_NAME, FILE_4_NAME, FILE_5_NAME, FILE_6_NAME, FILE_7_NAME
 ]
 
 SAMPLE_ROI = os.path.join(
@@ -76,6 +79,14 @@ WA_label = pvl.PVLModule(
     {
         'INSTRUMENT_NAME': 'IMAGING SCIENCE SUBSYSTEM WIDE ANGLE',
         'FILTER_NAME': ["CB2", "CL2"],
+
+    }
+)
+
+SSI_label = pvl.PVLModule(
+    {
+        'INSTRUMENT_NAME': 'SOLID STATE IMAGING EXPERIMENT',
+        'FILTER_NAME': ["CLEAR", "0"],
 
     }
 )

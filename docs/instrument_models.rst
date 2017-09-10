@@ -44,3 +44,11 @@ cassini_iss
     :members:
     :show-inheritance:
     :inherited-members:
+
+galileo_ssi
+-----------
+.. automodule:: instrument_models.galileo_ssi
+.. autoclass:: GalileoSSI
+    :members:
+    :show-inheritance:
+    :inherited-members:
